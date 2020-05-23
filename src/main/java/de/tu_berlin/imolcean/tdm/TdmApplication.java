@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import schemacrawler.inclusionrule.RegularExpressionExclusionRule;
 import schemacrawler.schema.*;
 import schemacrawler.schemacrawler.SchemaCrawlerOptions;
 import schemacrawler.schemacrawler.SchemaCrawlerOptionsBuilder;
@@ -50,6 +51,7 @@ public class TdmApplication implements CommandLineRunner
                     SchemaCrawlerOptionsBuilder.builder()
                             .withSchemaInfoLevel(SchemaInfoLevelBuilder.standard())
                             .includeSchemas(name -> name.contains(databaseName + ".dbo"))
+                            .includeTables(name -> !name.contains("sysdiagrams"))
                             .toOptions();
 
             Catalog catalog = SchemaCrawlerUtility.getCatalog(connection, options);
