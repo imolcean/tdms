@@ -40,6 +40,13 @@
 <!--            <artifactId>ojdbc8</artifactId>-->
 <!--            <scope>runtime</scope>-->
 <!--        </dependency>-->
+
+        <dependency>
+            <groupId>us.fatehi</groupId>
+            <artifactId>schemacrawler</artifactId>
+            <version>16.7.2</version>
+        </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

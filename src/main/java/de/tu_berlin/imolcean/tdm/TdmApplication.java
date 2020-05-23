@@ -4,6 +4,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import schemacrawler.schema.*;
+import schemacrawler.schemacrawler.SchemaCrawlerOptions;
+import schemacrawler.schemacrawler.SchemaCrawlerOptionsBuilder;
+import schemacrawler.schemacrawler.SchemaInfoLevelBuilder;
+import schemacrawler.utility.SchemaCrawlerUtility;
 
 import java.sql.*;
 
@@ -41,35 +46,42 @@ public class TdmApplication implements CommandLineRunner
         {
             System.out.println(String.format("Connection with %s:%d:%s established", this.serverName, this.portNumber, this.databaseName));
 
-            DatabaseMetaData dbMetaData = connection.getMetaData();
-            ResultSet rs;
+            SchemaCrawlerOptions options =
+                    SchemaCrawlerOptionsBuilder.builder()
+                            .withSchemaInfoLevel(SchemaInfoLevelBuilder.standard())
+                            .includeSchemas(name -> name.contains(databaseName + ".dbo"))
+                            .toOptions();
 
-            System.out.println("Type TABLE");
-            System.out.println("------------------------------------");
-            rs = dbMetaData.getTables(null, null, null, new String[] {"TABLE"});
-            while(rs.next())
-            {
-                System.out.println(rs.getString("TABLE_NAME"));
-            }
-            System.out.println();
+            Catalog catalog = SchemaCrawlerUtility.getCatalog(connection, options);
 
-            System.out.println("Type SYSTEM TABLE");
-            System.out.println("------------------------------------");
-            rs = dbMetaData.getTables(null, null, null, new String[] {"SYSTEM TABLE"});
-            while(rs.next())
+            for(Schema schema : catalog.getSchemas())
             {
-                System.out.println(rs.getString("TABLE_NAME"));
-            }
-            System.out.println();
+                System.out.println(schema);
 
-            System.out.println("Type VIEW");
-            System.out.println("------------------------------------");
-            rs = dbMetaData.getTables(null, null, null, new String[] {"VIEW"});
-            while(rs.next())
-            {
-                System.out.println(rs.getString("TABLE_NAME"));
+                for(Table table : catalog.getTables(schema))
+                {
+                    System.out.print("---> " + table);
+
+                    if(table instanceof View)
+                    {
+                        System.out.println(" (VIEW)");
+                    }
+                    else
+                    {
+                        System.out.println();
+                    }
+
+                    for(Column column : table.getColumns())
+                    {
+                        System.out.println(
+                                String.format("     ---> %s (%s) %s %s",
+                                        column,
+                                        column.getColumnDataType(),
+                                        column.isPartOfPrimaryKey() ? "PK" : "",
+                                        column.isPartOfForeignKey() ? "FK" : ""));
+                    }
+                }
             }
-            System.out.println();
         }
     }
 }
