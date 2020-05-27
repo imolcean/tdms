@@ -1,5 +1,6 @@
 package de.tu_berlin.imolcean.tdm;
 
+import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 import schemacrawler.schema.*;
@@ -8,30 +9,27 @@ import schemacrawler.schemacrawler.SchemaCrawlerOptionsBuilder;
 import schemacrawler.schemacrawler.SchemaInfoLevelBuilder;
 import schemacrawler.utility.SchemaCrawlerUtility;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
-import java.util.Collection;
 
 @Service
 @Log
 public class SchemaExtractor
 {
-    public Collection<Table> extractDboTables(DataSource ds, String dbName) throws Exception
+    public Catalog extractDboTables(SQLServerDataSource ds) throws Exception
     {
         try(Connection connection = ds.getConnection())
         {
-            log.info(String.format("Connection with %s established", dbName));
+            log.info(String.format("Connection with %s:%d:%s established", ds.getServerName(), ds.getPortNumber(), ds.getDatabaseName()));
 
             SchemaCrawlerOptions options =
                     SchemaCrawlerOptionsBuilder.builder()
                             .withSchemaInfoLevel(SchemaInfoLevelBuilder.standard())
-                            .includeSchemas(name -> name.contains(dbName + ".dbo"))
+                            .includeSchemas(name -> name.contains(ds.getDatabaseName() + ".dbo"))
                             .includeTables(name -> !name.contains("sysdiagrams"))
+                            .tableTypes("TABLE")
                             .toOptions();
 
-            Catalog catalog = SchemaCrawlerUtility.getCatalog(connection, options);
-
-            return catalog.getTables();
+            return SchemaCrawlerUtility.getCatalog(connection, options);
         }
     }
 }

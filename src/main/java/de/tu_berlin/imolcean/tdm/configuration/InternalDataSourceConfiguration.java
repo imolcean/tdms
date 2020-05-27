@@ -8,20 +8,23 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class InternalDataSourceConfiguration
 {
-    @Value("${app.datasource.internal.server}")
+    @Value("${app.datasource.ru2.server}")
     private String serverName;
 
-    @Value("${app.datasource.internal.port}")
+    @Value("${app.datasource.ru2.port}")
     private int portNumber;
 
-    @Value("${app.datasource.internal.db}")
+    @Value("${app.datasource.ru2.db}")
     private String databaseName;
 
-    @Value("${app.datasource.internal.user}")
+    @Value("${app.datasource.ru2.user}")
     private String username;
 
+    @Value("${app.datasource.ru2.password}")
+    private String password;
+
     @Bean(name = "InternalDataSource")
-    public SQLServerDataSource internalDataSource()
+    public SQLServerDataSource externalRu2DataSource()
     {
         SQLServerDataSource ds = new SQLServerDataSource();
 
@@ -29,7 +32,7 @@ public class InternalDataSourceConfiguration
         ds.setPortNumber(this.portNumber);
         ds.setDatabaseName(this.databaseName);
         ds.setUser(this.username);
-        ds.setIntegratedSecurity(true);
+        ds.setPassword(this.password);
 
         return ds;
     }

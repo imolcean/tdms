@@ -1,15 +1,14 @@
 package de.tu_berlin.imolcean.tdm;
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
-import de.tu_berlin.imolcean.tdm.utils.SchemaPrinter;
+import de.danielbechler.diff.node.DiffNode;
+import de.danielbechler.diff.node.Visit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import schemacrawler.schema.*;
-
-import java.util.Collection;
 
 @SpringBootApplication
 public class TdmApplication implements CommandLineRunner
@@ -33,10 +32,38 @@ public class TdmApplication implements CommandLineRunner
     @Override
     public void run(String... args) throws Exception
     {
-//        Collection<Table> internalDbTables = schemaExtractor.extractDboTables(internalDs, internalDs.getDatabaseName());
-//        SchemaPrinter.print(internalDbTables);
+        Catalog internalDb = schemaExtractor.extractDboTables(internalDs);
+        Catalog externalRu2Db = schemaExtractor.extractDboTables(externalRu2Ds);
 
-        Collection<Table> externalRu2DbTables = schemaExtractor.extractDboTables(externalRu2Ds, externalRu2Ds.getDatabaseName());
-        SchemaPrinter.print(externalRu2DbTables);
+        final DiffNode diff = new SchemaDifferBuilder().build().compare(internalDb, externalRu2Db);
+
+        diff.visit((node, visit) -> {
+            final DiffNode.State nodeState = node.getState();
+            final boolean print = DatabaseObject.class.isAssignableFrom(node.getValueType());
+
+            if (print)
+            {
+                System.out.println(node.getPath() + " (" + nodeState + ")");
+            }
+
+            if (Table.class.isAssignableFrom(node.getValueType()) && nodeState != DiffNode.State.CHANGED)
+            {
+                visit.dontGoDeeper();
+            }
+
+            if (Column.class.isAssignableFrom(node.getValueType()))
+            {
+                visit.dontGoDeeper();
+            }
+        });
+
+        System.out.println(diff.hasChanges());
+        System.out.println(diff.hasChildren());
+
+        System.out.println("=====================================================");
+
+        diff.visit((node, visit) -> System.out.println(node.getPath() + " => " + node.getState()));
+
+        System.out.println("DONE!");
     }
 }

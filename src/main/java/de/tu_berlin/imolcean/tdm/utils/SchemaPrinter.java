@@ -1,18 +1,25 @@
 package de.tu_berlin.imolcean.tdm.utils;
 
-import org.springframework.stereotype.Service;
+import schemacrawler.schema.Catalog;
 import schemacrawler.schema.Column;
 import schemacrawler.schema.Table;
 import schemacrawler.schema.View;
 
-import java.util.Collection;
-
-@Service
 public class SchemaPrinter
 {
-    public static void print(Collection<Table> tables)
+    public static void printCompact(Catalog catalog)
     {
-        for(Table table : tables)
+        print(catalog, false);
+    }
+
+    public static void print(Catalog catalog)
+    {
+        print(catalog, true);
+    }
+
+    private static void print(Catalog catalog, boolean printColumns)
+    {
+        for(Table table : catalog.getTables())
         {
             System.out.print("---> " + table);
 
@@ -25,14 +32,17 @@ public class SchemaPrinter
                 System.out.println();
             }
 
-            for(Column column : table.getColumns())
+            if(printColumns)
             {
-                System.out.println(
-                        String.format("     ---> %s (%s) %s %s",
-                                column,
-                                column.getColumnDataType(),
-                                column.isPartOfPrimaryKey() ? "PK" : "",
-                                column.isPartOfForeignKey() ? "FK" : ""));
+                for(Column column : table.getColumns())
+                {
+                    System.out.println(
+                            String.format("     ---> %s (%s) %s %s",
+                                    column,
+                                    column.getColumnDataType(),
+                                    column.isPartOfPrimaryKey() ? "PK" : "",
+                                    column.isPartOfForeignKey() ? "FK" : ""));
+                }
             }
         }
     }

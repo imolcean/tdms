@@ -8,23 +8,23 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ExternalRu2DataSourceConfiguration
 {
-    @Value("${app.datasource.external.ru2.server}")
+    @Value("${app.datasource.dev.server}")
     private String serverName;
 
-    @Value("${app.datasource.external.ru2.port}")
+    @Value("${app.datasource.dev.port}")
     private int portNumber;
 
-    @Value("${app.datasource.external.ru2.db}")
+    @Value("${app.datasource.dev.db}")
     private String databaseName;
 
-    @Value("${app.datasource.external.ru2.user}")
+    @Value("${app.datasource.dev.user}")
     private String username;
 
-    @Value("${app.datasource.external.ru2.password}")
+    @Value("${app.datasource.dev.password}")
     private String password;
 
     @Bean(name = "ExternalRu2DataSource")
-    public SQLServerDataSource externalRu2DataSource()
+    public SQLServerDataSource internalDataSource()
     {
         SQLServerDataSource ds = new SQLServerDataSource();
 
