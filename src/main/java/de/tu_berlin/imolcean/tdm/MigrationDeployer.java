@@ -16,13 +16,13 @@ import java.util.*;
 public class MigrationDeployer
 {
     private final SQLServerDataSource internalDs;
-    private final SQLServerDataSource externalRu2Ds;
+    private final SQLServerDataSource externalDs;
 
     public MigrationDeployer(@Qualifier("InternalDataSource") SQLServerDataSource internalDs,
-                             @Qualifier("ExternalRu2DataSource") SQLServerDataSource externalRu2Ds)
+                             @Qualifier("ExternalDataSource") SQLServerDataSource externalDs)
     {
         this.internalDs = internalDs;
-        this.externalRu2Ds = externalRu2Ds;
+        this.externalDs = externalDs;
     }
 
     public void deploy() throws IOException, SQLException
@@ -35,11 +35,11 @@ public class MigrationDeployer
 
         log.info("Looking for non-empty tables in the external DB");
 
-        Collection<String> tablesExternalRu2 = getNonEmptyTables(externalRu2Ds);
+        Collection<String> tablesExternal = getNonEmptyTables(externalDs);
 
-        log.info(String.format("Found %s non-empty tables", tablesExternalRu2.size()));
+        log.info(String.format("Found %s non-empty tables", tablesExternal.size()));
 
-        if(tablesExternalRu2.size() > 0)
+        if(tablesExternal.size() > 0)
         {
             log.warning("External DB is not empty, deployment aborted");
 
@@ -77,9 +77,9 @@ public class MigrationDeployer
         log.info("Copying table " + table);
 
         try(Connection internalConnection = internalDs.getConnection();
-            Connection externalRu2Connection = externalRu2Ds.getConnection();
+            Connection externalConnection = externalDs.getConnection();
             Statement selectStatement = internalConnection.createStatement();
-            Statement truncateStatement = externalRu2Connection.createStatement())
+            Statement truncateStatement = externalConnection.createStatement())
         {
             // Get full content of the table
 
@@ -113,7 +113,7 @@ public class MigrationDeployer
                     values.add(rs.getObject(i));
                 }
 
-                try(PreparedStatement insertStatement = externalRu2Connection.prepareStatement(insertSql))
+                try(PreparedStatement insertStatement = externalConnection.prepareStatement(insertSql))
                 {
                     int i = 1;
                     for(int type : columns.values())

@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ExternalRu2DataSourceConfiguration
+public class ExternalDataSourceConfiguration
 {
     @Value("${app.datasource.dev.server}")
     private String serverName;
@@ -23,7 +23,7 @@ public class ExternalRu2DataSourceConfiguration
     @Value("${app.datasource.dev.password}")
     private String password;
 
-    @Bean(name = "ExternalRu2DataSource")
+    @Bean(name = "ExternalDataSource")
     public SQLServerDataSource internalDataSource()
     {
         SQLServerDataSource ds = new SQLServerDataSource();

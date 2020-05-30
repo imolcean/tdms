@@ -15,8 +15,8 @@ public class TdmApplication implements CommandLineRunner
     private SQLServerDataSource internalDs;
 
     @Autowired
-    @Qualifier("ExternalRu2DataSource")
-    private SQLServerDataSource externalRu2Ds;
+    @Qualifier("ExternalDataSource")
+    private SQLServerDataSource externalDs;
 
     @Autowired
     SchemaExtractor schemaExtractor;
@@ -33,9 +33,9 @@ public class TdmApplication implements CommandLineRunner
     public void run(String... args) throws Exception
     {
 //        Catalog internalDb = schemaExtractor.extractDboTables(internalDs);
-//        Catalog externalRu2Db = schemaExtractor.extractDboTables(externalRu2Ds);
+//        Catalog externalDb = schemaExtractor.extractDboTables(externalDs);
 //
-//        final DiffNode diff = new SchemaDifferBuilder().build().compare(internalDb, externalRu2Db);
+//        final DiffNode diff = new SchemaDifferBuilder().build().compare(internalDb, externalDb);
 //
 //        SchemaDiffPrinter.print(diff);
 
