@@ -47,12 +47,14 @@ public class MigrationDeployer
         }
 
         // TODO
-//        for(String table : tablesInternal)
-//        {
-//            copyTableContent(table);
-//        }
+        for(String table : tablesInternal)
+        {
+            deployTable(table);
+        }
 
-        deployTable(tablesInternal.iterator().next());
+//        deployTable(tablesInternal.iterator().next());
+
+        log.info("Deployment finished completely");
     }
 
     private Collection<String> getNonEmptyTables(SQLServerDataSource ds) throws SQLException, IOException
@@ -74,12 +76,11 @@ public class MigrationDeployer
 
     private void deployTable(String table) throws SQLException
     {
-        log.info("Copying table " + table);
+        log.info("Deploying table " + table);
 
         try(Connection internalConnection = internalDs.getConnection();
             Connection externalConnection = externalDs.getConnection();
-            Statement selectStatement = internalConnection.createStatement();
-            Statement truncateStatement = externalConnection.createStatement())
+            Statement selectStatement = internalConnection.createStatement())
         {
             // Get full content of the table
 
@@ -89,11 +90,13 @@ public class MigrationDeployer
 
             // Get column names and types
 
-            Map<String, Integer> columns = new TreeMap<>();
+            List<String> columnNames = new ArrayList<>();
+            List<Integer> columnTypes = new ArrayList<>();
 
             for(int i = 1; i < rs.getMetaData().getColumnCount() + 1; i++)
             {
-                columns.put(rs.getMetaData().getColumnName(i), rs.getMetaData().getColumnType(i));
+                columnNames.add(rs.getMetaData().getColumnName(i));
+                columnTypes.add(rs.getMetaData().getColumnType(i));
             }
 
             // Execute an INSERT statement for each row from the ResultSet
@@ -101,7 +104,7 @@ public class MigrationDeployer
             String insertSql = String
                     .format("INSERT INTO %s (%s) VALUES (%s)",
                             table,
-                            Strings.join(",", columns.keySet()),
+                            Strings.join(",", columnNames),
                             getPlaceholders(rs.getMetaData().getColumnCount()));
 
             while(rs.next())
@@ -116,18 +119,17 @@ public class MigrationDeployer
                 try(PreparedStatement insertStatement = externalConnection.prepareStatement(insertSql))
                 {
                     int i = 1;
-                    for(int type : columns.values())
+                    for(int type : columnTypes)
                     {
-                        // TODO Deal with the types
-                        insertStatement.setObject(i, values.get(i - 1), i);
+                        insertStatement.setObject(i, values.get(i - 1), type);
                         i++;
                     }
 
-                    insertStatement.executeUpdate();
+//                    insertStatement.executeUpdate();
                 }
             }
 
-            log.info("Deployment finished");
+            log.info(String.format("Deployment of table %s finished", table));
         }
     }
 
