@@ -37,6 +37,9 @@ public class MigrationDeployer
      * In case the external database contains any data, the deployment process will not be performed.
      *
      * @return {@code true} after the deployment is successfully finished, {@code false} otherwise
+     *
+     * TODO Transactions, so no rows are added when constraint violation occurs
+     * TODO Batching INSERT requests
      */
     public boolean deploy() throws IOException, SQLException
     {
@@ -47,26 +50,45 @@ public class MigrationDeployer
         {
             log.fine("Looking for non-empty tables in TDM");
 
-            Collection<String> tablesInternal = getNonEmptyTables(internalConnection);
+            Queue<String> internalTables = getNonEmptyTables(internalConnection);
 
-            log.fine(String.format("Found %s non-empty tables", tablesInternal.size()));
+            log.fine(String.format("Found %s non-empty tables", internalTables.size()));
 
             log.fine("Looking for non-empty tables in the external DB");
 
-            Collection<String> tablesExternal = getNonEmptyTables(externalConnection);
+            Queue<String> externalTables = getNonEmptyTables(externalConnection);
 
-            log.fine(String.format("Found %s non-empty tables", tablesExternal.size()));
+            log.fine(String.format("Found %s non-empty tables", externalTables.size()));
 
-            if(tablesExternal.size() > 0)
+            if(externalTables.size() > 0)
             {
                 log.warning("External DB is not empty, deployment aborted");
 
                 return false;
             }
 
-            for(String table : tablesInternal)
+            while(internalTables.size() > 0)
             {
-                deployTable(internalConnection, externalConnection, table);
+                String table = internalTables.poll();
+
+                try
+                {
+                    deployTable(internalConnection, externalConnection, table);
+                }
+                catch(SQLException e)
+                {
+                    log.fine("SQLState: " + e.getSQLState());
+
+                    // Codes 23xxx mean constraint violation
+                    if(Integer.parseInt(e.getSQLState()) / 1000 != 23)
+                    {
+                        throw e;
+                    }
+
+                    log.warning(String.format("Table %s could not be deployed due to FK constraints, I will return to it later", table));
+
+                    internalTables.add(table);
+                }
             }
 
             // TODO Remove
@@ -84,9 +106,9 @@ public class MigrationDeployer
      * @param connection JDBC {@link Connection} to a database
      * @return Names of non-empty database tables
      */
-    private Collection<String> getNonEmptyTables(Connection connection) throws SQLException, IOException
+    private Queue<String> getNonEmptyTables(Connection connection) throws SQLException, IOException
     {
-        Collection<String> tables = new TreeSet<>();
+        Queue<String> tables = new LinkedList<>();
 
         try(Statement statement = connection.createStatement())
         {
@@ -153,14 +175,15 @@ public class MigrationDeployer
                     {
                         values.add(rs.getObject(i));
                     }
-                        int i = 1;
-                        for(int type : columnTypes)
-                        {
-                            insertStatement.setObject(i, values.get(i - 1), type);
-                            i++;
-                        }
 
-//                    insertStatement.executeUpdate();
+                    int i = 1;
+                    for(int type : columnTypes)
+                    {
+                        insertStatement.setObject(i, values.get(i - 1), type);
+                        i++;
+                    }
+
+                    insertStatement.executeUpdate();
 
                     rowCnt++;
                 }
