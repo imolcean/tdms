@@ -3,7 +3,10 @@ package de.tu_berlin.imolcean.tdm;
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import de.danielbechler.util.Strings;
 import de.tu_berlin.imolcean.tdm.utils.QueryLoader;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.java.Log;
+import org.apache.commons.dbutils.handlers.ArrayListHandler;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +24,16 @@ import java.util.*;
 @Log
 public class MigrationDeployer
 {
+    @Data
+    @AllArgsConstructor
+    private static class TableContent
+    {
+        private final String table;
+        private final List<Object[]> rows;
+        private final List<String> columnNames;
+        private final List<Integer> columnTypes;
+    }
+
     private final SQLServerDataSource internalDs;
     private final SQLServerDataSource externalDs;
 
@@ -56,11 +69,11 @@ public class MigrationDeployer
 
             log.fine("Looking for non-empty tables in the external DB");
 
-            Queue<String> externalTables = getNonEmptyTables(externalConnection);
+            int nonEmptyExternalTables = getNonEmptyTables(externalConnection).size();
 
-            log.fine(String.format("Found %s non-empty tables", externalTables.size()));
+            log.fine(String.format("Found %s non-empty tables", nonEmptyExternalTables));
 
-            if(externalTables.size() > 0)
+            if(nonEmptyExternalTables > 0)
             {
                 log.warning("External DB is not empty, deployment aborted");
 
@@ -85,7 +98,8 @@ public class MigrationDeployer
                         throw e;
                     }
 
-                    log.warning(String.format("Table %s could not be deployed due to FK constraints, I will return to it later", table));
+                    log.warning(e.getMessage());
+                    log.warning(String.format("Table %s could not be deployed because of constraint violation, I will return to it later", table));
 
                     internalTables.add(table);
                 }
@@ -123,12 +137,57 @@ public class MigrationDeployer
         return tables;
     }
 
-    // TODO Break into several methods
     private void deployTable(Connection internalConnection, Connection externalConnection, String table) throws SQLException
     {
         log.info("Deploying table " + table);
 
-        try(Statement selectStatement = internalConnection.createStatement())
+        TableContent content = getTableContent(internalConnection, table);
+
+        String insertSql = String
+                .format("INSERT INTO %s (%s) VALUES (%s)",
+                        table,
+                        Strings.join(",", content.getColumnNames()),
+                        getPlaceholders(content.getColumnNames().size()));
+
+        try(PreparedStatement insertStatement = externalConnection.prepareStatement(insertSql))
+        {
+            int rowCnt = 1;
+            for(Object[] row : content.getRows())
+            {
+                log.fine("Copying row " + rowCnt);
+
+                insertStatement.clearParameters();
+
+                int i = 1;
+                for(int type : content.getColumnTypes())
+                {
+                    insertStatement.setObject(i, row[i - 1], type);
+                    i++;
+                }
+
+                insertStatement.executeUpdate();
+
+                rowCnt++;
+            }
+        }
+
+        log.info("Finished deployment of table " + table);
+    }
+
+    /**
+     * Retrieves all rows from the requested {@code table}.
+     *
+     * @param connection {@link Connection} object of the database
+     * @param table name of the table to query
+     * @return {@link TableContent} object containing rows of the table as well as columns' names and types
+     */
+    private TableContent getTableContent(Connection connection, String table) throws SQLException
+    {
+        List<Object[]> rows;
+        List<String> columnNames = new ArrayList<>();
+        List<Integer> columnTypes = new ArrayList<>();
+
+        try(Statement selectStatement = connection.createStatement())
         {
             // Get full content of the table
 
@@ -137,9 +196,6 @@ public class MigrationDeployer
             log.fine(String.format("Table has %s columns", rs.getMetaData().getColumnCount()));
 
             // Get column names and types
-
-            List<String> columnNames = new ArrayList<>();
-            List<Integer> columnTypes = new ArrayList<>();
 
             for(int i = 1; i < rs.getMetaData().getColumnCount() + 1; i++)
             {
@@ -152,45 +208,10 @@ public class MigrationDeployer
                         rs.getMetaData().getColumnClassName(i)));
             }
 
-            // Execute an INSERT statement for each row from the ResultSet
-
-            String insertSql = String
-                    .format("INSERT INTO %s (%s) VALUES (%s)",
-                            table,
-                            Strings.join(",", columnNames),
-                            getPlaceholders(rs.getMetaData().getColumnCount()));
-
-            try(PreparedStatement insertStatement = externalConnection.prepareStatement(insertSql))
-            {
-                int rowCnt = 1;
-                while(rs.next())
-                {
-                    log.fine("Copying row " + rowCnt);
-
-                    insertStatement.clearParameters();
-
-                    ArrayList<Object> values = new ArrayList<>();
-
-                    for(int i = 1; i < rs.getMetaData().getColumnCount() + 1; i++)
-                    {
-                        values.add(rs.getObject(i));
-                    }
-
-                    int i = 1;
-                    for(int type : columnTypes)
-                    {
-                        insertStatement.setObject(i, values.get(i - 1), type);
-                        i++;
-                    }
-
-                    insertStatement.executeUpdate();
-
-                    rowCnt++;
-                }
-            }
-
-            log.info(String.format("Deployment of table %s finished", table));
+            rows = new ArrayListHandler().handle(rs);
         }
+
+        return new TableContent(table, rows, columnNames, columnTypes);
     }
 
     /**
@@ -208,4 +229,37 @@ public class MigrationDeployer
                 .deleteCharAt(0)
                 .toString();
     }
+
+//    private List<Object[]> rowDifference(List<Object[]> leftRows, List<Object[]> rightRows)
+//    {
+//        return leftRows.stream()
+//                .filter(leftRow ->
+//                {
+//                    for(Object[] rightRow : rightRows)
+//                    {
+//                        if(rowsEqual(leftRow, rightRow))
+//                        {
+//                            return false;
+//                        }
+//                    }
+//
+//                    return true;
+//                })
+//                .collect(Collectors.toList());
+//    }
+//
+//    private boolean rowsEqual(Object[] leftRow, Object[] rightRow)
+//    {
+//        assert leftRow.length == rightRow.length;
+//
+//        for(int i = 0; i < leftRow.length; i++)
+//        {
+//            if(!Objects.equals(leftRow[i], rightRow[i]))
+//            {
+//                return false;
+//            }
+//        }
+//
+//        return true;
+//    }
 }
