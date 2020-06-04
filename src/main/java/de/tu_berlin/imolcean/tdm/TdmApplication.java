@@ -1,6 +1,7 @@
 package de.tu_berlin.imolcean.tdm;
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
+import de.tu_berlin.imolcean.tdm.deployment.MigrationDeployer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
