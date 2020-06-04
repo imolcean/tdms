@@ -37,8 +37,6 @@ public class MigrationDeployer
      * In case the external database contains any data, the deployment process will not be performed.
      *
      * @return {@code true} after the deployment is successfully finished, {@code false} otherwise
-     *
-     * TODO Transactions, so no rows are added when constraint violation occurs
      */
     public boolean deploy() throws IOException, SQLException
     {
@@ -48,15 +46,11 @@ public class MigrationDeployer
             Connection externalConnection = externalDs.getConnection())
         {
             log.fine("Looking for non-empty tables in TDM");
-
             Queue<String> internalTables = getNonEmptyTables(internalConnection);
-
             log.fine(String.format("Found %s non-empty tables", internalTables.size()));
 
             log.fine("Looking for non-empty tables in the external DB");
-
             int nonEmptyExternalTables = getNonEmptyTables(externalConnection).size();
-
             log.fine(String.format("Found %s non-empty tables", nonEmptyExternalTables));
 
             if(nonEmptyExternalTables > 0)
@@ -66,33 +60,22 @@ public class MigrationDeployer
                 return false;
             }
 
-            while(internalTables.size() > 0)
+            log.fine("Disabling database constraints");
+            try(Statement statement = externalConnection.createStatement())
             {
-                String table = internalTables.poll();
-
-                try
-                {
-                    deployTable(internalConnection, externalConnection, table);
-                }
-                catch(SQLException e)
-                {
-                    log.fine("SQLState: " + e.getSQLState());
-
-                    // Codes 23xxx mean constraint violation
-                    if(Integer.parseInt(e.getSQLState()) / 1000 != 23)
-                    {
-                        throw e;
-                    }
-
-                    log.warning(e.getMessage());
-                    log.warning(String.format("Table %s could not be deployed because of constraint violation, putting it back to the queue", table));
-
-                    internalTables.add(table);
-                }
+                statement.execute(QueryLoader.loadQuery("disable_constraints"));
             }
 
-            // TODO Remove
-//            deployTable(internalConnection, externalConnection, "PERSON");
+            while(internalTables.size() > 0)
+            {
+                deployTable(internalConnection, externalConnection, internalTables.poll());
+            }
+
+            log.fine("Enabling database constraints");
+            try(Statement statement = externalConnection.createStatement())
+            {
+                statement.execute(QueryLoader.loadQuery("enable_constraints"));
+            }
         }
 
         log.info("Deployment finished successfully");
@@ -123,6 +106,16 @@ public class MigrationDeployer
         return tables;
     }
 
+    /**
+     * Performs migration of a single {@code table} from the internal TDMS database into the target external database.
+     *
+     * The table is being copied row by row. If any row fails to be copied, the whole transaction is being rolled back
+     * and the table in the external database remains empty.
+     *
+     * @param internalConnection JDBC {@link Connection} to the internal database of the TDMS
+     * @param externalConnection JDBC {@link Connection} to the target database of a staging environment
+     * @param table name of the table to deploy
+     */
     private void deployTable(Connection internalConnection, Connection externalConnection, String table) throws SQLException
     {
         log.info("Deploying table " + table);
@@ -131,46 +124,20 @@ public class MigrationDeployer
 
         log.fine("Rows to insert: " + content.getRows().size());
 
-        Map<String, String> fk2pk = getFk2PkSelfDependencies(internalConnection, table);
-
         String insertSql = String
                 .format("INSERT INTO %s (%s) VALUES (%s)",
                         table,
                         Strings.join(",", content.getColumnNames()),
                         getPlaceholders(content.getColumnNames().size()));
 
-        Collection<Object[]> insertedRows = new ArrayList<>();
-
         try(PreparedStatement insertStatement = externalConnection.prepareStatement(insertSql))
         {
             externalConnection.setAutoCommit(false);
 
-            rowsCycle:
             while(content.getRows().peek() != null)
             {
                 Object[] row = content.getRows().poll();
                 assert row != null;
-
-                // Checking row dependencies (only for self dependent tables)
-
-                for(String fk : fk2pk.keySet())
-                {
-                    Object fkValue = row[content.getIndex(fk)];
-
-                    boolean rowReferencesSelf = Objects.equals(row[content.getIndex(fk)], row[content.getIndex(fk2pk.get(fk))]);
-                    boolean pkWithFkValueAlreadyInserted = insertedRows.stream()
-                            .anyMatch(insertedRow -> insertedRow[content.getIndex(fk2pk.get(fk))].equals(fkValue));
-
-                    if(fkValue != null && !pkWithFkValueAlreadyInserted && !rowReferencesSelf)
-                    {
-                        log.fine(String.format("Row with FK=%s needs a row that is not yet inserted, putting it back to the queue.", fkValue));
-
-                        content.getRows().add(row);
-                        continue rowsCycle;
-                    }
-                }
-
-                // Copying the row
 
                 insertStatement.clearParameters();
 
@@ -182,7 +149,6 @@ public class MigrationDeployer
                 }
 
                 insertStatement.addBatch();
-                insertedRows.add(row);
             }
 
             insertStatement.executeBatch();
@@ -197,32 +163,6 @@ public class MigrationDeployer
         }
 
         log.info("Finished deployment of table " + table);
-    }
-
-    /**
-     * Looks for FK->PK dependencies inside the same table, i.e. dependency on PKs of other tables are ignored.
-     *
-     * @param connection {@link Connection} object of the database
-     * @param table name of the table to query
-     * @return {@link Map} of column names where the first element is the FK and the second one is the PK
-     */
-    private Map<String, String> getFk2PkSelfDependencies(Connection connection, String table) throws SQLException
-    {
-        Map<String, String> associations = new HashMap<>();
-        ResultSet importedKeysRs = connection.getMetaData().getImportedKeys(connection.getCatalog(), connection.getSchema(), table);
-
-        while(importedKeysRs.next())
-        {
-            String pkTable = importedKeysRs.getString("PKTABLE_NAME");
-            if(pkTable.equals(table))
-            {
-                associations.put(importedKeysRs.getString("FKCOLUMN_NAME"), importedKeysRs.getString("PKCOLUMN_NAME"));
-
-                log.fine(String.format("FK: %s -> %s", importedKeysRs.getString("FKCOLUMN_NAME"), importedKeysRs.getString("PKCOLUMN_NAME")));
-            }
-        }
-
-        return associations;
     }
 
     /**
@@ -257,38 +197,4 @@ public class MigrationDeployer
                 .deleteCharAt(0)
                 .toString();
     }
-
-    // TODO Remove
-//    private List<Object[]> rowDifference(List<Object[]> leftRows, List<Object[]> rightRows)
-//    {
-//        return leftRows.stream()
-//                .filter(leftRow ->
-//                {
-//                    for(Object[] rightRow : rightRows)
-//                    {
-//                        if(rowsEqual(leftRow, rightRow))
-//                        {
-//                            return false;
-//                        }
-//                    }
-//
-//                    return true;
-//                })
-//                .collect(Collectors.toList());
-//    }
-//
-//    private boolean rowsEqual(Object[] leftRow, Object[] rightRow)
-//    {
-//        assert leftRow.length == rightRow.length;
-//
-//        for(int i = 0; i < leftRow.length; i++)
-//        {
-//            if(!Objects.equals(leftRow[i], rightRow[i]))
-//            {
-//                return false;
-//            }
-//        }
-//
-//        return true;
-//    }
 }
