@@ -39,7 +39,6 @@ public class MigrationDeployer
      * @return {@code true} after the deployment is successfully finished, {@code false} otherwise
      *
      * TODO Transactions, so no rows are added when constraint violation occurs
-     * TODO Batching INSERT requests
      */
     public boolean deploy() throws IOException, SQLException
     {
@@ -67,33 +66,33 @@ public class MigrationDeployer
                 return false;
             }
 
-//            while(internalTables.size() > 0)
-//            {
-//                String table = internalTables.poll();
-//
-//                try
-//                {
-//                    deployTable(internalConnection, externalConnection, table);
-//                }
-//                catch(SQLException e)
-//                {
-//                    log.fine("SQLState: " + e.getSQLState());
-//
-//                    // Codes 23xxx mean constraint violation
-//                    if(Integer.parseInt(e.getSQLState()) / 1000 != 23)
-//                    {
-//                        throw e;
-//                    }
-//
-//                    log.warning(e.getMessage());
-//                    log.warning(String.format("Table %s could not be deployed because of constraint violation, I will return to it later", table));
-//
-//                    internalTables.add(table);
-//                }
-//            }
+            while(internalTables.size() > 0)
+            {
+                String table = internalTables.poll();
+
+                try
+                {
+                    deployTable(internalConnection, externalConnection, table);
+                }
+                catch(SQLException e)
+                {
+                    log.fine("SQLState: " + e.getSQLState());
+
+                    // Codes 23xxx mean constraint violation
+                    if(Integer.parseInt(e.getSQLState()) / 1000 != 23)
+                    {
+                        throw e;
+                    }
+
+                    log.warning(e.getMessage());
+                    log.warning(String.format("Table %s could not be deployed because of constraint violation, putting it back to the queue", table));
+
+                    internalTables.add(table);
+                }
+            }
 
             // TODO Remove
-            deployTable(internalConnection, externalConnection, "PERSON");
+//            deployTable(internalConnection, externalConnection, "PERSON");
         }
 
         log.info("Deployment finished successfully");
@@ -130,6 +129,8 @@ public class MigrationDeployer
 
         TableContent content = getTableContent(internalConnection, table);
 
+        log.fine("Rows to insert: " + content.getRows().size());
+
         Map<String, String> fk2pk = getFk2PkSelfDependencies(internalConnection, table);
 
         String insertSql = String
@@ -142,13 +143,15 @@ public class MigrationDeployer
 
         try(PreparedStatement insertStatement = externalConnection.prepareStatement(insertSql))
         {
+            externalConnection.setAutoCommit(false);
+
             rowsCycle:
             while(content.getRows().peek() != null)
             {
-                log.info("Rows to insert: " + content.getRows().size());
-
                 Object[] row = content.getRows().poll();
                 assert row != null;
+
+                // Checking row dependencies (only for self dependent tables)
 
                 for(String fk : fk2pk.keySet())
                 {
@@ -160,12 +163,14 @@ public class MigrationDeployer
 
                     if(fkValue != null && !pkWithFkValueAlreadyInserted && !rowReferencesSelf)
                     {
-                        log.info(String.format("Row with FK=%s needs row that is not yet inserted. Putting it back to the queue.", (Long) fkValue));
+                        log.fine(String.format("Row with FK=%s needs a row that is not yet inserted, putting it back to the queue.", fkValue));
 
                         content.getRows().add(row);
                         continue rowsCycle;
                     }
                 }
+
+                // Copying the row
 
                 insertStatement.clearParameters();
 
@@ -176,9 +181,19 @@ public class MigrationDeployer
                     i++;
                 }
 
-                insertStatement.executeUpdate();
+                insertStatement.addBatch();
                 insertedRows.add(row);
             }
+
+            insertStatement.executeBatch();
+            externalConnection.commit();
+
+            externalConnection.setAutoCommit(true);
+        }
+        catch(SQLException e)
+        {
+            externalConnection.rollback();
+            throw e;
         }
 
         log.info("Finished deployment of table " + table);
