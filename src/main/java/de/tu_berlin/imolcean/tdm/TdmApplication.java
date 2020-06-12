@@ -2,11 +2,15 @@ package de.tu_berlin.imolcean.tdm;
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import de.tu_berlin.imolcean.tdm.deployment.MigrationDeployer;
+import de.tu_berlin.imolcean.tdm.importers.ExcelImporter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import java.nio.file.Paths;
 
 @SpringBootApplication
 public class TdmApplication implements CommandLineRunner
@@ -20,10 +24,16 @@ public class TdmApplication implements CommandLineRunner
     private SQLServerDataSource externalDs;
 
     @Autowired
-    SchemaExtractor schemaExtractor;
+    private SchemaExtractor schemaExtractor;
+
+    @Autowired
+    private ExcelImporter excelImporter;
 
     @Autowired
     private MigrationDeployer deployer;
+
+    @Value("${app.data.excel.path}")
+    private String excelDir;
 
     public static void main(String[] args)
     {
@@ -40,7 +50,9 @@ public class TdmApplication implements CommandLineRunner
 //
 //        SchemaDiffPrinter.print(diff);
 
-        deployer.deploy();
+        excelImporter.importDirectory(Paths.get(excelDir));
+
+//        deployer.deploy();
 
         System.out.println("DONE!");
     }
