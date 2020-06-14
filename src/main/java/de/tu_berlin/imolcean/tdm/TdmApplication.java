@@ -2,7 +2,7 @@ package de.tu_berlin.imolcean.tdm;
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import de.tu_berlin.imolcean.tdm.deployment.MigrationDeployer;
-import de.tu_berlin.imolcean.tdm.importers.ExcelImporter;
+import de.tu_berlin.imolcean.tdm.imports.ExcelImporter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +11,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.List;
 
 @SpringBootApplication
 public class TdmApplication implements CommandLineRunner
@@ -52,8 +54,13 @@ public class TdmApplication implements CommandLineRunner
 
         excelImporter.importDirectory(Paths.get(excelDir));
 
+        Collections.sort((List<String>) excelImporter.filledTables);
+        excelImporter.filledTables.forEach(System.out::println);
+        System.out.println("Total: " + excelImporter.filledTables.size());
+
 //        deployer.deploy();
 
         System.out.println("DONE!");
+        System.exit(0);
     }
 }

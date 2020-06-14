@@ -14,7 +14,7 @@ import java.io.Reader;
  */
 public class QueryLoader
 {
-    static ResourceLoader resourceLoader;
+    private final static ResourceLoader resourceLoader;
 
     static {
         resourceLoader = new DefaultResourceLoader();

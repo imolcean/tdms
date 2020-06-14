@@ -1,20 +1,40 @@
-package de.tu_berlin.imolcean.tdm.importers;
+package de.tu_berlin.imolcean.tdm.imports;
 
+import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
+import de.tu_berlin.imolcean.tdm.SchemaExtractor;
 import lombok.extern.java.Log;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import schemacrawler.schema.Table;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
 
-@Component
+@Service
 @Log
 public class ExcelImporter implements Importer
 {
+    private final Collection<Table> tables;
+
+    public final Collection<String> filledTables;
+
+    // TODO Use InternalDataSource
+    public ExcelImporter(@Qualifier("ExternalDataSource") SQLServerDataSource internalDs,
+                         SchemaExtractor schemaExtractor) throws Exception
+    {
+        this.tables = schemaExtractor.extractDboTables(internalDs).getTables();
+        this.filledTables = new ArrayList<>();
+
+        // TODO Check that DB is empty?
+    }
+
     @Override
     public void importFile(Path path)
     {
@@ -55,7 +75,19 @@ public class ExcelImporter implements Importer
     private void importSheet(Sheet sheet)
     {
         int idx = sheet.getWorkbook().getSheetIndex(sheet);
+        String name = sheet.getWorkbook().getSheetName(idx);
 
-        System.out.println(sheet.getWorkbook().getSheetName(idx));
+        boolean tableWithSheetNameFound = tables.stream()
+                .anyMatch(table -> table.getName().equalsIgnoreCase(name));
+
+        if(!tableWithSheetNameFound)
+        {
+            log.warning(String.format("No corresponding table found for the sheet %s. I will ignore it.", name));
+            return;
+        }
+
+        log.fine("Importing " + name);
+
+        filledTables.add(name);
     }
 }

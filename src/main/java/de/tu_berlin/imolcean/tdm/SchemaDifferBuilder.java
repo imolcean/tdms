@@ -6,7 +6,7 @@ import de.danielbechler.diff.node.DiffNode;
 
 public class SchemaDifferBuilder
 {
-    final ObjectDifferBuilder objectDifferBuilder;
+    private final ObjectDifferBuilder objectDifferBuilder;
 
     public SchemaDifferBuilder()
     {

@@ -1,13 +1,10 @@
-package de.tu_berlin.imolcean.tdm.importers;
-
-import org.springframework.stereotype.Component;
+package de.tu_berlin.imolcean.tdm.imports;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
-@Component
 public interface Importer
 {
     /**
