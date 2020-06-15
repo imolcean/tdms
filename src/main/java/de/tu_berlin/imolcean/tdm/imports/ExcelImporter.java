@@ -27,7 +27,7 @@ public class ExcelImporter implements Importer
     public final Collection<String> filledTables;
 
     // TODO Use InternalDataSource
-    public ExcelImporter(@Qualifier("ExternalDataSource") DataSource internalDs,
+    public ExcelImporter(@Qualifier("StageDataSource") DataSource internalDs,
                          SchemaExtractor schemaExtractor) throws Exception
     {
         this.tables = schemaExtractor.extractDboTables(internalDs).getTables();
@@ -39,11 +39,6 @@ public class ExcelImporter implements Importer
     @Override
     public void importFile(Path path)
     {
-        if(path.toFile().isDirectory())
-        {
-            return;
-        }
-
         log.fine("Importing " + path.toString());
 
         try(Workbook workbook = new XSSFWorkbook(path.toFile()))

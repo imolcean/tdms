@@ -40,4 +40,22 @@ class TableContent
     {
         return this.column2Index.get(column);
     }
+
+    public Object getValue(int row, String column)
+    {
+        // TODO
+        return null;
+    }
+
+    public Object getValue(Object[] row, String column)
+    {
+        // TODO
+        return null;
+    }
+
+    public int getColumnType(String column)
+    {
+        // TODO
+        return 0;
+    }
 }

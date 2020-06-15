@@ -16,7 +16,15 @@ public interface Importer
     {
         try(Stream<Path> paths = Files.walk(dir))
         {
-            paths.forEach(this::importFile);
+            paths.forEach(path ->
+            {
+                if(path.toFile().isFile())
+                {
+                    return;
+                }
+
+                importFile(path);
+            });
         }
     }
 
