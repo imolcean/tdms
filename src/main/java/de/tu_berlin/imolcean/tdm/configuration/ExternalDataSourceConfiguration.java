@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.sql.DataSource;
+
 @Configuration
 public class ExternalDataSourceConfiguration
 {
@@ -24,7 +26,7 @@ public class ExternalDataSourceConfiguration
     private String password;
 
     @Bean(name = "ExternalDataSource")
-    public SQLServerDataSource internalDataSource()
+    public DataSource internalDataSource()
     {
         SQLServerDataSource ds = new SQLServerDataSource();
 

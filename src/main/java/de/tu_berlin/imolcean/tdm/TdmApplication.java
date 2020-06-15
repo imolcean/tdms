@@ -1,15 +1,18 @@
 package de.tu_berlin.imolcean.tdm;
 
-import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
+import de.danielbechler.diff.node.DiffNode;
 import de.tu_berlin.imolcean.tdm.deployment.MigrationDeployer;
 import de.tu_berlin.imolcean.tdm.imports.ExcelImporter;
+import de.tu_berlin.imolcean.tdm.utils.SchemaDiffPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import schemacrawler.schema.Catalog;
 
+import javax.sql.DataSource;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
@@ -19,11 +22,11 @@ public class TdmApplication implements CommandLineRunner
 {
     @Autowired
     @Qualifier("InternalDataSource")
-    private SQLServerDataSource internalDs;
+    private DataSource internalDs;
 
     @Autowired
     @Qualifier("ExternalDataSource")
-    private SQLServerDataSource externalDs;
+    private DataSource externalDs;
 
     @Autowired
     private SchemaExtractor schemaExtractor;
@@ -45,20 +48,23 @@ public class TdmApplication implements CommandLineRunner
     @Override
     public void run(String... args) throws Exception
     {
-//        Catalog internalDb = schemaExtractor.extractDboTables(internalDs);
-//        Catalog externalDb = schemaExtractor.extractDboTables(externalDs);
-//
-//        final DiffNode diff = new SchemaDifferBuilder().build().compare(internalDb, externalDb);
-//
-//        SchemaDiffPrinter.print(diff);
+        Catalog internalDb = schemaExtractor.extractDboTables(internalDs);
+        Catalog externalDb = schemaExtractor.extractDboTables(externalDs);
 
-        excelImporter.importDirectory(Paths.get(excelDir));
+        final DiffNode diff = new SchemaDifferBuilder().build().compare(internalDb, externalDb);
 
-        Collections.sort((List<String>) excelImporter.filledTables);
-        excelImporter.filledTables.forEach(System.out::println);
-        System.out.println("Total: " + excelImporter.filledTables.size());
+        SchemaDiffPrinter.print(diff);
+
+
+//        excelImporter.importDirectory(Paths.get(excelDir));
+//
+//        Collections.sort((List<String>) excelImporter.filledTables);
+//        excelImporter.filledTables.forEach(System.out::println);
+//        System.out.println(String.format("Imported %d tables ", excelImporter.filledTables.size()));
+
 
 //        deployer.deploy();
+
 
         System.out.println("DONE!");
         System.exit(0);

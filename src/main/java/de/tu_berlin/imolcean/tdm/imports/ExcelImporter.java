@@ -1,6 +1,5 @@
 package de.tu_berlin.imolcean.tdm.imports;
 
-import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import de.tu_berlin.imolcean.tdm.SchemaExtractor;
 import lombok.extern.java.Log;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -12,6 +11,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import schemacrawler.schema.Table;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -23,10 +23,11 @@ public class ExcelImporter implements Importer
 {
     private final Collection<Table> tables;
 
+    // TODO Remove
     public final Collection<String> filledTables;
 
     // TODO Use InternalDataSource
-    public ExcelImporter(@Qualifier("ExternalDataSource") SQLServerDataSource internalDs,
+    public ExcelImporter(@Qualifier("ExternalDataSource") DataSource internalDs,
                          SchemaExtractor schemaExtractor) throws Exception
     {
         this.tables = schemaExtractor.extractDboTables(internalDs).getTables();

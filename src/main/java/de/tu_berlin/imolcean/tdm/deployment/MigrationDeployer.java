@@ -1,12 +1,12 @@
 package de.tu_berlin.imolcean.tdm.deployment;
 
-import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import de.danielbechler.util.Strings;
 import de.tu_berlin.imolcean.tdm.utils.QueryLoader;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
@@ -21,11 +21,11 @@ import java.util.*;
 @Log
 public class MigrationDeployer
 {
-    private final SQLServerDataSource internalDs;
-    private final SQLServerDataSource externalDs;
+    private final DataSource internalDs;
+    private final DataSource externalDs;
 
-    public MigrationDeployer(@Qualifier("InternalDataSource") SQLServerDataSource internalDs,
-                             @Qualifier("ExternalDataSource") SQLServerDataSource externalDs)
+    public MigrationDeployer(@Qualifier("InternalDataSource") DataSource internalDs,
+                             @Qualifier("ExternalDataSource") DataSource externalDs)
     {
         this.internalDs = internalDs;
         this.externalDs = externalDs;
