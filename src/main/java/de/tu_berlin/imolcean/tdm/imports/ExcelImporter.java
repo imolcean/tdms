@@ -13,30 +13,64 @@ import schemacrawler.schema.Table;
 
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.Stream;
 
 @Service
 @Log
-public class ExcelImporter implements Importer
+public class ExcelImporter
 {
-    private final Collection<Table> tables;
+    private final DataSource internalDs;
+
+    private final SchemaExtractor schemaExtractor;
+
+    private Collection<Table> tables;
 
     // TODO Remove
-    public final Collection<String> filledTables;
+    public Collection<String> filledTables;
 
-    // TODO Use InternalDataSource
-    public ExcelImporter(@Qualifier("StageDataSource") DataSource internalDs,
-                         SchemaExtractor schemaExtractor) throws Exception
+    public ExcelImporter(@Qualifier("InternalDataSource") DataSource internalDs,
+                         SchemaExtractor schemaExtractor)
+    {
+        this.internalDs = internalDs;
+        this.schemaExtractor = schemaExtractor;
+    }
+
+    /**
+     * Tries to import all files from the given directory.
+     *
+     * @param dir directory containing files that have to be imported
+     */
+    public void importDirectory(Path dir) throws Exception
     {
         this.tables = schemaExtractor.extractDboTables(internalDs).getTables();
         this.filledTables = new ArrayList<>();
 
         // TODO Check that DB is empty?
+
+        try(Stream<Path> paths = Files.walk(dir))
+        {
+            paths.forEach(path ->
+            {
+                if(path.toFile().isFile())
+                {
+                    return;
+                }
+
+                importFile(path);
+            });
+        }
     }
 
-    @Override
+    /**
+     * Tries to import the given file. If the file cannot be imported
+     * for some reason, it will be ignored.
+     *
+     * @param path file that has to be imported
+     */
     public void importFile(Path path)
     {
         log.fine("Importing " + path.toString());
@@ -64,9 +98,10 @@ public class ExcelImporter implements Importer
     }
 
     /**
-     * TODO
+     * Imports content of the given Excel {@code sheet} into the table with the same name.
+     * If there is no table with the same name, the {@code sheet} is ignored.
      *
-     * @param sheet
+     * @param sheet Excel {@link Sheet} to be imported
      */
     private void importSheet(Sheet sheet)
     {

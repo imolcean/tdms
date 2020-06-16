@@ -19,18 +19,48 @@ import java.util.stream.Stream;
 
 @Service
 @Log
-public class StageDataSourceLoader
+public class StageDataSourceManager
 {
     private final Path configs;
 
-    public StageDataSourceLoader(@Value("${app.datasource.stages.path}") String configDir)
+    private Map<String, DataSource> stageName2Ds;
+
+    public StageDataSourceManager(@Value("${app.datasource.stages.path}") String configDir) throws IOException
     {
         this.configs = Path.of(configDir);
+        this.stageName2Ds = new HashMap<>();
+
+        this.loadConfigs();
     }
 
-    public Map<Object, Object> loadAll() throws IOException
+    /**
+     * Provides access to the {@link DataSource} of the staging environment that
+     * is currently selected in the {@link StageContextHolder}.
+     *
+     * @return {@link DataSource} of the currently selected staging environment
+     * @throws IllegalStateException if no {@link DataSource} could be found
+     */
+    public DataSource getCurrentStageDataSource() throws IllegalStateException
     {
-        Map<Object, Object> result = new HashMap<>();
+        log.fine("Retrieving DataSource for stage " + StageContextHolder.getStageName());
+
+        DataSource ds = stageName2Ds.get(StageContextHolder.getStageName());
+
+        if(ds == null)
+        {
+            throw new IllegalStateException(String.format("No DataSource found for stage %s", StageContextHolder.getStageName()));
+        }
+
+        return ds;
+    }
+
+    /**
+     * Loads all configuration files with DB connection parameters of staging environments.
+     * Whenever a configuration file gets added, changed, or removed call this method to reload everything.
+     */
+    public void loadConfigs() throws IOException
+    {
+        Map<String, DataSource> result = new HashMap<>();
 
         try(Stream<Path> paths = Files.walk(configs))
         {
@@ -52,7 +82,7 @@ public class StageDataSourceLoader
             });
         }
 
-        return result;
+        stageName2Ds = result;
     }
 
     private DataSource load(Path path)

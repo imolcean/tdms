@@ -25,11 +25,7 @@ public class TdmApplication implements CommandLineRunner
     private DataSource internalDs;
 
     @Autowired
-    @Qualifier("StageDataSource")
-    private DataSource stageDs;
-
-    @Value("${app.datasource.stages.default}")
-    String defaultStage;
+    private StageDataSourceManager stageDsManager;
 
     @Autowired
     private SchemaExtractor schemaExtractor;
@@ -51,21 +47,21 @@ public class TdmApplication implements CommandLineRunner
     @Override
     public void run(String... args) throws Exception
     {
-        StageContextHolder.setStageName(defaultStage);
+        StageContextHolder.setStageName("dev0");
+
 
 //        Catalog internalDb = schemaExtractor.extractDboTables(internalDs);
-//        Catalog externalDb = schemaExtractor.extractDboTables(stageDs);
+//        Catalog externalDb = schemaExtractor.extractDboTables(stageDsManager.getCurrentStageDataSource());
 //
 //        final DiffNode diff = new SchemaDifferBuilder().build().compare(internalDb, externalDb);
-//
 //        SchemaDiffPrinter.print(diff);
 
 
-        excelImporter.importDirectory(Paths.get(excelDir));
-
-        Collections.sort((List<String>) excelImporter.filledTables);
-        excelImporter.filledTables.forEach(System.out::println);
-        System.out.println(String.format("Imported %d tables ", excelImporter.filledTables.size()));
+//        excelImporter.importDirectory(Paths.get(excelDir));
+//
+//        Collections.sort((List<String>) excelImporter.filledTables);
+//        excelImporter.filledTables.forEach(System.out::println);
+//        System.out.println(String.format("Imported %d tables ", excelImporter.filledTables.size()));
 
 
 //        deployer.deploy();

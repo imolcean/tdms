@@ -1,6 +1,7 @@
 package de.tu_berlin.imolcean.tdm.deployment;
 
 import de.danielbechler.util.Strings;
+import de.tu_berlin.imolcean.tdm.StageDataSourceManager;
 import de.tu_berlin.imolcean.tdm.utils.QueryLoader;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,13 +23,12 @@ import java.util.*;
 public class MigrationDeployer
 {
     private final DataSource internalDs;
-    private final DataSource externalDs;
+    private final StageDataSourceManager stageDsManager;
 
-    public MigrationDeployer(@Qualifier("InternalDataSource") DataSource internalDs,
-                             @Qualifier("ExternalDataSource") DataSource externalDs)
+    public MigrationDeployer(@Qualifier("InternalDataSource") DataSource internalDs, StageDataSourceManager stageDsManager)
     {
         this.internalDs = internalDs;
-        this.externalDs = externalDs;
+        this.stageDsManager = stageDsManager;
     }
 
     /**
@@ -40,6 +40,17 @@ public class MigrationDeployer
      */
     public boolean deploy() throws IOException, SQLException
     {
+        DataSource externalDs;
+        try
+        {
+            externalDs = stageDsManager.getCurrentStageDataSource();
+        }
+        catch(IllegalStateException e)
+        {
+            log.severe("Cannot get DataSource for the current stage. Deployment aborted.");
+            return false;
+        }
+
         log.info("Deploying test data into external DB");
 
         try(Connection internalConnection = internalDs.getConnection();
@@ -55,7 +66,7 @@ public class MigrationDeployer
 
             if(nonEmptyExternalTables > 0)
             {
-                log.warning("External DB is not empty, deployment aborted");
+                log.severe("External DB is not empty, deployment aborted");
 
                 return false;
             }
