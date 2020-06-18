@@ -13,6 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import javax.sql.DataSource;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 
 @SpringBootApplication
@@ -33,10 +34,6 @@ public class TdmApplication implements CommandLineRunner
 
     @Autowired
     private MigrationDeployer deployer;
-
-    // TODO Pack into ExcelImporter
-    @Value("${app.data.excel.path}")
-    private String excelDir;
 
     @Autowired
     private SpringPluginManager plugins;
@@ -59,7 +56,7 @@ public class TdmApplication implements CommandLineRunner
 //        SchemaDiffPrinter.print(diff);
 
 
-//        excelImporter.importDirectory(Paths.get(excelDir));
+//        excelImporter.importDirectory();
 //
 //        Collections.sort((List<String>) excelImporter.filledTables);
 //        excelImporter.filledTables.forEach(System.out::println);

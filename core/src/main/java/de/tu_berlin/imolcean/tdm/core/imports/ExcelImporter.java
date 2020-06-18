@@ -8,6 +8,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import schemacrawler.schema.Table;
 
@@ -27,31 +28,33 @@ public class ExcelImporter
 
     private final SchemaExtractor schemaExtractor;
 
+    private final Path excelDirPath;
+
     private Collection<Table> tables;
 
     // TODO Remove
     public Collection<String> filledTables;
 
     public ExcelImporter(@Qualifier("InternalDataSource") DataSource internalDs,
-                         SchemaExtractor schemaExtractor)
+                         SchemaExtractor schemaExtractor,
+                         @Value("${app.data.excel.path}") String excelDir)
     {
         this.internalDs = internalDs;
         this.schemaExtractor = schemaExtractor;
+        this.excelDirPath = Path.of(excelDir);
     }
 
     /**
-     * Tries to import all files from the given directory.
-     *
-     * @param dir directory containing files that have to be imported
+     * Tries to import all files from the directory that is set in configuration.
      */
-    public void importDirectory(Path dir) throws Exception
+    public void importDirectory() throws Exception
     {
         this.tables = schemaExtractor.extractDboTables(internalDs).getTables();
         this.filledTables = new ArrayList<>();
 
         // TODO Check that DB is empty?
 
-        try(Stream<Path> paths = Files.walk(dir))
+        try(Stream<Path> paths = Files.walk(excelDirPath))
         {
             paths.forEach(path ->
             {
