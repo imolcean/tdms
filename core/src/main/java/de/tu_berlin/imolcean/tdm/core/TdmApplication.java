@@ -3,6 +3,7 @@ package de.tu_berlin.imolcean.tdm.core;
 import de.tu_berlin.imolcean.tdm.core.deployment.MigrationDeployer;
 import de.tu_berlin.imolcean.tdm.core.imports.ExcelImporter;
 import de.tu_berlin.imolcean.tdm.plugins.api.Greeter;
+import org.pf4j.spring.SpringPluginManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +12,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import javax.sql.DataSource;
+import java.nio.file.Path;
+import java.util.List;
 
 @SpringBootApplication
 public class TdmApplication implements CommandLineRunner
@@ -31,8 +34,12 @@ public class TdmApplication implements CommandLineRunner
     @Autowired
     private MigrationDeployer deployer;
 
+    // TODO Pack into ExcelImporter
     @Value("${app.data.excel.path}")
     private String excelDir;
+
+    @Autowired
+    private SpringPluginManager plugins;
 
     public static void main(String[] args)
     {
@@ -61,9 +68,13 @@ public class TdmApplication implements CommandLineRunner
 
 //        deployer.deploy();
 
-        Greeter g = () -> System.out.println("Hi there!");
+        List<Greeter> greeters = plugins.getExtensions(Greeter.class);
+        for(Greeter g : greeters)
+        {
+            System.out.print(g.getClass() + ": ");
+            g.greet();
+        }
 
-        g.greet();
 
         System.out.println("DONE!");
     }
