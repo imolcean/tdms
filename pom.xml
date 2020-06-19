@@ -19,7 +19,7 @@
     <modules>
         <module>plugin-api</module>
         <module>core</module>
-        <module>it_greeter</module>
+        <module>importers-plugin</module>
     </modules>
 
     <name>tdm</name>

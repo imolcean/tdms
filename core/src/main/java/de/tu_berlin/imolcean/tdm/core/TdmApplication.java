@@ -1,8 +1,7 @@
 package de.tu_berlin.imolcean.tdm.core;
 
 import de.tu_berlin.imolcean.tdm.core.deployment.MigrationDeployer;
-import de.tu_berlin.imolcean.tdm.core.imports.ExcelImporter;
-import de.tu_berlin.imolcean.tdm.plugins.api.Greeter;
+import de.tu_berlin.imolcean.tdm.plugins.api.SchemaAwareImporter;
 import org.pf4j.spring.SpringPluginManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -13,8 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import javax.sql.DataSource;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
+import java.sql.Connection;
 
 @SpringBootApplication
 public class TdmApplication implements CommandLineRunner
@@ -30,13 +28,13 @@ public class TdmApplication implements CommandLineRunner
     private SchemaExtractor schemaExtractor;
 
     @Autowired
-    private ExcelImporter excelImporter;
-
-    @Autowired
     private MigrationDeployer deployer;
 
     @Autowired
     private SpringPluginManager plugins;
+
+    @Value("${app.data.excel.path}")
+    private String excelImportDir;
 
     public static void main(String[] args)
     {
@@ -56,21 +54,17 @@ public class TdmApplication implements CommandLineRunner
 //        SchemaDiffPrinter.print(diff);
 
 
-//        excelImporter.importDirectory();
-//
-//        Collections.sort((List<String>) excelImporter.filledTables);
-//        excelImporter.filledTables.forEach(System.out::println);
-//        System.out.println(String.format("Imported %d tables ", excelImporter.filledTables.size()));
+        SchemaAwareImporter excelImporter = plugins.getExtensions(SchemaAwareImporter.class).stream()
+                .findFirst()
+                .orElseThrow();
+
+        try(Connection connection = internalDs.getConnection())
+        {
+            excelImporter.importPath(Path.of(excelImportDir), connection, schemaExtractor.extractDboTables(internalDs).getTables());
+        }
 
 
 //        deployer.deploy();
-
-        List<Greeter> greeters = plugins.getExtensions(Greeter.class);
-        for(Greeter g : greeters)
-        {
-            System.out.print(g.getClass() + ": ");
-            g.greet();
-        }
 
 
         System.out.println("DONE!");

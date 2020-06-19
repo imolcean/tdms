@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>it_greeter</artifactId>
+    <artifactId>importers-plugin</artifactId>
 
     <dependencies>
         <dependency>
@@ -31,16 +31,16 @@
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                         <manifestEntries>
-                            <Plugin-Class>it.berlusconi.solvio.tdm.BerlusconiPlugin</Plugin-Class>
-                            <Plugin-Id>berlusconi-plugin</Plugin-Id>
+                            <Plugin-Id>importers-plugin</Plugin-Id>
                             <Plugin-Version>0.0.1</Plugin-Version>
-                            <Plugin-Description>My example plugin</Plugin-Description>
-                            <Plugin-Provider>Silvio Berlusconi</Plugin-Provider>
+                            <Plugin-Description>
+                                Plugin contains importers that are shipped together with the TDM software but are not part of its core.
+                            </Plugin-Description>
+                            <Plugin-Provider>Igor Molcean</Plugin-Provider>
                         </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 </project>
