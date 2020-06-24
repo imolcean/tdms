@@ -1,16 +1,26 @@
+div.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 header {
-  background-color: darkred;
-  height: 50px;
+  flex-shrink: 0;
+  background-color: #303030;
+  color: #c9c9c9;
+  border-bottom: 1px solid grey;
+  padding: 5px;
 }
 
 nav {
   background-color: blueviolet;
-  height: 25px;
+  flex-shrink: 0;
+  border-bottom: 1px solid grey;
 }
 
 main {
   background-color: darkseagreen;
-  height: calc(100vh - 50px - 25px - 50px);
+  flex: 1 0 auto;
   display: flex;
 
   aside {
@@ -20,6 +30,7 @@ main {
 
     &:nth-child(1) {
       flex-grow: 1;
+      border-right: 3px solid #c9c9c9;
     }
 
     &:nth-child(2) {
@@ -31,6 +42,7 @@ main {
 
       &:nth-child(1) {
         flex-grow: 2;
+        border-bottom: 3px solid #c9c9c9;
       }
 
       &:nth-child(2) {
@@ -41,6 +53,26 @@ main {
 }
 
 footer {
-  background-color: darkblue;
-  height: 50px;
+  height: 25px;
+  flex-shrink: 0;
+  background-color: #c9c9c9;
+  border-top: 1px solid grey;
+}
+
+:host ::ng-deep {
+  .ui-menubar {
+    border-radius: 0;
+    background-color: #c9c9c9;
+    font-size: smaller;
+  }
+
+  .ui-menubar-root-list {
+    .ui-menuitem {
+      .ui-menuitem-link {
+        .ui-submenu-icon {
+          display: none;
+        }
+      }
+    }
+  }
 }
