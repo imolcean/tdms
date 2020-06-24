@@ -13,50 +13,56 @@ header {
 }
 
 nav {
-  background-color: blueviolet;
   flex-shrink: 0;
   border-bottom: 1px solid grey;
 }
 
 main {
-  background-color: darkseagreen;
   flex: 1 0 auto;
   display: flex;
+  height: 1%;
 
   aside {
-    background-color: aquamarine;
     display: flex;
     flex-direction: column;
 
     &:nth-child(1) {
-      flex-grow: 1;
-      border-right: 3px solid #c9c9c9;
+      flex-basis: 20%;
     }
 
     &:nth-child(2) {
-      flex-grow: 3;
+      flex-basis: 80%;
     }
 
     section {
-      background-color: coral;
+      overflow: auto;
+
+      header {
+        padding: 5px;
+        background-color: #bcbcbc;
+        color: black;
+      }
 
       &:nth-child(1) {
-        flex-grow: 2;
-        border-bottom: 3px solid #c9c9c9;
+        flex: 1 0 70%;
+
+        app-properties {
+          height: 100%;
+        }
       }
 
       &:nth-child(2) {
-        flex-grow: 1;
+        flex: 1 0 30%;
       }
     }
   }
 }
 
 footer {
-  height: 25px;
   flex-shrink: 0;
   background-color: #c9c9c9;
   border-top: 1px solid grey;
+  padding: 5px;
 }
 
 :host ::ng-deep {

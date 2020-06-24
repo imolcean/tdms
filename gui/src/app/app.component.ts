@@ -7,6 +7,7 @@ import {MenuItem} from "primeng/api";
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
+
   public items: MenuItem[];
 
   ngOnInit(): void {
@@ -35,4 +36,5 @@ export class AppComponent implements OnInit {
       }
     ];
   }
+
 }
