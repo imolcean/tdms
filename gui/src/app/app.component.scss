@@ -1,0 +1,46 @@
+header {
+  background-color: darkred;
+  height: 50px;
+}
+
+nav {
+  background-color: blueviolet;
+  height: 25px;
+}
+
+main {
+  background-color: darkseagreen;
+  height: calc(100vh - 50px - 25px - 50px);
+  display: flex;
+
+  aside {
+    background-color: aquamarine;
+    display: flex;
+    flex-direction: column;
+
+    &:nth-child(1) {
+      flex-grow: 1;
+    }
+
+    &:nth-child(2) {
+      flex-grow: 3;
+    }
+
+    section {
+      background-color: coral;
+
+      &:nth-child(1) {
+        flex-grow: 2;
+      }
+
+      &:nth-child(2) {
+        flex-grow: 1;
+      }
+    }
+  }
+}
+
+footer {
+  background-color: darkblue;
+  height: 50px;
+}
