@@ -1,5 +1,4 @@
 article {
-  //position: fixed;
   height: 100%;
   display: flex;
 
@@ -40,6 +39,7 @@ article {
         flex: 1 0 auto;
         height: 1px;
         overflow: auto;
+        padding: 5px;
       }
     }
   }

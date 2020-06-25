@@ -1,5 +1,10 @@
-<div>
-  <p *ngFor="let message of messages">
-    {{message}}
-  </p>
-</div>
+<p *ngFor="let message of messages">
+  <ng-container [ngSwitch]="message.kind">
+    <i *ngSwitchCase="'INFO'" class="pi pi-info"></i>
+    <i *ngSwitchCase="'SUCCESS'" class="pi pi-check"></i>
+    <i *ngSwitchCase="'WARNING'" class="pi pi-exclamation-triangle"></i>
+    <i *ngSwitchCase="'ERROR'" class="pi pi-times"></i>
+  </ng-container>
+
+  {{message.content}}
+</p>

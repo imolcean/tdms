@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {StatusMessageDto, StatusMessageDtoKind} from "../../dto/dto";
 
 @Component({
   selector: 'app-status',
@@ -7,11 +8,16 @@ import { Component, OnInit } from '@angular/core';
 })
 export class StatusComponent implements OnInit {
 
-  public messages: string[] = [];
+  public messages: StatusMessageDto[] = [];
 
   ngOnInit(): void {
     for(let i = 0; i < 50; i++) {
-      this.messages.push("Message " + i);
+      const msg: StatusMessageDto = {
+        kind: i%2 === 0 ? "WARNING" : "SUCCESS" as StatusMessageDtoKind,
+        content: "Message " + i
+      };
+
+      this.messages.push(msg);
     }
   }
 
