@@ -1,0 +1,46 @@
+article {
+  //position: fixed;
+  height: 100%;
+  display: flex;
+
+  aside {
+    display: flex;
+    flex-direction: column;
+
+    &:nth-child(1) {
+      flex-basis: 20%;
+      border-right: 1px solid grey;
+    }
+
+    &:nth-child(2) {
+      flex-basis: 80%;
+    }
+
+    section {
+      display: flex;
+      flex-direction: column;
+
+      &:nth-child(1) {
+        flex: 1 0 70%;
+        border-bottom: 1px solid grey;
+      }
+
+      &:nth-child(2) {
+        flex: 1 0 30%;
+      }
+
+      header {
+        flex-shrink: 0;
+        padding: 5px;
+        background-color: #bcbcbc;
+        color: black;
+      }
+
+      main {
+        flex: 1 0 auto;
+        height: 1px;
+        overflow: auto;
+      }
+    }
+  }
+}

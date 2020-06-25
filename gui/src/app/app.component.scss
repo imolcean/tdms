@@ -17,45 +17,9 @@ nav {
   border-bottom: 1px solid grey;
 }
 
-main {
+app-square {
   flex: 1 0 auto;
-  display: flex;
-  height: 1%;
-
-  aside {
-    display: flex;
-    flex-direction: column;
-
-    &:nth-child(1) {
-      flex-basis: 20%;
-    }
-
-    &:nth-child(2) {
-      flex-basis: 80%;
-    }
-
-    section {
-      overflow: auto;
-
-      header {
-        padding: 5px;
-        background-color: #bcbcbc;
-        color: black;
-      }
-
-      &:nth-child(1) {
-        flex: 1 0 70%;
-
-        app-properties {
-          height: 100%;
-        }
-      }
-
-      &:nth-child(2) {
-        flex: 1 0 30%;
-      }
-    }
-  }
+  height: 1px;
 }
 
 footer {

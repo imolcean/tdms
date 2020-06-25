@@ -7,11 +7,13 @@ import {MenubarModule} from 'primeng/menubar';
 import {TableModule} from 'primeng/table';
 
 import { PropertiesComponent } from './panes/properties/properties.component';
+import { SquareComponent } from './layouts/square/square.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    PropertiesComponent
+    PropertiesComponent,
+    SquareComponent
   ],
   imports: [
     BrowserModule,
