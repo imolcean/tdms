@@ -1,4 +1,4 @@
-package de.tu_berlin.imolcean.tdm.core.annotation;
+package de.tu_berlin.imolcean.tdm.api.annotations;
 
 import java.lang.annotation.*;
 

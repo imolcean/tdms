@@ -1,4 +1,4 @@
-package de.tu_berlin.imolcean.tdm.plugins.api;
+package de.tu_berlin.imolcean.tdm.api.plugins;
 
 import org.pf4j.ExtensionPoint;
 

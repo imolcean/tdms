@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>de.tu_berlin.imolcean</groupId>
-            <artifactId>plugin-api</artifactId>
+            <artifactId>api</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>

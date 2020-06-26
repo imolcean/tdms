@@ -17,7 +17,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>plugin-api</module>
+        <module>api</module>
         <module>core</module>
         <module>importers-plugin</module>
         <module>gui</module>

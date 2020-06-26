@@ -1,6 +1,6 @@
-package de.tu_berlin.imolcean.tdm.core.dto;
+package de.tu_berlin.imolcean.tdm.api.dto;
 
-import de.tu_berlin.imolcean.tdm.core.annotation.TsOptional;
+import de.tu_berlin.imolcean.tdm.api.annotations.TsOptional;
 import lombok.Data;
 import lombok.Getter;
 
@@ -19,6 +19,6 @@ public class StatusMessageDto
 
     private String content;
 
-    @Getter(onMethod_ = { @TsOptional})
+    @Getter(onMethod_ = {@TsOptional})
     private String addition;
 }

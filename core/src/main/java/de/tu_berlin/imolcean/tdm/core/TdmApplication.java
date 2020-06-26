@@ -1,7 +1,7 @@
 package de.tu_berlin.imolcean.tdm.core;
 
 import de.tu_berlin.imolcean.tdm.core.deployment.MigrationDeployer;
-import de.tu_berlin.imolcean.tdm.plugins.api.SchemaAwareImporter;
+import de.tu_berlin.imolcean.tdm.api.plugins.SchemaAwareImporter;
 import org.pf4j.spring.SpringPluginManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

@@ -1,6 +1,6 @@
-package de.tu_berlin.imolcean.tdm.importers;
+package de.tu_berlin.imolcean.tdm.x.importers;
 
-import de.tu_berlin.imolcean.tdm.plugins.api.SchemaAwareImporter;
+import de.tu_berlin.imolcean.tdm.api.plugins.SchemaAwareImporter;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;

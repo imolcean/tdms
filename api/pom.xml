@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>tdm</artifactId>
+        <groupId>de.tu_berlin.imolcean</groupId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>api</artifactId>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>cz.habarta.typescript-generator</groupId>
+                <artifactId>typescript-generator-maven-plugin</artifactId>
+                <version>2.20.583</version>
+                <!--                <executions>-->
+                <!--                    <execution>-->
+                <!--                        <id>generate</id>-->
+                <!--                        <goals>-->
+                <!--                            <goal>generate</goal>-->
+                <!--                        </goals>-->
+                <!--                        <phase>process-classes</phase>-->
+                <!--                    </execution>-->
+                <!--                </executions>-->
+                <configuration>
+                    <jsonLibrary>jackson2</jsonLibrary>
+                    <outputFileType>implementationFile</outputFileType>
+                    <outputKind>module</outputKind>
+                    <outputFile>../gui/src/app/dto/dto.ts</outputFile>
+                    <classPatterns>
+                        <pattern>de.tu_berlin.imolcean.tdm.api.dto.*</pattern>
+                    </classPatterns>
+                    <scanSpringApplication>true</scanSpringApplication>
+                    <optionalAnnotations>
+                        <annotation>de.tu_berlin.imolcean.tdm.api.annotations.TsOptional</annotation>
+                    </optionalAnnotations>
+                    <customTypeNamingFunction>
+                        function(name, simpleName) {
+                            <!-- Nested classes renamed from Outer$Nester to OuterNester -->
+                            if (name.indexOf('$') !== -1) {
+                            var parent = name.split('$')[0];
+                            var parentParts = parent.split('.');
+                            return parentParts[parentParts.length-1]+simpleName;
+                            }
+                        }
+                    </customTypeNamingFunction>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

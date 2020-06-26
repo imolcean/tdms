@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 2.20.583 on 2020-06-25 12:15:27.
+// Generated using typescript-generator version 2.20.583 on 2020-06-26 12:04:07.
 
 export interface StatusMessageDto {
     kind: StatusMessageDtoKind;

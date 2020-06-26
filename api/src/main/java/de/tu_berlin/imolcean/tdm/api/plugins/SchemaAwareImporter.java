@@ -1,13 +1,17 @@
-package de.tu_berlin.imolcean.tdm.plugins.api;
+package de.tu_berlin.imolcean.tdm.api.plugins;
+
+import schemacrawler.schema.Table;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.util.Collection;
 
-public interface SimpleImporter extends Importer
+public interface SchemaAwareImporter extends Importer
 {
     /**
-     * Imports data from file or directory ({@code path}) into the database.
+     * Imports data from file or directory ({@code path}) into the database
+     * taking into account the database schema ({@code tables}).
      *
      * Implementations of this interface should use transactions to guarantee that
      * the data is either imported completely or not at all. In case an {@link Exception}
@@ -16,7 +20,8 @@ public interface SimpleImporter extends Importer
      *
      * @param path {@link Path} to the source of data (file or directory with files)
      * @param db {@link Connection} to the database that accepts imported data
+     * @param tables {@link Collection} of {@link Table}s that the database has
      * @throws IOException if something goes wrong while reading the files
      */
-    void importPath(Path path, Connection db) throws IOException;
+    void importPath(Path path, Connection db, Collection<Table> tables) throws IOException;
 }
