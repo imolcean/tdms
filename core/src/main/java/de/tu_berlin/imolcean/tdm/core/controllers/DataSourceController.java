@@ -44,9 +44,15 @@ public class DataSourceController
     }
 
 //    @PostMapping("/stages")
-    public ResponseEntity<DataSourceDto> createStage(@RequestHeader("TDM-Stage-Name") String name,
-                                     @RequestBody DataSourceDto ds)
+    public ResponseEntity<DataSourceDto> createStage(@RequestHeader("TDM-Datasource-Name") String name,
+                                                     @RequestBody DataSourceDto ds)
     {
+        // Datasource name "internal" is reserved and can't be used to name stages
+        if(name.equalsIgnoreCase("internal"))
+        {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+        }
+
         try
         {
             return ResponseEntity.ok(
@@ -60,7 +66,7 @@ public class DataSourceController
     }
 
 //    @PutMapping("/stage")
-    public ResponseEntity<DataSourceDto> updateStage(@RequestHeader("TDM-Stage-Name") String name,
+    public ResponseEntity<DataSourceDto> updateStage(@RequestHeader("TDM-Datasource-Name") String name,
                                                      @RequestBody DataSourceDto ds)
     {
         try
@@ -76,7 +82,7 @@ public class DataSourceController
     }
 
 //    @DeleteMapping("/stage")
-    public ResponseEntity<Void> deleteStage(@RequestHeader("TDM-Stage-Name") String name)
+    public ResponseEntity<Void> deleteStage(@RequestHeader("TDM-Datasource-Name") String name)
     {
         try
         {
@@ -90,7 +96,7 @@ public class DataSourceController
     }
 
     @GetMapping("/stage")
-    public ResponseEntity<DataSourceDto> getStage(@RequestHeader("TDM-Stage-Name") String stageName)
+    public ResponseEntity<DataSourceDto> getStage(@RequestHeader("TDM-Datasource-Name") String stageName)
     {
         DataSourceProxy ds = stageDsManager.getStageDataSourceByName(stageName);
 
@@ -122,7 +128,7 @@ public class DataSourceController
     }
 
     @PutMapping("/stage/current")
-    public ResponseEntity<DataSourceDto> selectCurrentStage(@RequestHeader("TDM-Stage-Name") String stageName)
+    public ResponseEntity<DataSourceDto> selectCurrentStage(@RequestHeader("TDM-Datasource-Name") String stageName)
     {
         DataSourceProxy ds = stageDsManager.getStageDataSourceByName(stageName);
 

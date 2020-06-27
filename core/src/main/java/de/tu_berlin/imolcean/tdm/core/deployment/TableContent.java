@@ -15,6 +15,8 @@ class TableContent
     private final List<Integer> columnTypes;
     private final Map<String, Integer> column2Index;
 
+    // TODO Move to API
+
     public TableContent(Queue<Object[]> rows, List<String> columnNames, List<Integer> columnTypes)
     {
         if(columnNames.size() != columnTypes.size())
