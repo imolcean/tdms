@@ -1,13 +1,16 @@
 package de.tu_berlin.imolcean.tdm.core;
 
+import de.tu_berlin.imolcean.tdm.api.dto.DataSourceDto;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -69,6 +72,23 @@ public class StageDataSourceManager
         }
 
         return ds;
+    }
+
+    public DataSourceProxy createStageDataSource(String name, DataSourceDto dto) throws FileAlreadyExistsException
+    {
+        // TODO Create file & reload
+        return null;
+    }
+
+    public DataSourceProxy updateStageDataSource(String name, DataSourceDto dto) throws FileNotFoundException
+    {
+        // TODO Overwrite file & reload
+        return null;
+    }
+
+    public void deleteStageDataSource(String name) throws FileNotFoundException
+    {
+        // TODO Remove file & reload
     }
 
     /**

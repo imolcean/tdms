@@ -6,9 +6,12 @@ import de.tu_berlin.imolcean.tdm.core.StageContextHolder;
 import de.tu_berlin.imolcean.tdm.core.StageDataSourceManager;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.DataSourceMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.FileNotFoundException;
+import java.nio.file.FileAlreadyExistsException;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -27,8 +30,6 @@ public class DataSourceController
         this.stageDsManager = stageDsManager;
     }
 
-    // TODO crUD
-
     @GetMapping("/internal")
     public DataSourceDto getInternal()
     {
@@ -44,25 +45,48 @@ public class DataSourceController
 
 //    @PostMapping("/stages")
     public ResponseEntity<DataSourceDto> createStage(@RequestHeader("TDM-Stage-Name") String name,
-                                                     @RequestBody DataSourceDto ds)
+                                     @RequestBody DataSourceDto ds)
     {
-        // TODO
-        return ResponseEntity.noContent().build();
+        try
+        {
+            return ResponseEntity.ok(
+                    DataSourceMapper.toDto(
+                            stageDsManager.createStageDataSource(name, ds)));
+        }
+        catch(FileAlreadyExistsException e)
+        {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 
 //    @PutMapping("/stage")
     public ResponseEntity<DataSourceDto> updateStage(@RequestHeader("TDM-Stage-Name") String name,
                                                      @RequestBody DataSourceDto ds)
     {
-        // TODO
-        return ResponseEntity.noContent().build();
+        try
+        {
+            return ResponseEntity.ok(
+                    DataSourceMapper.toDto(
+                            stageDsManager.updateStageDataSource(name, ds)));
+        }
+        catch(FileNotFoundException e)
+        {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 //    @DeleteMapping("/stage")
     public ResponseEntity<Void> deleteStage(@RequestHeader("TDM-Stage-Name") String name)
     {
-        // TODO
-        return ResponseEntity.noContent().build();
+        try
+        {
+            stageDsManager.deleteStageDataSource(name);
+            return ResponseEntity.noContent().build();
+        }
+        catch(FileNotFoundException e)
+        {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/stage")
