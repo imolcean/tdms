@@ -42,7 +42,7 @@ public class DataSourceController
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> DataSourceMapper.toDto(entry.getValue())));
     }
 
-    @PostMapping("/stages")
+//    @PostMapping("/stages")
     public ResponseEntity<DataSourceDto> createStage(@RequestHeader("TDM-Stage-Name") String name,
                                                      @RequestBody DataSourceDto ds)
     {
@@ -50,7 +50,7 @@ public class DataSourceController
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/stage")
+//    @PutMapping("/stage")
     public ResponseEntity<DataSourceDto> updateStage(@RequestHeader("TDM-Stage-Name") String name,
                                                      @RequestBody DataSourceDto ds)
     {
@@ -58,7 +58,7 @@ public class DataSourceController
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/stage")
+//    @DeleteMapping("/stage")
     public ResponseEntity<Void> deleteStage(@RequestHeader("TDM-Stage-Name") String name)
     {
         // TODO
