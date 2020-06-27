@@ -2,20 +2,20 @@ package de.tu_berlin.imolcean.tdm.core;
 
 public class StageContextHolder
 {
-    private static final ThreadLocal<String> stageName = new ThreadLocal<>();
+    private static String stageName = null;
 
     public static void setStageName(String name)
     {
-        stageName.set(name);
+        stageName = name;
     }
 
     public static String getStageName()
     {
-        return stageName.get();
+        return stageName;
     }
 
     public static void clearStageName()
     {
-        stageName.remove();
+        stageName = null;
     }
 }

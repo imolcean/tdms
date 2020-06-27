@@ -50,11 +50,11 @@ public class TdmApplication implements CommandLineRunner
         StageContextHolder.setStageName("dev0");
 
 
-        Catalog internalDb = schemaExtractor.extractDboTables(internalDs);
-        Catalog externalDb = schemaExtractor.extractDboTables(stageDsManager.getCurrentStageDataSource());
-
-        final DiffNode diff = new SchemaDifferBuilder().build().compare(internalDb, externalDb);
-        SchemaDiffPrinter.print(diff);
+//        Catalog internalDb = schemaExtractor.extractDboTables(internalDs);
+//        Catalog externalDb = schemaExtractor.extractDboTables(stageDsManager.getCurrentStageDataSource());
+//
+//        final DiffNode diff = new SchemaDifferBuilder().build().compare(internalDb, externalDb);
+//        SchemaDiffPrinter.print(diff);
 
 
 //        SchemaAwareImporter excelImporter = plugins.getExtensions(SchemaAwareImporter.class).stream()

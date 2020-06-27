@@ -40,12 +40,9 @@ public class MigrationDeployer
      */
     public boolean deploy() throws IOException, SQLException
     {
-        DataSource externalDs;
-        try
-        {
-            externalDs = stageDsManager.getCurrentStageDataSource();
-        }
-        catch(IllegalStateException e)
+        DataSource externalDs = stageDsManager.getCurrentStageDataSource();
+
+        if(externalDs == null)
         {
             log.severe("Cannot get DataSource for the current stage. Deployment aborted.");
             return false;

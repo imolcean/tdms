@@ -11,7 +11,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -34,35 +33,31 @@ public class StageDataSourceManager
      * Provides access to the {@link DataSourceProxy} of the staging environment that
      * is currently selected in the {@link StageContextHolder}.
      *
-     * @return {@link DataSourceProxy} of the currently selected staging environment
-     * @throws IllegalStateException if no {@link DataSourceProxy} could be found
+     * @return {@link DataSourceProxy} of the currently selected staging environment or {@code null}, if no stage is selected
      */
-    public DataSourceProxy getCurrentStageDataSource() throws IllegalStateException
+    public DataSourceProxy getCurrentStageDataSource()
     {
-        return getStageDataSource(StageContextHolder.getStageName());
+        return getStageDataSourceByName(StageContextHolder.getStageName());
     }
 
     /**
      * Provides access to the {@link DataSourceProxy} objects of the
      * staging environments that are currently known.
      *
-     * @return {@link List} of {@link DataSourceProxy} of all staging environments that are known at the moment
+     * @return {@link Map} of all staging environments that are known at the moment with names as keys
      */
-    public List<DataSourceProxy> getAllStagesDataSources()
+    public Map<String, DataSourceProxy> getAllStagesDataSources()
     {
-        return stageName2Ds.keySet().stream()
-                .map(this::getStageDataSource)
-                .collect(Collectors.toList());
+        return new HashMap<>(stageName2Ds);
     }
 
     /**
      * Provides access to the {@link DataSourceProxy} of the
      * staging environment with the given {@code stageName}.
      *
-     * @return {@link DataSourceProxy} of the staging environment with the specified name
-     * @throws IllegalStateException if no {@link DataSourceProxy} could be found
+     * @return {@link DataSourceProxy} of the staging environment or {@code null}, if nothing was found
      */
-    private DataSourceProxy getStageDataSource(String stageName) throws IllegalStateException
+    public DataSourceProxy getStageDataSourceByName(String stageName)
     {
         log.fine("Retrieving DataSource for stage " + stageName);
 
@@ -70,7 +65,7 @@ public class StageDataSourceManager
 
         if(ds == null)
         {
-            throw new IllegalStateException(String.format("No DataSource found for stage %s", StageContextHolder.getStageName()));
+            log.warning("No DataSource found for stage " + stageName);
         }
 
         return ds;
