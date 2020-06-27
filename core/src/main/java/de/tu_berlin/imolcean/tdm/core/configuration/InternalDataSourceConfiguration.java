@@ -1,5 +1,6 @@
 package de.tu_berlin.imolcean.tdm.core.configuration;
 
+import de.tu_berlin.imolcean.tdm.core.DataSourceProxy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -23,13 +24,8 @@ public class InternalDataSourceConfiguration
     private String password;
 
     @Bean(name = "InternalDataSource")
-    public DataSource externalRu2DataSource()
+    public DataSourceProxy externalRu2DataSource()
     {
-        return DataSourceBuilder.create()
-                .driverClassName(this.driver)
-                .url(this.url)
-                .username(this.username)
-                .password(this.password)
-                .build();
+        return new DataSourceProxy(driver, url, username, password);
     }
 }

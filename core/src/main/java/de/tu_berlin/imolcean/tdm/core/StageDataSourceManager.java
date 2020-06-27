@@ -3,18 +3,15 @@ package de.tu_berlin.imolcean.tdm.core;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.stereotype.Service;
 
-import javax.sql.DataSource;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -23,7 +20,7 @@ public class StageDataSourceManager
 {
     private final Path configs;
 
-    private Map<String, DataSource> stageName2Ds;
+    private Map<String, DataSourceProxy> stageName2Ds;
 
     public StageDataSourceManager(@Value("${app.datasource.stages.path}") String configDir) throws IOException
     {
@@ -34,17 +31,42 @@ public class StageDataSourceManager
     }
 
     /**
-     * Provides access to the {@link DataSource} of the staging environment that
+     * Provides access to the {@link DataSourceProxy} of the staging environment that
      * is currently selected in the {@link StageContextHolder}.
      *
-     * @return {@link DataSource} of the currently selected staging environment
-     * @throws IllegalStateException if no {@link DataSource} could be found
+     * @return {@link DataSourceProxy} of the currently selected staging environment
+     * @throws IllegalStateException if no {@link DataSourceProxy} could be found
      */
-    public DataSource getCurrentStageDataSource() throws IllegalStateException
+    public DataSourceProxy getCurrentStageDataSource() throws IllegalStateException
     {
-        log.fine("Retrieving DataSource for stage " + StageContextHolder.getStageName());
+        return getStageDataSource(StageContextHolder.getStageName());
+    }
 
-        DataSource ds = stageName2Ds.get(StageContextHolder.getStageName());
+    /**
+     * Provides access to the {@link DataSourceProxy} objects of the
+     * staging environments that are currently known.
+     *
+     * @return {@link List} of {@link DataSourceProxy} of all staging environments that are known at the moment
+     */
+    public List<DataSourceProxy> getAllStagesDataSources()
+    {
+        return stageName2Ds.keySet().stream()
+                .map(this::getStageDataSource)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Provides access to the {@link DataSourceProxy} of the
+     * staging environment with the given {@code stageName}.
+     *
+     * @return {@link DataSourceProxy} of the staging environment with the specified name
+     * @throws IllegalStateException if no {@link DataSourceProxy} could be found
+     */
+    private DataSourceProxy getStageDataSource(String stageName) throws IllegalStateException
+    {
+        log.fine("Retrieving DataSource for stage " + stageName);
+
+        DataSourceProxy ds = stageName2Ds.get(stageName);
 
         if(ds == null)
         {
@@ -60,7 +82,7 @@ public class StageDataSourceManager
      */
     public void loadConfigs() throws IOException
     {
-        Map<String, DataSource> result = new HashMap<>();
+        Map<String, DataSourceProxy> result = new HashMap<>();
 
         try(Stream<Path> paths = Files.walk(configs))
         {
@@ -71,7 +93,7 @@ public class StageDataSourceManager
                     return;
                 }
 
-                DataSource ds = load(path);
+                DataSourceProxy ds = load(path);
 
                 if(ds != null)
                 {
@@ -85,19 +107,18 @@ public class StageDataSourceManager
         stageName2Ds = result;
     }
 
-    private DataSource load(Path path)
+    private DataSourceProxy load(Path path)
     {
         try(InputStream fs = new FileInputStream(path.toFile()))
         {
             Properties config = new Properties();
             config.load(fs);
 
-            return DataSourceBuilder.create()
-                    .driverClassName(config.getProperty("driver-class-name"))
-                    .url(config.getProperty("url"))
-                    .username(config.getProperty("username"))
-                    .password(config.getProperty("password"))
-                    .build();
+            return new DataSourceProxy(
+                    config.getProperty("driver-class-name"),
+                    config.getProperty("url"),
+                    config.getProperty("username"),
+                    config.getProperty("password"));
         }
         catch(IOException e)
         {

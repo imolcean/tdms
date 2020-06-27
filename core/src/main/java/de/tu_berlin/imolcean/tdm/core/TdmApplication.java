@@ -1,7 +1,9 @@
 package de.tu_berlin.imolcean.tdm.core;
 
+import de.danielbechler.diff.node.DiffNode;
 import de.tu_berlin.imolcean.tdm.core.deployment.MigrationDeployer;
 import de.tu_berlin.imolcean.tdm.api.plugins.SchemaAwareImporter;
+import de.tu_berlin.imolcean.tdm.core.utils.SchemaDiffPrinter;
 import org.pf4j.spring.SpringPluginManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -9,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import schemacrawler.schema.Catalog;
 
 import javax.sql.DataSource;
 import java.nio.file.Path;
@@ -19,7 +22,7 @@ public class TdmApplication implements CommandLineRunner
 {
     @Autowired
     @Qualifier("InternalDataSource")
-    private DataSource internalDs;
+    private DataSourceProxy internalDs;
 
     @Autowired
     private StageDataSourceManager stageDsManager;
@@ -47,21 +50,21 @@ public class TdmApplication implements CommandLineRunner
         StageContextHolder.setStageName("dev0");
 
 
-//        Catalog internalDb = schemaExtractor.extractDboTables(internalDs);
-//        Catalog externalDb = schemaExtractor.extractDboTables(stageDsManager.getCurrentStageDataSource());
+        Catalog internalDb = schemaExtractor.extractDboTables(internalDs);
+        Catalog externalDb = schemaExtractor.extractDboTables(stageDsManager.getCurrentStageDataSource());
+
+        final DiffNode diff = new SchemaDifferBuilder().build().compare(internalDb, externalDb);
+        SchemaDiffPrinter.print(diff);
+
+
+//        SchemaAwareImporter excelImporter = plugins.getExtensions(SchemaAwareImporter.class).stream()
+//                .findFirst()
+//                .orElseThrow();
 //
-//        final DiffNode diff = new SchemaDifferBuilder().build().compare(internalDb, externalDb);
-//        SchemaDiffPrinter.print(diff);
-
-
-        SchemaAwareImporter excelImporter = plugins.getExtensions(SchemaAwareImporter.class).stream()
-                .findFirst()
-                .orElseThrow();
-
-        try(Connection connection = internalDs.getConnection())
-        {
-            excelImporter.importPath(Path.of(excelImportDir), connection, schemaExtractor.extractDboTables(internalDs).getTables());
-        }
+//        try(Connection connection = internalDs.getConnection())
+//        {
+//            excelImporter.importPath(Path.of(excelImportDir), connection, schemaExtractor.extractDboTables(internalDs).getTables());
+//        }
 
 
 //        deployer.deploy();
