@@ -15,7 +15,7 @@ class TableContent
     private final List<Integer> columnTypes;
     private final Map<String, Integer> column2Index;
 
-    // TODO Move to API
+    // TODO Replace by TableDataDto and TableMetaDataDto
 
     public TableContent(Queue<Object[]> rows, List<String> columnNames, List<Integer> columnTypes)
     {
