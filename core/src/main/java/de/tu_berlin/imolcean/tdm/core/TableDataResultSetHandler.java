@@ -27,6 +27,6 @@ public class TableDataResultSetHandler implements ResultSetHandler<TableDataDto>
             rows.add(row);
         }
 
-        return new TableDataDto(rs.getMetaData().getTableName(1), rows);
+        return new TableDataDto(rows);
     }
 }

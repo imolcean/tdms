@@ -9,7 +9,5 @@ import java.util.List;
 @AllArgsConstructor
 public class TableDataDto
 {
-    private String name;
-
     private List<Object[]> data;
 }
