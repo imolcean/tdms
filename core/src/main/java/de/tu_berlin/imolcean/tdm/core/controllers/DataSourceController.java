@@ -6,12 +6,9 @@ import de.tu_berlin.imolcean.tdm.core.DataSourceProxy;
 import de.tu_berlin.imolcean.tdm.core.DataSourceService;
 import de.tu_berlin.imolcean.tdm.core.StageContextHolder;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.DataSourceMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.FileNotFoundException;
-import java.nio.file.FileAlreadyExistsException;
 import java.util.Map;
 import java.util.stream.Collectors;
 

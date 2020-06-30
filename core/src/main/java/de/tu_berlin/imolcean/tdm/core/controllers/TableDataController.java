@@ -6,7 +6,6 @@ import de.tu_berlin.imolcean.tdm.core.TableDataService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.sql.DataSource;
 import java.sql.SQLException;
 
 @RestController
@@ -24,79 +23,40 @@ public class TableDataController
     }
 
     @GetMapping("/")
-    public ResponseEntity<TableDataDto> getTableContent(@RequestHeader("TDM-Datasource-Name") String dsName,
+    public ResponseEntity<TableDataDto> getTableContent(@RequestHeader("TDM-Datasource-Alias") String dsName,
                                                         @RequestHeader("TDM-Table-Name") String tableName) throws SQLException
     {
-        DataSource ds;
-        try
-        {
-            ds = dsService.getDataSourceByAlias(dsName);
-        }
-        catch(Exception e)
-        {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(tableDataService.getTableData(ds, tableName));
+        return ResponseEntity.ok(
+                tableDataService.getTableData(dsService.getDataSourceByAlias(dsName), tableName));
     }
 
 //    @PostMapping("/")
-    public ResponseEntity<Void> insertRow(@RequestHeader("TDM-Datasource-Name") String dsName,
+    public ResponseEntity<Void> insertRow(@RequestHeader("TDM-Datasource-Alias") String dsName,
                                           @RequestHeader("TDM-Table-Name") String tableName,
                                           @RequestBody Object[] row) throws SQLException
     {
-        DataSource ds;
-        try
-        {
-            ds = dsService.getDataSourceByAlias(dsName);
-        }
-        catch(Exception e)
-        {
-            return ResponseEntity.notFound().build();
-        }
-
-        tableDataService.insertRow(ds, tableName, row);
+        tableDataService.insertRow(dsService.getDataSourceByAlias(dsName), tableName, row);
 
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/")
-    public ResponseEntity<Void> updateRow(@RequestHeader("TDM-Datasource-Name") String dsName,
+    public ResponseEntity<Void> updateRow(@RequestHeader("TDM-Datasource-Alias") String dsName,
                                           @RequestHeader("TDM-Table-Name") String tableName,
                                           @RequestHeader("TDM-Row-Index") Integer rowIndex,
                                           @RequestBody Object[] row) throws SQLException
     {
-        DataSource ds;
-        try
-        {
-            ds = dsService.getDataSourceByAlias(dsName);
-        }
-        catch(Exception e)
-        {
-            return ResponseEntity.notFound().build();
-        }
-
-        tableDataService.updateRow(ds, tableName, rowIndex, row);
+        tableDataService.updateRow(dsService.getDataSourceByAlias(dsName), tableName, rowIndex, row);
 
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/")
-    public ResponseEntity<Void> deleteRow(@RequestHeader("TDM-Datasource-Name") String dsName,
+    public ResponseEntity<Void> deleteRow(@RequestHeader("TDM-Datasource-Alias") String dsName,
                                           @RequestHeader("TDM-Table-Name") String tableName,
                                           @RequestHeader("TDM-Row-Index") Integer rowIndex) throws SQLException
     {
-        DataSource ds;
-        try
-        {
-            ds = dsService.getDataSourceByAlias(dsName);
-        }
-        catch(Exception e)
-        {
-            return ResponseEntity.notFound().build();
-        }
-
-        tableDataService.deleteRow(ds, tableName, rowIndex);
+        tableDataService.deleteRow(dsService.getDataSourceByAlias(dsName), tableName, rowIndex);
 
         return ResponseEntity.noContent().build();
     }

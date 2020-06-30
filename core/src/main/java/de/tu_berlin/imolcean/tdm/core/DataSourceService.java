@@ -1,9 +1,6 @@
 package de.tu_berlin.imolcean.tdm.core;
 
-import de.tu_berlin.imolcean.tdm.api.exceptions.NoCurrentStageException;
-import de.tu_berlin.imolcean.tdm.api.exceptions.StageDataSourceAlreadyExistsException;
-import de.tu_berlin.imolcean.tdm.api.exceptions.StageDataSourceNotFoundException;
-import de.tu_berlin.imolcean.tdm.api.exceptions.InvalidStageNameException;
+import de.tu_berlin.imolcean.tdm.api.exceptions.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -82,24 +79,22 @@ public class DataSourceService
      * Returns {@link DataSourceProxy} that is associated with the specified {@code name}.
      *
      * @param alias "internal" is an alias for the internal {@link DataSourceProxy},
-     *              "current" is an alias for the {@link DataSourceProxy} of the currently selected stage,
-     *              other values are directly mapped to the names of the stages
-     * @throws StageDataSourceNotFoundException if there is no {@link DataSourceProxy} associated with a stage named {@code alias}
+     *              "current" is an alias for the {@link DataSourceProxy} of the currently selected stage
+     * @throws InvalidDataSourceAliasException if the provided {@code alias} is invalid
+     * @throws NoCurrentStageException if {@code alias} is "current" but there is no stage selected
      * @return {@link DataSourceProxy} associated with the {@code alias}
      */
     public DataSourceProxy getDataSourceByAlias(String alias)
     {
-        if(alias.equalsIgnoreCase("internal"))
+        switch(alias)
         {
-            return getInternalDataSource();
+            case "internal":
+                return getInternalDataSource();
+            case "current":
+                return getCurrentStageDataSource();
+            default:
+                throw new InvalidDataSourceAliasException(alias);
         }
-
-        if(alias.equalsIgnoreCase("current"))
-        {
-            return getCurrentStageDataSource();
-        }
-
-        return getStageDataSourceByName(alias);
     }
 
     /**

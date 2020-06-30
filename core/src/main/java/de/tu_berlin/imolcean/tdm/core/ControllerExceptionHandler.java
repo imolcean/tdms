@@ -1,9 +1,6 @@
 package de.tu_berlin.imolcean.tdm.core;
 
-import de.tu_berlin.imolcean.tdm.api.exceptions.NoCurrentStageException;
-import de.tu_berlin.imolcean.tdm.api.exceptions.StageDataSourceAlreadyExistsException;
-import de.tu_berlin.imolcean.tdm.api.exceptions.StageDataSourceNotFoundException;
-import de.tu_berlin.imolcean.tdm.api.exceptions.InvalidStageNameException;
+import de.tu_berlin.imolcean.tdm.api.exceptions.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +24,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler
         return this.handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.CONFLICT, req);
     }
 
-    @ExceptionHandler({InvalidStageNameException.class})
+    @ExceptionHandler({InvalidStageNameException.class, InvalidDataSourceAliasException.class})
     public final ResponseEntity<Object> handleInvalidArgument(Exception ex, WebRequest req)
     {
         return this.handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY, req);
