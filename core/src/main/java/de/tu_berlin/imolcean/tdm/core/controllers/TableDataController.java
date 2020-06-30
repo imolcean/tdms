@@ -30,7 +30,7 @@ public class TableDataController
         DataSource ds;
         try
         {
-            ds = dsService.getDataSourceByName(dsName);
+            ds = dsService.getDataSourceByAlias(dsName);
         }
         catch(Exception e)
         {
@@ -48,7 +48,7 @@ public class TableDataController
         DataSource ds;
         try
         {
-            ds = dsService.getDataSourceByName(dsName);
+            ds = dsService.getDataSourceByAlias(dsName);
         }
         catch(Exception e)
         {
@@ -69,7 +69,7 @@ public class TableDataController
         DataSource ds;
         try
         {
-            ds = dsService.getDataSourceByName(dsName);
+            ds = dsService.getDataSourceByAlias(dsName);
         }
         catch(Exception e)
         {
@@ -89,7 +89,7 @@ public class TableDataController
         DataSource ds;
         try
         {
-            ds = dsService.getDataSourceByName(dsName);
+            ds = dsService.getDataSourceByAlias(dsName);
         }
         catch(Exception e)
         {

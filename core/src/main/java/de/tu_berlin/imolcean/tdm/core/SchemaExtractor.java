@@ -3,6 +3,7 @@ package de.tu_berlin.imolcean.tdm.core;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 import schemacrawler.schema.*;
+import schemacrawler.schemacrawler.SchemaCrawlerException;
 import schemacrawler.schemacrawler.SchemaCrawlerOptions;
 import schemacrawler.schemacrawler.SchemaCrawlerOptionsBuilder;
 import schemacrawler.schemacrawler.SchemaInfoLevelBuilder;
@@ -10,12 +11,13 @@ import schemacrawler.utility.SchemaCrawlerUtility;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 @Service
 @Log
 public class SchemaExtractor
 {
-    public Catalog extractDboTables(DataSource ds) throws Exception
+    public Catalog extractDboTables(DataSource ds) throws SQLException, SchemaCrawlerException
     {
         try(Connection connection = ds.getConnection())
         {

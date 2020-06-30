@@ -1,9 +1,6 @@
 package de.tu_berlin.imolcean.tdm.core;
 
-import de.danielbechler.diff.node.DiffNode;
 import de.tu_berlin.imolcean.tdm.core.deployment.MigrationDeployer;
-import de.tu_berlin.imolcean.tdm.api.plugins.SchemaAwareImporter;
-import de.tu_berlin.imolcean.tdm.core.utils.SchemaDiffPrinter;
 import org.pf4j.spring.SpringPluginManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -11,11 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import schemacrawler.schema.Catalog;
-
-import javax.sql.DataSource;
-import java.nio.file.Path;
-import java.sql.Connection;
 
 @SpringBootApplication
 public class TdmApplication implements CommandLineRunner
@@ -25,7 +17,7 @@ public class TdmApplication implements CommandLineRunner
     private DataSourceProxy internalDs;
 
     @Autowired
-    private StageDataSourceManager stageDsManager;
+    private StageDataSourceRepository stageDsManager;
 
     @Autowired
     private SchemaExtractor schemaExtractor;

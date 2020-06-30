@@ -8,8 +8,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import schemacrawler.schemacrawler.SchemaCrawlerException;
 
-import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.util.*;
 
 @RestController
@@ -27,19 +28,11 @@ public class SchemaController
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<TableMetaDataDto>> getStageSchema(@RequestHeader("TDM-Datasource-Name") String dsName)
-            throws Exception
+    public ResponseEntity<List<TableMetaDataDto>> getStageSchema(@RequestHeader("TDM-Datasource-Alias") String dsName)
+            throws SQLException, SchemaCrawlerException
     {
-        DataSource ds;
-        try
-        {
-            ds = dsService.getDataSourceByName(dsName);
-        }
-        catch(Exception e)
-        {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(schemaService.getSchema(ds));
+        return ResponseEntity.ok(
+                schemaService.getSchema(
+                        dsService.getDataSourceByAlias(dsName)));
     }
 }

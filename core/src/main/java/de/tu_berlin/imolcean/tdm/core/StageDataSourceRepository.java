@@ -16,15 +16,17 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
 
+// TODO implement Repository
+
 @Service
 @Log
-public class StageDataSourceManager
+public class StageDataSourceRepository
 {
     private final Path configs;
 
     private Map<String, DataSourceProxy> stageName2Ds;
 
-    public StageDataSourceManager(@Value("${app.datasource.stages.path}") String configDir) throws IOException
+    public StageDataSourceRepository(@Value("${app.datasource.stages.path}") String configDir) throws IOException
     {
         this.configs = Path.of(configDir);
         this.stageName2Ds = new HashMap<>();
@@ -33,23 +35,12 @@ public class StageDataSourceManager
     }
 
     /**
-     * Provides access to the {@link DataSourceProxy} of the staging environment that
-     * is currently selected in the {@link StageContextHolder}.
-     *
-     * @return {@link DataSourceProxy} of the currently selected staging environment or {@code null}, if no stage is selected
-     */
-    public DataSourceProxy getCurrentStageDataSource()
-    {
-        return getStageDataSourceByName(StageContextHolder.getStageName());
-    }
-
-    /**
      * Provides access to the {@link DataSourceProxy} objects of the
      * staging environments that are currently known.
      *
      * @return {@link Map} of all staging environments that are known at the moment with names as keys
      */
-    public Map<String, DataSourceProxy> getAllStagesDataSources()
+    public Map<String, DataSourceProxy> findAll()
     {
         return new HashMap<>(stageName2Ds);
     }
@@ -58,9 +49,10 @@ public class StageDataSourceManager
      * Provides access to the {@link DataSourceProxy} of the
      * staging environment with the given {@code stageName}.
      *
-     * @return {@link DataSourceProxy} of the staging environment or {@code null}, if nothing was found
+     * @return {@link Optional} with the {@link DataSourceProxy} of the staging environment
+     * or an empty one if no {@link DataSourceProxy} is configured for the provided stage name
      */
-    public DataSourceProxy getStageDataSourceByName(String stageName)
+    public Optional<DataSourceProxy> findByName(String stageName)
     {
         log.fine("Retrieving DataSource for stage " + stageName);
 
@@ -71,16 +63,16 @@ public class StageDataSourceManager
             log.warning("No DataSource found for stage " + stageName);
         }
 
-        return ds;
+        return Optional.ofNullable(ds);
     }
 
-    public DataSourceProxy createStageDataSource(String name, DataSourceDto dto) throws FileAlreadyExistsException
+    public DataSourceProxy createStageDataSource(String name, DataSourceProxy ds) throws FileAlreadyExistsException
     {
         // TODO Create file & reload
         return null;
     }
 
-    public DataSourceProxy updateStageDataSource(String name, DataSourceDto dto) throws FileNotFoundException
+    public DataSourceProxy updateStageDataSource(String name, DataSourceProxy ds) throws FileNotFoundException
     {
         // TODO Overwrite file & reload
         return null;
