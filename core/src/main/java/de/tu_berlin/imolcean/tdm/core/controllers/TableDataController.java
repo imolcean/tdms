@@ -42,8 +42,8 @@ public class TableDataController
 
 //    @PostMapping("/")
     public ResponseEntity<Void> insertRow(@RequestHeader("TDM-Datasource-Name") String dsName,
-                                              @RequestHeader("TDM-Table-Name") String tableName,
-                                              @RequestBody Object[] row) throws SQLException
+                                          @RequestHeader("TDM-Table-Name") String tableName,
+                                          @RequestBody Object[] row) throws SQLException
     {
         DataSource ds;
         try
@@ -62,9 +62,9 @@ public class TableDataController
 
     @PutMapping("/")
     public ResponseEntity<Void> updateRow(@RequestHeader("TDM-Datasource-Name") String dsName,
-                                              @RequestHeader("TDM-Table-Name") String tableName,
-                                              @RequestHeader("TDM-Row-Index") Integer rowIndex,
-                                              @RequestBody Object[] row) throws SQLException
+                                          @RequestHeader("TDM-Table-Name") String tableName,
+                                          @RequestHeader("TDM-Row-Index") Integer rowIndex,
+                                          @RequestBody Object[] row) throws SQLException
     {
         DataSource ds;
         try
@@ -83,8 +83,8 @@ public class TableDataController
 
     @DeleteMapping("/")
     public ResponseEntity<Void> deleteRow(@RequestHeader("TDM-Datasource-Name") String dsName,
-                                       @RequestHeader("TDM-Table-Name") String tableName,
-                                       @RequestHeader("TDM-Row-Index") Integer rowIndex) throws SQLException
+                                          @RequestHeader("TDM-Table-Name") String tableName,
+                                          @RequestHeader("TDM-Row-Index") Integer rowIndex) throws SQLException
     {
         DataSource ds;
         try
