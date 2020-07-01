@@ -27,4 +27,8 @@ public class TableMetaDataDto
     private String name;
 
     private List<Column> columns;
+
+    // TODO PK
+
+    // TODO FK
 }

@@ -23,40 +23,40 @@ public class TableDataController
     }
 
     @GetMapping("/")
-    public ResponseEntity<TableDataDto> getTableContent(@RequestHeader("TDM-Datasource-Alias") String dsName,
+    public ResponseEntity<TableDataDto> getTableContent(@RequestHeader("TDM-Datasource-Alias") String alias,
                                                         @RequestHeader("TDM-Table-Name") String tableName) throws SQLException
     {
         return ResponseEntity.ok(
-                tableDataService.getTableData(dsService.getDataSourceByAlias(dsName), tableName));
+                tableDataService.getTableData(dsService.getDataSourceByAlias(alias), tableName));
     }
 
 //    @PostMapping("/")
-    public ResponseEntity<Void> insertRow(@RequestHeader("TDM-Datasource-Alias") String dsName,
+    public ResponseEntity<Void> insertRow(@RequestHeader("TDM-Datasource-Alias") String alias,
                                           @RequestHeader("TDM-Table-Name") String tableName,
                                           @RequestBody Object[] row) throws SQLException
     {
-        tableDataService.insertRow(dsService.getDataSourceByAlias(dsName), tableName, row);
+        tableDataService.insertRow(dsService.getDataSourceByAlias(alias), tableName, row);
 
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/")
-    public ResponseEntity<Void> updateRow(@RequestHeader("TDM-Datasource-Alias") String dsName,
+    public ResponseEntity<Void> updateRow(@RequestHeader("TDM-Datasource-Alias") String alias,
                                           @RequestHeader("TDM-Table-Name") String tableName,
                                           @RequestHeader("TDM-Row-Index") Integer rowIndex,
                                           @RequestBody Object[] row) throws SQLException
     {
-        tableDataService.updateRow(dsService.getDataSourceByAlias(dsName), tableName, rowIndex, row);
+        tableDataService.updateRow(dsService.getDataSourceByAlias(alias), tableName, rowIndex, row);
 
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/")
-    public ResponseEntity<Void> deleteRow(@RequestHeader("TDM-Datasource-Alias") String dsName,
+    public ResponseEntity<Void> deleteRow(@RequestHeader("TDM-Datasource-Alias") String alias,
                                           @RequestHeader("TDM-Table-Name") String tableName,
                                           @RequestHeader("TDM-Row-Index") Integer rowIndex) throws SQLException
     {
-        tableDataService.deleteRow(dsService.getDataSourceByAlias(dsName), tableName, rowIndex);
+        tableDataService.deleteRow(dsService.getDataSourceByAlias(alias), tableName, rowIndex);
 
         return ResponseEntity.noContent().build();
     }

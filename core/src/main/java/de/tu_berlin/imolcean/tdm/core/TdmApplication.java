@@ -20,9 +20,6 @@ public class TdmApplication implements CommandLineRunner
     private StageDataSourceRepository stageDsManager;
 
     @Autowired
-    private SchemaExtractor schemaExtractor;
-
-    @Autowired
     private MigrationDeployer deployer;
 
     @Autowired
@@ -40,8 +37,8 @@ public class TdmApplication implements CommandLineRunner
     public void run(String... args) throws Exception
     {
         StageContextHolder.setStageName("dev0");
-
-
+//
+//
 //        Catalog internalDb = schemaExtractor.extractDboTables(internalDs);
 //        Catalog externalDb = schemaExtractor.extractDboTables(stageDsManager.getCurrentStageDataSource());
 //

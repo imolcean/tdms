@@ -1,11 +1,16 @@
 package de.tu_berlin.imolcean.tdm.core;
 
-import de.tu_berlin.imolcean.tdm.api.dto.TableMetaDataDto;
-import de.tu_berlin.imolcean.tdm.core.controllers.mappers.TableMetaDataMapper;
+import de.tu_berlin.imolcean.tdm.api.exceptions.TableNotFoundException;
 import org.springframework.stereotype.Service;
-import schemacrawler.schemacrawler.SchemaCrawlerException;
+import schemacrawler.inclusionrule.RegularExpressionInclusionRule;
+import schemacrawler.schema.Catalog;
+import schemacrawler.schema.NamedObject;
+import schemacrawler.schema.Table;
+import schemacrawler.schemacrawler.*;
+import schemacrawler.utility.SchemaCrawlerUtility;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,19 +18,115 @@ import java.util.stream.Collectors;
 @Service
 public class SchemaService
 {
-    // TODO Cache Catalogs from SchemaExtractor
+    // TODO Cache
 
-    private final SchemaExtractor schemaExtractor;
-
-    public SchemaService(SchemaExtractor schemaExtractor)
+    public Catalog getSchema(DataSource ds) throws SQLException, SchemaCrawlerException
     {
-        this.schemaExtractor = schemaExtractor;
+        try(Connection connection = ds.getConnection())
+        {
+            LoadOptions load = LoadOptionsBuilder.builder()
+                    .withInfoLevel(InfoLevel.standard)
+                    .toOptions();
+
+            SchemaCrawlerOptions options = SchemaCrawlerOptionsBuilder.builder()
+                    .withLimitOptions(getDefaultLimitOptions(getFullSchemaName(connection)))
+                    .withLoadOptions(load)
+                    .toOptions();
+
+            return SchemaCrawlerUtility.getCatalog(connection, options);
+        }
     }
 
-    public List<TableMetaDataDto> getSchema(DataSource ds) throws SQLException, SchemaCrawlerException
+    public List<String> getTableNames(DataSource ds) throws Exception
     {
-        return schemaExtractor.extractDboTables(ds).getTables().stream()
-                .map(TableMetaDataMapper::toDto)
-                .collect(Collectors.toList());
+        try(Connection connection = ds.getConnection())
+        {
+            LoadOptions load = LoadOptionsBuilder.builder()
+                    .withInfoLevel(InfoLevel.minimum)
+                    .toOptions();
+
+            SchemaCrawlerOptions options = SchemaCrawlerOptionsBuilder.builder()
+                    .withLimitOptions(getDefaultLimitOptions(getFullSchemaName(connection)))
+                    .withLoadOptions(load)
+                    .toOptions();
+
+            Catalog catalog = SchemaCrawlerUtility.getCatalog(connection, options);
+
+            return catalog.getTables().stream()
+                    .map(NamedObject::getName)
+                    .collect(Collectors.toList());
+        }
+    }
+
+    public List<String> getOccupiedTableNames(DataSource ds) throws SQLException, SchemaCrawlerException
+    {
+        try(Connection connection = ds.getConnection())
+        {
+            LoadOptions load = LoadOptionsBuilder.builder()
+                    .withInfoLevel(InfoLevel.minimum)
+                    .loadRowCounts()
+                    .toOptions();
+
+            FilterOptions filter = FilterOptionsBuilder.builder()
+                    .noEmptyTables()
+                    .toOptions();
+
+            SchemaCrawlerOptions options = SchemaCrawlerOptionsBuilder.builder()
+                    .withLimitOptions(getDefaultLimitOptions(getFullSchemaName(connection)))
+                    .withLoadOptions(load)
+                    .withFilterOptions(filter)
+                    .toOptions();
+
+            Catalog catalog = SchemaCrawlerUtility.getCatalog(connection, options);
+
+            return catalog.getTables().stream()
+                    .map(NamedObject::getName)
+                    .collect(Collectors.toList());
+        }
+    }
+
+    public Table getTable(DataSource ds, String tableName) throws SQLException, SchemaCrawlerException
+    {
+        try(Connection connection = ds.getConnection())
+        {
+            LimitOptions limit = LimitOptionsBuilder.builder()
+                    .fromOptions(getDefaultLimitOptions(getFullSchemaName(connection)))
+                    .includeTables(new RegularExpressionInclusionRule(getFullTableName(connection, tableName)))
+                    .toOptions();
+
+            LoadOptions load = LoadOptionsBuilder.builder()
+                    .withInfoLevel(InfoLevel.standard)
+                    .toOptions();
+
+            SchemaCrawlerOptions options = SchemaCrawlerOptionsBuilder.builder()
+                    .withLimitOptions(limit)
+                    .withLoadOptions(load)
+                    .toOptions();
+
+            Catalog catalog = SchemaCrawlerUtility.getCatalog(connection, options);
+
+            return catalog.getTables().stream()
+                    .findFirst()
+                    .orElseThrow(() -> new TableNotFoundException(tableName));
+        }
+    }
+
+    private String getFullSchemaName(Connection connection) throws SQLException
+    {
+        return String.format("%s.%s", connection.getCatalog(), connection.getSchema());
+    }
+
+    private String getFullTableName(Connection connection, String tableName) throws SQLException
+    {
+        return String.format("%s.%s", getFullSchemaName(connection), tableName);
+    }
+
+    private LimitOptions getDefaultLimitOptions(String fullSchemaName)
+    {
+        return LimitOptionsBuilder.builder()
+                .includeSchemas(new RegularExpressionInclusionRule(fullSchemaName))
+                .includeTables(name -> !name.contains("sysdiagrams"))
+                .tableTypes("TABLE")
+                .toOptions();
     }
 }

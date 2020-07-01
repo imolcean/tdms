@@ -12,7 +12,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class ControllerExceptionHandler extends ResponseEntityExceptionHandler
 {
-    @ExceptionHandler({StageDataSourceNotFoundException.class})
+    @ExceptionHandler({StageDataSourceNotFoundException.class, TableNotFoundException.class})
     public final ResponseEntity<Object> handleEntityNotFound(Exception ex, WebRequest req)
     {
         return this.handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, req);
