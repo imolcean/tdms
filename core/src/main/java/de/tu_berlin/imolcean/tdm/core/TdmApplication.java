@@ -8,6 +8,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import schemacrawler.schema.*;
+import schemacrawler.utility.SchemaCrawlerUtility;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.List;
 
 @SpringBootApplication
 public class TdmApplication implements CommandLineRunner
@@ -18,6 +25,9 @@ public class TdmApplication implements CommandLineRunner
 
     @Autowired
     private StageDataSourceRepository stageDsManager;
+
+    @Autowired
+    private SchemaService schemaService;
 
     @Autowired
     private MigrationDeployer deployer;
@@ -57,6 +67,27 @@ public class TdmApplication implements CommandLineRunner
 
 
 //        deployer.deploy();
+
+
+//        Table table = schemaService.getTable(internalDs, "PERSON");
+//
+//        for(ForeignKey fk : table.getExportedForeignKeys())
+//        {
+//            System.out.println(fk.getFullName());
+//
+//            for(ForeignKeyColumnReference ref : fk.getColumnReferences())
+//            {
+//                Column pkCol = ref.getPrimaryKeyColumn();
+//                Column fkCol = ref.getForeignKeyColumn();
+//
+//                System.out.print(fkCol.getParent() + " . " + fkCol.getName());
+//                System.out.print("   ->   ");
+//                System.out.print(pkCol.getParent() + " . " + pkCol.getName());
+//                System.out.println();
+//            }
+//
+//            System.out.println("---");
+//        }
 
 
         System.out.println("DONE!");

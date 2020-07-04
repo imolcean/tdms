@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Queue;
 
 @Log
+@Deprecated
 public class TableContentResultSetHandler implements ResultSetHandler<TableContent>
 {
     @Override

@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class TableDataDto
+public class TableContentDto
 {
     private List<Object[]> data;
 }

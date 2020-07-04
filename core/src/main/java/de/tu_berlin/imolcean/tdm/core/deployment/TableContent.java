@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Queue;
 
 @Data
+@Deprecated
 class TableContent
 {
     private final Queue<Object[]> rows;
