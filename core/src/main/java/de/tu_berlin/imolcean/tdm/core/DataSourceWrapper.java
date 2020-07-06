@@ -13,7 +13,7 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Logger;
 
 @Getter
-public class DataSourceProxy implements DataSource
+public class DataSourceWrapper implements DataSource
 {
     @Getter(AccessLevel.NONE)
     private final DataSource ds;
@@ -26,12 +26,12 @@ public class DataSourceProxy implements DataSource
 
     private final String password;
 
-    public DataSourceProxy(StageDataSourceParams params)
+    public DataSourceWrapper(StageDataSourceParams params)
     {
         this(params.getDriverClassName(), params.getUrl(), params.getUsername(), params.getPassword());
     }
 
-    public DataSourceProxy(String driverClassName, String url, String username, String password)
+    public DataSourceWrapper(String driverClassName, String url, String username, String password)
     {
         this.driverClassName = driverClassName;
         this.url = url;

@@ -12,10 +12,10 @@ import java.util.Map;
 @Service
 public class DataSourceService
 {
-    private final DataSourceProxy internalDs;
+    private final DataSourceWrapper internalDs;
     private final StageDataSourceParamsRepository stageDsParamsRepo;
 
-    public DataSourceService(@Qualifier("InternalDataSource") DataSourceProxy internalDs,
+    public DataSourceService(@Qualifier("InternalDataSource") DataSourceWrapper internalDs,
                              StageDataSourceParamsRepository stageDsParamsRepo)
     {
         this.internalDs = internalDs;
@@ -23,23 +23,23 @@ public class DataSourceService
     }
 
     /**
-     * Provides access to the {@link DataSourceProxy} of the internal database.
+     * Provides access to the {@link DataSourceWrapper} of the internal database.
      *
-     * @return {@link DataSourceProxy} of the internal database
+     * @return {@link DataSourceWrapper} of the internal database
      */
-    public DataSourceProxy getInternalDataSource()
+    public DataSourceWrapper getInternalDataSource()
     {
         return internalDs;
     }
 
     /**
-     * Provides access to the {@link DataSourceProxy} of the staging environment
+     * Provides access to the {@link DataSourceWrapper} of the staging environment
      * that is currently selected in the {@link StageContextHolder}.
      *
-     * @throws StageDataSourceNotFoundException if no {@link DataSourceProxy} is configured for the given {@code name}
-     * @return {@link DataSourceProxy} of the currently selected staging environment
+     * @throws StageDataSourceNotFoundException if no {@link DataSourceWrapper} is configured for the given {@code name}
+     * @return {@link DataSourceWrapper} of the currently selected staging environment
      */
-    public DataSourceProxy getCurrentStageDataSource()
+    public DataSourceWrapper getCurrentStageDataSource()
     {
         String currentStage = StageContextHolder.getStageName();
 
@@ -52,48 +52,48 @@ public class DataSourceService
     }
 
     /**
-     * Provides access to the {@link DataSourceProxy} of the stage with the given {@code name}.
+     * Provides access to the {@link DataSourceWrapper} of the stage with the given {@code name}.
      *
      * @param name name of the stage
-     * @throws StageDataSourceNotFoundException if no {@link DataSourceProxy} is configured for the given {@code name}
-     * @return {@link DataSourceProxy} of the stage with the given {@code name}
+     * @throws StageDataSourceNotFoundException if no {@link DataSourceWrapper} is configured for the given {@code name}
+     * @return {@link DataSourceWrapper} of the stage with the given {@code name}
      */
-    public DataSourceProxy getStageDataSourceByName(String name)
+    public DataSourceWrapper getStageDataSourceByName(String name)
     {
         StageDataSourceParams params = stageDsParamsRepo.findByStageName(name)
                 .orElseThrow(() -> new StageDataSourceNotFoundException(name));
 
-        return new DataSourceProxy(params);
+        return new DataSourceWrapper(params);
     }
 
     /**
-     * Provides access to the {@link DataSourceProxy} objects of the
+     * Provides access to the {@link DataSourceWrapper} objects of the
      * staging environments that are currently known.
      *
      * @return {@link Map} of all staging environments that are known at the moment with names as keys
      */
-    public Map<String, DataSourceProxy> getAllStagesDataSources()
+    public Map<String, DataSourceWrapper> getAllStagesDataSources()
     {
-        Map<String, DataSourceProxy> map = new HashMap<>();
+        Map<String, DataSourceWrapper> map = new HashMap<>();
 
         for(StageDataSourceParams params : stageDsParamsRepo.findAll())
         {
-            map.put(params.getStageName(), new DataSourceProxy(params));
+            map.put(params.getStageName(), new DataSourceWrapper(params));
         }
 
         return map;
     }
 
     /**
-     * Returns {@link DataSourceProxy} that is associated with the specified {@code name}.
+     * Returns {@link DataSourceWrapper} that is associated with the specified {@code name}.
      *
-     * @param alias "internal" is an alias for the internal {@link DataSourceProxy},
-     *              "current" is an alias for the {@link DataSourceProxy} of the currently selected stage
+     * @param alias "internal" is an alias for the internal {@link DataSourceWrapper},
+     *              "current" is an alias for the {@link DataSourceWrapper} of the currently selected stage
      * @throws InvalidDataSourceAliasException if the provided {@code alias} is invalid
      * @throws NoCurrentStageException if {@code alias} is "current" but there is no stage selected
-     * @return {@link DataSourceProxy} associated with the {@code alias}
+     * @return {@link DataSourceWrapper} associated with the {@code alias}
      */
-    public DataSourceProxy getDataSourceByAlias(String alias)
+    public DataSourceWrapper getDataSourceByAlias(String alias)
     {
         switch(alias)
         {
@@ -110,9 +110,9 @@ public class DataSourceService
      * Stores parameters of a new stage.
      *
      * @param params {@link StageDataSourceParams} of the newly created stage
-     * @return {@link DataSourceProxy} of the newly created stage
+     * @return {@link DataSourceWrapper} of the newly created stage
      */
-    public DataSourceProxy storeStageDsParams(StageDataSourceParams params)
+    public DataSourceWrapper storeStageDsParams(StageDataSourceParams params)
     {
         if(params.getStageName().equalsIgnoreCase("internal") || params.getStageName().equalsIgnoreCase("current"))
         {
@@ -124,23 +124,23 @@ public class DataSourceService
             throw new StageDataSourceAlreadyExistsException(params.getStageName());
         }
 
-        return new DataSourceProxy(stageDsParamsRepo.save(params));
+        return new DataSourceWrapper(stageDsParamsRepo.save(params));
     }
 
     /**
      * Updates parameters of an existing stage.
      *
      * @param params new {@link StageDataSourceParams} for the stage specified in {@code StageDataSourceParams::stageName}
-     * @return new {@link DataSourceProxy} of the stage
+     * @return new {@link DataSourceWrapper} of the stage
      */
-    public DataSourceProxy updateStageDataSource(StageDataSourceParams params)
+    public DataSourceWrapper updateStageDataSource(StageDataSourceParams params)
     {
         StageDataSourceParams existing = stageDsParamsRepo.findByStageName(params.getStageName())
                 .orElseThrow(() -> new StageDataSourceNotFoundException(params.getStageName()));
 
         params.setId(existing.getId());
 
-        return new DataSourceProxy(stageDsParamsRepo.save(params));
+        return new DataSourceWrapper(stageDsParamsRepo.save(params));
     }
 
     /**

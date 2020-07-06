@@ -2,7 +2,7 @@ package de.tu_berlin.imolcean.tdm.core.controllers;
 
 import de.tu_berlin.imolcean.tdm.api.dto.DataSourceDto;
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoCurrentStageException;
-import de.tu_berlin.imolcean.tdm.core.DataSourceProxy;
+import de.tu_berlin.imolcean.tdm.core.DataSourceWrapper;
 import de.tu_berlin.imolcean.tdm.core.DataSourceService;
 import de.tu_berlin.imolcean.tdm.core.StageContextHolder;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.DataSourceMapper;
@@ -17,8 +17,6 @@ import java.util.stream.Collectors;
 @RequestMapping("api/datasource")
 public class DataSourceController
 {
-    // TODO Move some parts to StageController
-
     private final DataSourceService dsService;
 
     public DataSourceController(DataSourceService dsService)
@@ -87,42 +85,11 @@ public class DataSourceController
                         dsService.getStageDataSourceByName(stageName)));
     }
 
-    @GetMapping("/stage/current/name")
-    public ResponseEntity<String> getCurrentStageName()
-    {
-        String stageName = StageContextHolder.getStageName();
-
-        if(stageName == null)
-        {
-            throw new NoCurrentStageException();
-        }
-
-        return ResponseEntity.ok(stageName);
-    }
-
     @GetMapping("/stage/current")
     public ResponseEntity<DataSourceDto> getCurrentStage()
     {
         return ResponseEntity.ok(
                 DataSourceMapper.toDto(
                         dsService.getCurrentStageDataSource()));
-    }
-
-    @PutMapping("/stage/current")
-    public ResponseEntity<DataSourceDto> selectCurrentStage(@RequestHeader("TDM-Stage-Name") String stageName)
-    {
-        DataSourceProxy ds = dsService.getStageDataSourceByName(stageName);
-
-        StageContextHolder.setStageName(stageName);
-
-        return ResponseEntity.ok(DataSourceMapper.toDto(ds));
-    }
-
-    @PutMapping("/stage/current/clear")
-    public ResponseEntity<Void> clearCurrentStageSelection()
-    {
-        StageContextHolder.clearStageName();
-
-        return ResponseEntity.noContent().build();
     }
 }
