@@ -2,10 +2,8 @@ package de.tu_berlin.imolcean.tdm.core.deployment;
 
 import de.danielbechler.util.Strings;
 import de.tu_berlin.imolcean.tdm.core.DataSourceService;
-import de.tu_berlin.imolcean.tdm.core.StageDataSourceRepository;
 import de.tu_berlin.imolcean.tdm.core.utils.QueryLoader;
 import lombok.extern.java.Log;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
@@ -18,23 +16,15 @@ import java.util.*;
  *
  * Migration is the default deployment method for test data. It means that content of
  * every non-empty table in the TDMS will be copied into the external database.
- *
- * TODO Refactor to use DataSourceService
  */
 @Service
 @Log
 public class MigrationDeployer
 {
-    private final DataSource internalDs;
-    private final StageDataSourceRepository stageDsRepository;
     private final DataSourceService dsService;
 
-    public MigrationDeployer(@Qualifier("InternalDataSource") DataSource internalDs,
-                             StageDataSourceRepository stageDsRepository,
-                             DataSourceService dsService)
+    public MigrationDeployer(DataSourceService dsService)
     {
-        this.internalDs = internalDs;
-        this.stageDsRepository = stageDsRepository;
         this.dsService = dsService;
     }
 
@@ -57,7 +47,7 @@ public class MigrationDeployer
 
         log.info("Deploying test data into external DB");
 
-        try(Connection internalConnection = internalDs.getConnection();
+        try(Connection internalConnection = dsService.getInternalDataSource().getConnection();
             Connection externalConnection = externalDs.getConnection())
         {
             log.fine("Looking for non-empty tables in TDM");

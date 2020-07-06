@@ -3,7 +3,6 @@ package de.tu_berlin.imolcean.tdm.core;
 import de.tu_berlin.imolcean.tdm.core.deployment.MigrationDeployer;
 import org.pf4j.spring.SpringPluginManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -20,11 +19,7 @@ import java.util.List;
 public class TdmApplication implements CommandLineRunner
 {
     @Autowired
-    @Qualifier("InternalDataSource")
-    private DataSourceProxy internalDs;
-
-    @Autowired
-    private StageDataSourceRepository stageDsManager;
+    private DataSourceService dsService;
 
     @Autowired
     private SchemaService schemaService;
@@ -49,8 +44,8 @@ public class TdmApplication implements CommandLineRunner
         StageContextHolder.setStageName("dev0");
 //
 //
-//        Catalog internalDb = schemaExtractor.extractDboTables(internalDs);
-//        Catalog externalDb = schemaExtractor.extractDboTables(stageDsManager.getCurrentStageDataSource());
+//        Catalog internalDb = schemaExtractor.extractDboTables(dsService.getInternalDataSource());
+//        Catalog externalDb = schemaExtractor.extractDboTables(dsService.getCurrentStageDataSource());
 //
 //        final DiffNode diff = new SchemaDifferBuilder().build().compare(internalDb, externalDb);
 //        SchemaDiffPrinter.print(diff);

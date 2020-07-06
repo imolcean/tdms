@@ -6,6 +6,7 @@ import de.tu_berlin.imolcean.tdm.core.DataSourceProxy;
 import de.tu_berlin.imolcean.tdm.core.DataSourceService;
 import de.tu_berlin.imolcean.tdm.core.StageContextHolder;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.DataSourceMapper;
+import de.tu_berlin.imolcean.tdm.core.entities.StageDataSourceParams;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +17,8 @@ import java.util.stream.Collectors;
 @RequestMapping("api/datasource")
 public class DataSourceController
 {
+    // TODO Move some parts to StageController
+
     private final DataSourceService dsService;
 
     public DataSourceController(DataSourceService dsService)
@@ -36,11 +39,12 @@ public class DataSourceController
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> DataSourceMapper.toDto(entry.getValue())));
     }
 
-//    @PostMapping("/stages")
+    @PostMapping("/stages")
     public ResponseEntity<DataSourceDto> createStage(@RequestHeader("TDM-Stage-Name") String name,
                                                      @RequestBody DataSourceDto dto)
     {
-        DataSourceProxy ds = new DataSourceProxy(
+        StageDataSourceParams params = new StageDataSourceParams(
+                name,
                 dto.getDriverClassName(),
                 dto.getUrl(),
                 dto.getUser(),
@@ -48,14 +52,15 @@ public class DataSourceController
 
         return ResponseEntity.ok(
                 DataSourceMapper.toDto(
-                        dsService.createStageDataSource(name, ds)));
+                        dsService.storeStageDsParams(params)));
     }
 
-//    @PutMapping("/stage")
+    @PutMapping("/stage")
     public ResponseEntity<DataSourceDto> updateStage(@RequestHeader("TDM-Stage-Name") String name,
                                                      @RequestBody DataSourceDto dto)
     {
-        DataSourceProxy ds = new DataSourceProxy(
+        StageDataSourceParams params = new StageDataSourceParams(
+                name,
                 dto.getDriverClassName(),
                 dto.getUrl(),
                 dto.getUser(),
@@ -63,10 +68,10 @@ public class DataSourceController
 
         return ResponseEntity.ok(
                 DataSourceMapper.toDto(
-                        dsService.updateStageDataSource(name, ds)));
+                        dsService.updateStageDataSource(params)));
     }
 
-//    @DeleteMapping("/stage")
+    @DeleteMapping("/stage")
     public ResponseEntity<Void> deleteStage(@RequestHeader("TDM-Stage-Name") String name)
     {
         dsService.deleteStageDataSource(name);

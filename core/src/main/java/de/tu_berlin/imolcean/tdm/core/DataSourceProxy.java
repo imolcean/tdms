@@ -1,5 +1,6 @@
 package de.tu_berlin.imolcean.tdm.core;
 
+import de.tu_berlin.imolcean.tdm.core.entities.StageDataSourceParams;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -24,6 +25,11 @@ public class DataSourceProxy implements DataSource
     private final String username;
 
     private final String password;
+
+    public DataSourceProxy(StageDataSourceParams params)
+    {
+        this(params.getDriverClassName(), params.getUrl(), params.getUsername(), params.getPassword());
+    }
 
     public DataSourceProxy(String driverClassName, String url, String username, String password)
     {

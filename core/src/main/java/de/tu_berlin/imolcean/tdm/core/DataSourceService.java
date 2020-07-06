@@ -1,25 +1,25 @@
 package de.tu_berlin.imolcean.tdm.core;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.*;
+import de.tu_berlin.imolcean.tdm.core.entities.StageDataSourceParams;
+import de.tu_berlin.imolcean.tdm.core.repositories.StageDataSourceParamsRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import java.io.FileNotFoundException;
-import java.nio.file.FileAlreadyExistsException;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
 public class DataSourceService
 {
     private final DataSourceProxy internalDs;
-
-    private final StageDataSourceRepository stageDsRepository;
+    private final StageDataSourceParamsRepository stageDsParamsRepo;
 
     public DataSourceService(@Qualifier("InternalDataSource") DataSourceProxy internalDs,
-                             StageDataSourceRepository stageDsRepository)
+                             StageDataSourceParamsRepository stageDsParamsRepo)
     {
         this.internalDs = internalDs;
-        this.stageDsRepository = stageDsRepository;
+        this.stageDsParamsRepo = stageDsParamsRepo;
     }
 
     /**
@@ -60,8 +60,10 @@ public class DataSourceService
      */
     public DataSourceProxy getStageDataSourceByName(String name)
     {
-        return stageDsRepository.findByName(name)
+        StageDataSourceParams params = stageDsParamsRepo.findByStageName(name)
                 .orElseThrow(() -> new StageDataSourceNotFoundException(name));
+
+        return new DataSourceProxy(params);
     }
 
     /**
@@ -72,7 +74,14 @@ public class DataSourceService
      */
     public Map<String, DataSourceProxy> getAllStagesDataSources()
     {
-        return stageDsRepository.findAll();
+        Map<String, DataSourceProxy> map = new HashMap<>();
+
+        for(StageDataSourceParams params : stageDsParamsRepo.findAll())
+        {
+            map.put(params.getStageName(), new DataSourceProxy(params));
+        }
+
+        return map;
     }
 
     /**
@@ -98,62 +107,52 @@ public class DataSourceService
     }
 
     /**
-     * Creates a {@link DataSourceProxy} for a new stage called {@code name}.
+     * Stores parameters of a new stage.
      *
-     * @param name name of the new stage
-     * @param ds {@link DataSourceProxy} of the newly created stage
+     * @param params {@link StageDataSourceParams} of the newly created stage
      * @return {@link DataSourceProxy} of the newly created stage
      */
-    public DataSourceProxy createStageDataSource(String name, DataSourceProxy ds)
+    public DataSourceProxy storeStageDsParams(StageDataSourceParams params)
     {
-        if(name.equalsIgnoreCase("internal") || name.equalsIgnoreCase("current"))
+        if(params.getStageName().equalsIgnoreCase("internal") || params.getStageName().equalsIgnoreCase("current"))
         {
-            throw new InvalidStageNameException(name);
+            throw new InvalidStageNameException(params.getStageName());
         }
 
-        try
+        if(stageDsParamsRepo.existsByStageName(params.getStageName()))
         {
-            return stageDsRepository.createStageDataSource(name, ds);
+            throw new StageDataSourceAlreadyExistsException(params.getStageName());
         }
-        catch(FileAlreadyExistsException e)
-        {
-            throw new StageDataSourceAlreadyExistsException(name);
-        }
+
+        return new DataSourceProxy(stageDsParamsRepo.save(params));
     }
 
     /**
-     * Changes {@link DataSourceProxy} for the stage with the name {@code name}.
+     * Updates parameters of an existing stage.
      *
-     * @param name name of the stage
-     * @param ds new {@link DataSourceProxy} for the stage
+     * @param params new {@link StageDataSourceParams} for the stage specified in {@code StageDataSourceParams::stageName}
      * @return new {@link DataSourceProxy} of the stage
      */
-    public DataSourceProxy updateStageDataSource(String name, DataSourceProxy ds)
+    public DataSourceProxy updateStageDataSource(StageDataSourceParams params)
     {
-        try
-        {
-            return stageDsRepository.updateStageDataSource(name, ds);
-        }
-        catch(FileNotFoundException e)
-        {
-            throw new StageDataSourceNotFoundException(name);
-        }
+        StageDataSourceParams existing = stageDsParamsRepo.findByStageName(params.getStageName())
+                .orElseThrow(() -> new StageDataSourceNotFoundException(params.getStageName()));
+
+        params.setId(existing.getId());
+
+        return new DataSourceProxy(stageDsParamsRepo.save(params));
     }
 
     /**
-     * Removes {@link DataSourceProxy} for the stage with the specified {@code name}.
+     * Removes data source parameters for the stage with the specified {@code name}.
      *
      * @param name name of the stage
      */
     public void deleteStageDataSource(String name)
     {
-        try
-        {
-            stageDsRepository.deleteStageDataSource(name);
-        }
-        catch(FileNotFoundException e)
-        {
-            throw new StageDataSourceNotFoundException(name);
-        }
+        StageDataSourceParams params = stageDsParamsRepo.findByStageName(name)
+                .orElseThrow(() -> new StageDataSourceNotFoundException(name));
+
+        stageDsParamsRepo.delete(params);
     }
 }
