@@ -22,8 +22,8 @@ public class StageController
         return ResponseEntity.ok(stageName);
     }
 
-    @PutMapping("/current")
-    public ResponseEntity<Void> setCurrentStage(@RequestHeader("TDM-Stage-Name") String stageName)
+    @PutMapping("/current/{name}")
+    public ResponseEntity<Void> setCurrentStage(@PathVariable("name") String stageName)
     {
         StageContextHolder.setStageName(stageName);
 

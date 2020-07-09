@@ -20,16 +20,14 @@ public class SchemaController
 
     private final SchemaService schemaService;
 
-    // TODO Place TDM-Datasource-Alias in path instead of HTTP Header?
-
     public SchemaController(DataSourceService dsService, SchemaService schemaService)
     {
         this.dsService = dsService;
         this.schemaService = schemaService;
     }
 
-    @GetMapping("/")
-    public ResponseEntity<List<TableMetaDataDto>> getSchema(@RequestHeader("TDM-Datasource-Alias") String alias)
+    @GetMapping("/{alias}")
+    public ResponseEntity<List<TableMetaDataDto>> getSchema(@PathVariable("alias") String alias)
             throws SQLException, SchemaCrawlerException
     {
         List<TableMetaDataDto> list = schemaService
@@ -49,8 +47,8 @@ public class SchemaController
         return null;
     }
 
-    @GetMapping("/tables")
-    public ResponseEntity<List<String>> getTableNames(@RequestHeader("TDM-Datasource-Alias") String alias)
+    @GetMapping("/tables/{alias}")
+    public ResponseEntity<List<String>> getTableNames(@PathVariable("alias") String alias)
             throws Exception
     {
         return ResponseEntity.ok(
@@ -58,17 +56,17 @@ public class SchemaController
                         dsService.getDataSourceByAlias(alias)));
     }
 
-    @GetMapping("/tables/occupied")
-    public ResponseEntity<List<String>> getOccupiedTableNames(@RequestHeader("TDM-Datasource-Alias") String alias) throws Exception
+    @GetMapping("/tables/{alias}/occupied")
+    public ResponseEntity<List<String>> getOccupiedTableNames(@PathVariable("alias") String alias) throws Exception
     {
         return ResponseEntity.ok(
                 schemaService.getOccupiedTableNames(
                         dsService.getDataSourceByAlias(alias)));
     }
 
-    @GetMapping("/table")
-    public ResponseEntity<TableMetaDataDto> getTable(@RequestHeader("TDM-Datasource-Alias") String alias,
-                                                     @RequestHeader("TDM-Table-Name") String tableName) throws SQLException, SchemaCrawlerException
+    @GetMapping("/table/{alias}/{table}")
+    public ResponseEntity<TableMetaDataDto> getTable(@PathVariable("alias") String alias,
+                                                     @PathVariable("table") String tableName) throws SQLException, SchemaCrawlerException
     {
         return ResponseEntity.ok(
                 TableMetaDataMapper.toDto(

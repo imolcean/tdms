@@ -4,6 +4,6 @@ public class InvalidStageNameException extends RuntimeException
 {
     public InvalidStageNameException(String stageName)
     {
-        super("'%s' is not a valid stage name");
+        super(String.format("'%s' is not a valid stage name", stageName));
     }
 }

@@ -13,7 +13,7 @@ public class DataSourceDto
 
     private String url;
 
-    private String user;
+    private String username;
 
     private String password;
 }

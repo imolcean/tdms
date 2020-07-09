@@ -112,6 +112,8 @@ public class DataSourceService
         {
             case "internal":
                 return getInternalDataSource();
+            case "import":
+                return getImportDataSource();
             case "current":
                 return getCurrentStageDataSource();
             default:
@@ -127,7 +129,9 @@ public class DataSourceService
      */
     public DataSourceWrapper storeStageDsParams(StageDataSourceParams params)
     {
-        if(params.getStageName().equalsIgnoreCase("internal") || params.getStageName().equalsIgnoreCase("current"))
+        if(params.getStageName().equalsIgnoreCase("internal")
+                || params.getStageName().equalsIgnoreCase("import")
+                || params.getStageName().equalsIgnoreCase("current"))
         {
             throw new InvalidStageNameException(params.getStageName());
         }

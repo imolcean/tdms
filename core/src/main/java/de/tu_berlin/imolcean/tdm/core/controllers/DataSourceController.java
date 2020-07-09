@@ -37,15 +37,15 @@ public class DataSourceController
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> DataSourceMapper.toDto(entry.getValue())));
     }
 
-    @PostMapping("/stages")
-    public ResponseEntity<DataSourceDto> createStage(@RequestHeader("TDM-Stage-Name") String name,
+    @PostMapping("/stages/{name}")
+    public ResponseEntity<DataSourceDto> createStage(@PathVariable("name") String name,
                                                      @RequestBody DataSourceDto dto)
     {
         StageDataSourceParams params = new StageDataSourceParams(
                 name,
                 dto.getDriverClassName(),
                 dto.getUrl(),
-                dto.getUser(),
+                dto.getUsername(),
                 dto.getPassword());
 
         return ResponseEntity.ok(
@@ -53,15 +53,15 @@ public class DataSourceController
                         dsService.storeStageDsParams(params)));
     }
 
-    @PutMapping("/stage")
-    public ResponseEntity<DataSourceDto> updateStage(@RequestHeader("TDM-Stage-Name") String name,
+    @PutMapping("/stage/{name}")
+    public ResponseEntity<DataSourceDto> updateStage(@PathVariable("name") String name,
                                                      @RequestBody DataSourceDto dto)
     {
         StageDataSourceParams params = new StageDataSourceParams(
                 name,
                 dto.getDriverClassName(),
                 dto.getUrl(),
-                dto.getUser(),
+                dto.getUsername(),
                 dto.getPassword());
 
         return ResponseEntity.ok(
@@ -69,16 +69,16 @@ public class DataSourceController
                         dsService.updateStageDataSource(params)));
     }
 
-    @DeleteMapping("/stage")
-    public ResponseEntity<Void> deleteStage(@RequestHeader("TDM-Stage-Name") String name)
+    @DeleteMapping("/stage/{name}")
+    public ResponseEntity<Void> deleteStage(@PathVariable("name") String name)
     {
         dsService.deleteStageDataSource(name);
 
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/stage")
-    public ResponseEntity<DataSourceDto> getStage(@RequestHeader("TDM-Stage-Name") String stageName)
+    @GetMapping("/stage/{name}")
+    public ResponseEntity<DataSourceDto> getStage(@PathVariable("name") String stageName)
     {
         return ResponseEntity.ok(
                 DataSourceMapper.toDto(

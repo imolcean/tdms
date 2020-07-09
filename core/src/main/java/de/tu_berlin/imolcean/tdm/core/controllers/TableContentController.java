@@ -30,9 +30,9 @@ public class TableContentController
         this.tableContentService = tableContentService;
     }
 
-    @GetMapping("/")
-    public ResponseEntity<TableContentDto> getTableContent(@RequestHeader("TDM-Datasource-Alias") String alias,
-                                                           @RequestHeader("TDM-Table-Name") String tableName) throws SQLException, SchemaCrawlerException
+    @GetMapping("/{alias}/{table}")
+    public ResponseEntity<TableContentDto> getTableContent(@PathVariable("alias") String alias,
+                                                           @PathVariable("table") String tableName) throws SQLException, SchemaCrawlerException
     {
         DataSource ds = dsService.getDataSourceByAlias(alias);
         Table table = schemaService.getTable(ds, tableName);
@@ -42,9 +42,9 @@ public class TableContentController
                         tableContentService.getTableContent(ds, table)));
     }
 
-    @PostMapping("/")
-    public ResponseEntity<Void> insertRow(@RequestHeader("TDM-Datasource-Alias") String alias,
-                                          @RequestHeader("TDM-Table-Name") String tableName,
+    @PostMapping("/{alias}/{table}")
+    public ResponseEntity<Void> insertRow(@PathVariable("alias") String alias,
+                                          @PathVariable("table") String tableName,
                                           @RequestBody Object[] row) throws SQLException, SchemaCrawlerException
     {
         DataSource ds = dsService.getDataSourceByAlias(alias);
@@ -55,10 +55,10 @@ public class TableContentController
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/")
-    public ResponseEntity<Void> updateRow(@RequestHeader("TDM-Datasource-Alias") String alias,
-                                          @RequestHeader("TDM-Table-Name") String tableName,
-                                          @RequestHeader("TDM-Row-Index") Integer rowIndex,
+    @PutMapping("/{alias}/{table}/{row}")
+    public ResponseEntity<Void> updateRow(@PathVariable("alias") String alias,
+                                          @PathVariable("table") String tableName,
+                                          @PathVariable("row") Integer rowIndex,
                                           @RequestBody Object[] row) throws SQLException, SchemaCrawlerException
     {
         DataSource ds = dsService.getDataSourceByAlias(alias);
@@ -69,10 +69,10 @@ public class TableContentController
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/")
-    public ResponseEntity<Void> deleteRowByIndex(@RequestHeader("TDM-Datasource-Alias") String alias,
-                                                 @RequestHeader("TDM-Table-Name") String tableName,
-                                                 @RequestHeader("TDM-Row-Index") Integer rowIndex) throws SQLException, SchemaCrawlerException
+    @DeleteMapping("/{alias}/{table}/{row}")
+    public ResponseEntity<Void> deleteRowByIndex(@PathVariable("alias") String alias,
+                                                 @PathVariable("table") String tableName,
+                                                 @PathVariable("row") Integer rowIndex) throws SQLException, SchemaCrawlerException
     {
         DataSource ds = dsService.getDataSourceByAlias(alias);
         Table table = schemaService.getTable(ds, tableName);
