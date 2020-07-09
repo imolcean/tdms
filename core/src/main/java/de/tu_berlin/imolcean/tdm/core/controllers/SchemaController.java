@@ -5,10 +5,7 @@ import de.tu_berlin.imolcean.tdm.core.DataSourceService;
 import de.tu_berlin.imolcean.tdm.core.SchemaService;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.TableMetaDataMapper;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import schemacrawler.schemacrawler.SchemaCrawlerException;
 
 import java.sql.SQLException;
@@ -22,6 +19,8 @@ public class SchemaController
     private final DataSourceService dsService;
 
     private final SchemaService schemaService;
+
+    // TODO Place TDM-Datasource-Alias in path instead of HTTP Header?
 
     public SchemaController(DataSourceService dsService, SchemaService schemaService)
     {
@@ -40,6 +39,14 @@ public class SchemaController
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(list);
+    }
+
+    // TODO Updater id as argument
+    @PutMapping("/internal")
+    public ResponseEntity<List<TableMetaDataDto>> updateSchemaInternal()
+    {
+        // TODO
+        return null;
     }
 
     @GetMapping("/tables")

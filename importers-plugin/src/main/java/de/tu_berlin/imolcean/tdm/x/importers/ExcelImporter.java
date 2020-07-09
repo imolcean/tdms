@@ -10,10 +10,12 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.pf4j.Extension;
 import schemacrawler.schema.Table;
 
+import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -22,21 +24,21 @@ import java.util.Iterator;
 public class ExcelImporter implements SchemaAwareImporter
 {
     @Override
-    public void importPath(Path path, Connection db, Collection<Table> tables) throws IOException
+    public void importPath(Path path, DataSource ds, Collection<Table> tables) throws IOException, SQLException
     {
         log.info("Importing " + path.toString());
 
         int sheetsImported;
 
-        try
+        try(Connection connection = ds.getConnection())
         {
             if(path.toFile().isDirectory())
             {
-                sheetsImported = importDirectory(path, db, tables);
+                sheetsImported = importDirectory(path, connection, tables);
             }
             else
             {
-                sheetsImported = importFile(path, db, tables);
+                sheetsImported = importFile(path, connection, tables);
             }
         }
         catch(InvalidFormatException e)

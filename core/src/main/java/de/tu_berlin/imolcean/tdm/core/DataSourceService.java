@@ -13,12 +13,15 @@ import java.util.Map;
 public class DataSourceService
 {
     private final DataSourceWrapper internalDs;
+    private final DataSourceWrapper importDs;
     private final StageDataSourceParamsRepository stageDsParamsRepo;
 
     public DataSourceService(@Qualifier("InternalDataSource") DataSourceWrapper internalDs,
+                             @Qualifier("ImportDataSource") DataSourceWrapper importDs,
                              StageDataSourceParamsRepository stageDsParamsRepo)
     {
         this.internalDs = internalDs;
+        this.importDs = importDs;
         this.stageDsParamsRepo = stageDsParamsRepo;
     }
 
@@ -30,6 +33,16 @@ public class DataSourceService
     public DataSourceWrapper getInternalDataSource()
     {
         return internalDs;
+    }
+
+    /**
+     * Provides access to the {@link DataSourceWrapper} of the import database.
+     *
+     * @return {@link DataSourceWrapper} of the import database
+     */
+    public DataSourceWrapper getImportDataSource()
+    {
+        return importDs;
     }
 
     /**

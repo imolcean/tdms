@@ -1,6 +1,8 @@
 package de.tu_berlin.imolcean.tdm.core;
 
+import de.danielbechler.diff.node.DiffNode;
 import de.tu_berlin.imolcean.tdm.core.deployment.MigrationDeployer;
+import de.tu_berlin.imolcean.tdm.core.utils.SchemaDiffPrinter;
 import org.pf4j.spring.SpringPluginManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,13 +44,13 @@ public class TdmApplication implements CommandLineRunner
     public void run(String... args) throws Exception
     {
         StageContextHolder.setStageName("dev0");
-//
-//
-//        Catalog internalDb = schemaExtractor.extractDboTables(dsService.getInternalDataSource());
-//        Catalog externalDb = schemaExtractor.extractDboTables(dsService.getCurrentStageDataSource());
-//
-//        final DiffNode diff = new SchemaDifferBuilder().build().compare(internalDb, externalDb);
-//        SchemaDiffPrinter.print(diff);
+
+
+        Catalog internalDb = schemaService.getSchema(dsService.getInternalDataSource());
+        Catalog importDb = schemaService.getSchema(dsService.getImportDataSource());
+
+        final DiffNode diff = new SchemaDifferBuilder().build().compare(importDb, internalDb);
+        SchemaDiffPrinter.print(diff);
 
 
 //        SchemaAwareImporter excelImporter = plugins.getExtensions(SchemaAwareImporter.class).stream()
