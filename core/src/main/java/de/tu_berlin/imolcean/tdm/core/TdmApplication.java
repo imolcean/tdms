@@ -1,6 +1,7 @@
 package de.tu_berlin.imolcean.tdm.core;
 
 import de.danielbechler.diff.node.DiffNode;
+import de.tu_berlin.imolcean.tdm.api.plugins.SchemaUpdater;
 import de.tu_berlin.imolcean.tdm.core.deployment.MigrationDeployer;
 import de.tu_berlin.imolcean.tdm.core.utils.SchemaDiffPrinter;
 import org.pf4j.spring.SpringPluginManager;
@@ -53,14 +54,12 @@ public class TdmApplication implements CommandLineRunner
 //        SchemaDiffPrinter.print(diff);
 
 
-//        SchemaAwareImporter excelImporter = plugins.getExtensions(SchemaAwareImporter.class).stream()
+
+//        SchemaUpdater liquibase = plugins.getExtensions(SchemaUpdater.class).stream()
 //                .findFirst()
 //                .orElseThrow();
 //
-//        try(Connection connection = internalDs.getConnection())
-//        {
-//            excelImporter.importPath(Path.of(excelImportDir), connection, schemaExtractor.extractDboTables(internalDs).getTables());
-//        }
+//        liquibase.updateSchema(dsService.getInternalDataSource());
 
 
 //        deployer.deploy();

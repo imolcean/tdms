@@ -5,6 +5,7 @@ import schemacrawler.schema.Column;
 import schemacrawler.schema.Table;
 import schemacrawler.schema.View;
 
+@Deprecated
 public class SchemaPrinter
 {
     public static void printCompact(Catalog catalog)

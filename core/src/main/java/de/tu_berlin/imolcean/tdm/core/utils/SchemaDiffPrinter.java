@@ -5,6 +5,7 @@ import schemacrawler.schema.Column;
 import schemacrawler.schema.DatabaseObject;
 import schemacrawler.schema.Table;
 
+@Deprecated
 public class SchemaDiffPrinter
 {
     public static void print(DiffNode diff)

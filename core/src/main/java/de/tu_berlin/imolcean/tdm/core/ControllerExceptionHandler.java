@@ -17,7 +17,8 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler
     @ExceptionHandler({
             StageDataSourceNotFoundException.class,
             TableNotFoundException.class,
-            TableContentRowIndexOutOfBoundsException.class
+            TableContentRowIndexOutOfBoundsException.class,
+            SchemaUpdaterNotFoundException.class
     })
     public final ResponseEntity<Object> handleEntityNotFound(Exception ex, WebRequest req)
     {
@@ -43,7 +44,8 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler
     }
 
     @ExceptionHandler({
-            NoCurrentStageException.class
+            NoCurrentStageException.class,
+            NoSchemaUpdaterSelectedException.class
     })
     public final ResponseEntity<Object> handleInvalidState(Exception ex, WebRequest req)
     {
@@ -51,9 +53,9 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler
     }
 
     @ExceptionHandler({
-            SQLException.class
+            Exception.class
     })
-    public final ResponseEntity<Object> handleSQLException(Exception ex, WebRequest req)
+    public final ResponseEntity<Object> handleBrutalExceptions(Exception ex, WebRequest req)
     {
         return this.handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, req);
     }

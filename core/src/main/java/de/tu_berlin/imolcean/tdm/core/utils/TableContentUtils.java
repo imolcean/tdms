@@ -2,6 +2,7 @@ package de.tu_berlin.imolcean.tdm.core.utils;
 
 import schemacrawler.schema.Table;
 
+@Deprecated
 public class TableContentUtils
 {
     public static int getColumnIndex(Table table, String columnName)

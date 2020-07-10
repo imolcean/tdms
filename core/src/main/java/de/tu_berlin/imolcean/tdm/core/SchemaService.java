@@ -1,6 +1,7 @@
 package de.tu_berlin.imolcean.tdm.core;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.TableNotFoundException;
+import de.tu_berlin.imolcean.tdm.api.plugins.SchemaUpdater;
 import org.springframework.stereotype.Service;
 import schemacrawler.inclusionrule.RegularExpressionInclusionRule;
 import schemacrawler.schema.Catalog;
