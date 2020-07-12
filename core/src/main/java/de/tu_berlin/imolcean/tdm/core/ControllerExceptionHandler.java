@@ -45,7 +45,8 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler
 
     @ExceptionHandler({
             NoCurrentStageException.class,
-            NoSchemaUpdaterSelectedException.class
+            NoSchemaUpdaterSelectedException.class,
+            IllegalStateException.class
     })
     public final ResponseEntity<Object> handleInvalidState(Exception ex, WebRequest req)
     {
