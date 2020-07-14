@@ -1,5 +1,6 @@
 package de.tu_berlin.imolcean.tdm.core.controllers;
 
+import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateDto;
 import de.tu_berlin.imolcean.tdm.api.dto.TableMetaDataDto;
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoSchemaUpdaterSelectedException;
 import de.tu_berlin.imolcean.tdm.api.plugins.SchemaUpdater;
@@ -51,7 +52,7 @@ public class SchemaController
         SchemaUpdater updater = schemaUpdaterService.getSelectedSchemaUpdater()
                 .orElseThrow(NoSchemaUpdaterSelectedException::new);
 
-        updater.initSchemaUpdate(dsService.getInternalDataSource(), dsService.getTmpDataSource());
+        SchemaUpdateDto schemaUpdateDto = updater.initSchemaUpdate(dsService.getInternalDataSource(), dsService.getTmpDataSource());
 
         return ResponseEntity.noContent().build();
     }

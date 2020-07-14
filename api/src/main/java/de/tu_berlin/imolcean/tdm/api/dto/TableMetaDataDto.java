@@ -14,21 +14,30 @@ public class TableMetaDataDto
     public static class Column
     {
         private String name;
-
         private String type;
-
         private boolean nullable;
+    }
 
-        private boolean primaryKey;
+    @Data
+    @AllArgsConstructor
+    public static class PrimaryKey
+    {
+        private String name;
+        private List<String> columnNames;
+    }
 
-        // TODO FK
+    @Data
+    @AllArgsConstructor
+    public static class ForeignKey
+    {
+        private String name;
+        private List<String> columnNames;
+        private String pkTableName;
+        private List<String> pkColumnNames;
     }
 
     private String name;
-
     private List<Column> columns;
-
-    // TODO PK
-
-    // TODO FK
+    private PrimaryKey pk;
+    private List<ForeignKey> fks;
 }
