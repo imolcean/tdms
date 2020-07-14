@@ -2,6 +2,7 @@ package de.tu_berlin.imolcean.tdm.core;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.SchemaUpdaterNotFoundException;
 import de.tu_berlin.imolcean.tdm.api.plugins.SchemaUpdater;
+import lombok.extern.java.Log;
 import org.pf4j.spring.SpringPluginManager;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Log
 public class SchemaUpdaterService
 {
     SpringPluginManager plugins;
@@ -54,6 +56,8 @@ public class SchemaUpdaterService
                 .filter(updater -> updater.getClass().getName().equalsIgnoreCase(className))
                 .findFirst()
                 .orElseThrow(() -> new SchemaUpdaterNotFoundException(className));
+
+        log.fine("Selected SchemaUpdater changed to " + className);
     }
 
     /**
@@ -62,5 +66,7 @@ public class SchemaUpdaterService
     public void clearSelection()
     {
         selected = null;
+
+        log.fine("Selection of SchemaUpdater cleared");
     }
 }

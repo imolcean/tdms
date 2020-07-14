@@ -45,16 +45,20 @@ public class SchemaController
         return ResponseEntity.ok(list);
     }
 
-    @PutMapping("/internal")
-    public ResponseEntity<Void> updateSchemaInternal() throws Exception
+    @PutMapping("/internal/update/init")
+    public ResponseEntity<Void> initUpdateSchemaInternal() throws Exception
     {
         SchemaUpdater updater = schemaUpdaterService.getSelectedSchemaUpdater()
                 .orElseThrow(NoSchemaUpdaterSelectedException::new);
 
-        updater.updateSchema(dsService.getInternalDataSource());
+        updater.initSchemaUpdate(dsService.getInternalDataSource(), dsService.getTmpDataSource());
 
         return ResponseEntity.noContent().build();
     }
+
+//    public ResponseEntity<Void> commitUpdateSchemaInternal()
+//    {
+//    }
 
     @GetMapping("/tables/{alias}")
     public ResponseEntity<List<String>> getTableNames(@PathVariable("alias") String alias)

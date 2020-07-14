@@ -13,15 +13,15 @@ import java.util.Map;
 public class DataSourceService
 {
     private final DataSourceWrapper internalDs;
-    private final DataSourceWrapper importDs;
+    private final DataSourceWrapper tmpDs;
     private final StageDataSourceParamsRepository stageDsParamsRepo;
 
     public DataSourceService(@Qualifier("InternalDataSource") DataSourceWrapper internalDs,
-                             @Qualifier("ImportDataSource") DataSourceWrapper importDs,
+                             @Qualifier("ImportDataSource") DataSourceWrapper tmpDs,
                              StageDataSourceParamsRepository stageDsParamsRepo)
     {
         this.internalDs = internalDs;
-        this.importDs = importDs;
+        this.tmpDs = tmpDs;
         this.stageDsParamsRepo = stageDsParamsRepo;
     }
 
@@ -40,9 +40,9 @@ public class DataSourceService
      *
      * @return {@link DataSourceWrapper} of the import database
      */
-    public DataSourceWrapper getImportDataSource()
+    public DataSourceWrapper getTmpDataSource()
     {
-        return importDs;
+        return tmpDs;
     }
 
     /**
@@ -113,7 +113,7 @@ public class DataSourceService
             case "internal":
                 return getInternalDataSource();
             case "import":
-                return getImportDataSource();
+                return getTmpDataSource();
             case "current":
                 return getCurrentStageDataSource();
             default:

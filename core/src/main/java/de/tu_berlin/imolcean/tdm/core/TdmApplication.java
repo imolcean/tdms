@@ -1,7 +1,6 @@
 package de.tu_berlin.imolcean.tdm.core;
 
 import de.danielbechler.diff.node.DiffNode;
-import de.tu_berlin.imolcean.tdm.api.plugins.SchemaUpdater;
 import de.tu_berlin.imolcean.tdm.core.deployment.MigrationDeployer;
 import de.tu_berlin.imolcean.tdm.core.utils.SchemaDiffPrinter;
 import org.pf4j.spring.SpringPluginManager;
@@ -28,6 +27,9 @@ public class TdmApplication implements CommandLineRunner
     private SchemaService schemaService;
 
     @Autowired
+    private SchemaUpdaterService schemaUpdaterService;
+
+    @Autowired
     private MigrationDeployer deployer;
 
     @Autowired
@@ -45,6 +47,7 @@ public class TdmApplication implements CommandLineRunner
     public void run(String... args) throws Exception
     {
         StageContextHolder.setStageName("dev0");
+        schemaUpdaterService.selectSchemaUpdater("de.tu_berlin.imolcean.tdm.x.updaters.LiquibaseUpdater");
 
 
 //        Catalog internalDb = schemaService.getSchema(dsService.getInternalDataSource());
