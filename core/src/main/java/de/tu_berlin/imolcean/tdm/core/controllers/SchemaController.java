@@ -46,6 +46,15 @@ public class SchemaController
         return ResponseEntity.ok(list);
     }
 
+    @GetMapping("/internal/update")
+    public ResponseEntity<Boolean> isSchemaUpdateInProgress()
+    {
+        SchemaUpdater updater = schemaUpdaterService.getSelectedSchemaUpdater()
+                .orElseThrow(NoSchemaUpdaterSelectedException::new);
+
+        return ResponseEntity.ok(updater.isUpdateInProgress());
+    }
+
     @PutMapping("/internal/update/init")
     public ResponseEntity<SchemaUpdateDto> initUpdateSchemaInternal() throws Exception
     {

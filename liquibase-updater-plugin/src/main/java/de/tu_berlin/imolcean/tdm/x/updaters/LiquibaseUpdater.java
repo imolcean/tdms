@@ -21,6 +21,8 @@ import org.pf4j.Extension;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 // TODO Pack Liquibase.Core in the plugin jar
@@ -48,8 +50,6 @@ public class LiquibaseUpdater implements SchemaUpdater
     @Override
     public SchemaUpdateDto initSchemaUpdate(DataSource internalDs, DataSource tmpDs) throws Exception
     {
-        log.fine("Initialising schema update");
-
         if(changelogPath == null)
         {
             throw new IllegalStateException("Changelog path is not configured");
@@ -59,6 +59,8 @@ public class LiquibaseUpdater implements SchemaUpdater
         {
             throw new IllegalStateException("Another schema update is already in progress");
         }
+
+        log.info("Initialising schema update");
 
         this.internalDs = internalDs;
         this.tmpDs = tmpDs;
@@ -84,19 +86,18 @@ public class LiquibaseUpdater implements SchemaUpdater
                 {
                     System.out.println(String.format("%s (%s)", obj.getName(), obj.getObjectTypeName()));
                 }
+
+                log.info("Update initialised");
+
+                return diff2SchemaUpdateDto(diff);
             }
         }
-
-        log.fine("Update initialised");
-
-        // TODO Return SchemaUpdateDto
-        return null;
     }
 
     @Override
     public void commitSchemaUpdate(SchemaUpdateDto update)
     {
-        log.fine("Committing schema update");
+        log.info("Committing schema update");
 
         // TODO Copy data from intermediate db into ds for every table with empty diff
         // TODO Perform SQL from SchemaUpdateDto
@@ -104,7 +105,7 @@ public class LiquibaseUpdater implements SchemaUpdater
         this.tmpDs = null;
         this.internalDs = null;
 
-        log.fine("Schema update committed");
+        log.info("Schema update committed");
     }
 
     @Override
@@ -112,10 +113,10 @@ public class LiquibaseUpdater implements SchemaUpdater
     {
         if(!isUpdateInProgress())
         {
-            return;
+            throw new IllegalStateException("There is no schema update in progress currently");
         }
 
-        log.fine("Cancelling schema update");
+        log.info("Cancelling schema update");
 
         try(Connection connection = tmpDs.getConnection())
         {
@@ -130,12 +131,36 @@ public class LiquibaseUpdater implements SchemaUpdater
         this.tmpDs = null;
         this.internalDs = null;
 
-        log.fine("Schema update cancelled");
+        log.info("Schema update cancelled");
     }
 
     @Override
     public boolean isUpdateInProgress()
     {
         return tmpDs != null && internalDs != null;
+    }
+
+    private SchemaUpdateDto diff2SchemaUpdateDto(DiffResult diff)
+    {
+        List<String> addedTables = new ArrayList<>();
+        List<String> changedTables = new ArrayList<>();
+        List<String> deletedTables = new ArrayList<>();
+
+        for(DatabaseObject obj : diff.getUnexpectedObjects(Table.class))
+        {
+            addedTables.add(obj.getName());
+        }
+
+        for(DatabaseObject obj : diff.getChangedObjects(Table.class).keySet())
+        {
+            changedTables.add(obj.getName());
+        }
+
+        for(DatabaseObject obj : diff.getMissingObjects(Table.class))
+        {
+            deletedTables.add(obj.getName());
+        }
+
+        return new SchemaUpdateDto(addedTables, changedTables, deletedTables);
     }
 }
