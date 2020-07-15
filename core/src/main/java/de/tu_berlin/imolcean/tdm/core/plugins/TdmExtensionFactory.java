@@ -3,7 +3,7 @@ package de.tu_berlin.imolcean.tdm.core.plugins;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
 import org.pf4j.PluginManager;
-import org.pf4j.spring.SpringExtensionFactory;
+import org.pf4j.spring.SingletonSpringExtensionFactory;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -12,7 +12,7 @@ import java.nio.file.Path;
 import java.util.Properties;
 
 @Log
-public class TdmExtensionFactory extends SpringExtensionFactory
+public class TdmExtensionFactory extends SingletonSpringExtensionFactory
 {
     private final Path configsRoot;
 

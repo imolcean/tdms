@@ -6,6 +6,7 @@ import org.pf4j.ExtensionPoint;
 import javax.sql.DataSource;
 
 // TODO JavaDoc
+// TODO Throw SchemaUpdateException
 public interface SchemaUpdater extends ExtensionPoint
 {
     /**
@@ -16,5 +17,9 @@ public interface SchemaUpdater extends ExtensionPoint
      */
     SchemaUpdateDto initSchemaUpdate(DataSource internalDs, DataSource tmpDs) throws Exception;
 
-    void commitSchemaUpdate(DataSource internalDs, DataSource tmpDs, SchemaUpdateDto update);
+    void commitSchemaUpdate(SchemaUpdateDto update);
+
+    void cancelSchemaUpdate() throws Exception;
+
+    boolean isUpdateInProgress();
 }
