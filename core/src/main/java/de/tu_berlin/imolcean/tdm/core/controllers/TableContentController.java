@@ -2,7 +2,7 @@ package de.tu_berlin.imolcean.tdm.core.controllers;
 
 import de.tu_berlin.imolcean.tdm.api.dto.TableContentDto;
 import de.tu_berlin.imolcean.tdm.core.DataSourceService;
-import de.tu_berlin.imolcean.tdm.core.SchemaService;
+import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.core.TableContentService;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.TableContentMapper;
 import org.springframework.http.ResponseEntity;
@@ -23,10 +23,10 @@ public class TableContentController
 
     private final TableContentService tableContentService;
 
-    public TableContentController(DataSourceService dsService, SchemaService schemaService, TableContentService tableContentService)
+    public TableContentController(DataSourceService dsService, SchemaService SchemaService, TableContentService tableContentService)
     {
         this.dsService = dsService;
-        this.schemaService = schemaService;
+        this.schemaService = SchemaService;
         this.tableContentService = tableContentService;
     }
 

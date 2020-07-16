@@ -60,4 +60,12 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler
     {
         return this.handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, req);
     }
+
+    @Override
+    protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers, HttpStatus status, WebRequest request)
+    {
+        ex.printStackTrace();
+
+        return super.handleExceptionInternal(ex, body, headers, status, request);
+    }
 }

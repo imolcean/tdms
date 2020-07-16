@@ -1,7 +1,7 @@
 package de.tu_berlin.imolcean.tdm.core;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.TableNotFoundException;
-import de.tu_berlin.imolcean.tdm.api.plugins.SchemaUpdater;
+import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import org.springframework.stereotype.Service;
 import schemacrawler.inclusionrule.RegularExpressionInclusionRule;
 import schemacrawler.schema.Catalog;
@@ -17,10 +17,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class SchemaService
+public class DefaultSchemaService implements SchemaService
 {
     // TODO Cache
 
+    @Override
     public Catalog getSchema(DataSource ds) throws SQLException, SchemaCrawlerException
     {
         try(Connection connection = ds.getConnection())
@@ -38,7 +39,8 @@ public class SchemaService
         }
     }
 
-    public List<String> getTableNames(DataSource ds) throws Exception
+    @Override
+    public List<String> getTableNames(DataSource ds) throws SQLException, SchemaCrawlerException
     {
         try(Connection connection = ds.getConnection())
         {
@@ -59,6 +61,7 @@ public class SchemaService
         }
     }
 
+    @Override
     public List<String> getOccupiedTableNames(DataSource ds) throws SQLException, SchemaCrawlerException
     {
         try(Connection connection = ds.getConnection())
@@ -86,6 +89,7 @@ public class SchemaService
         }
     }
 
+    @Override
     public Table getTable(DataSource ds, String tableName) throws SQLException, SchemaCrawlerException
     {
         try(Connection connection = ds.getConnection())

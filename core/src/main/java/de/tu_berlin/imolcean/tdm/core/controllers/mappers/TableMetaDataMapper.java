@@ -16,7 +16,13 @@ public class TableMetaDataMapper
                 .map(TableMetaDataMapper::mapColumn)
                 .collect(Collectors.toList());
 
-        TableMetaDataDto.PrimaryKey pk = mapPk(table.getPrimaryKey());
+        TableMetaDataDto.PrimaryKey pk = null;
+
+        if(table.hasPrimaryKey())
+        {
+            pk = mapPk(table.getPrimaryKey());
+        }
+
         List<TableMetaDataDto.ForeignKey> fks = mapFks(table.getImportedForeignKeys());
 
         return new TableMetaDataDto(table.getName(), columns, pk, fks);

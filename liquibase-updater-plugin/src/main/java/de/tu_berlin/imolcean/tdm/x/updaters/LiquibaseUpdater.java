@@ -1,11 +1,10 @@
 package de.tu_berlin.imolcean.tdm.x.updaters;
 
-import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateDto;
 import de.tu_berlin.imolcean.tdm.api.plugins.SchemaUpdater;
+import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
-import liquibase.changelog.DatabaseChangeLog;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
@@ -14,16 +13,20 @@ import liquibase.diff.compare.CompareControl;
 import liquibase.diff.output.report.DiffToReport;
 import liquibase.resource.FileSystemResourceAccessor;
 import liquibase.structure.DatabaseObject;
-import liquibase.structure.core.Table;
+import liquibase.structure.core.Relation;
 import lombok.NoArgsConstructor;
 import lombok.extern.java.Log;
 import org.pf4j.Extension;
+import schemacrawler.schema.Table;
+import schemacrawler.schemacrawler.SchemaCrawlerException;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 // TODO Pack Liquibase.Core in the plugin jar
 // TODO Store intermediate DB info in plugin's config?
@@ -34,10 +37,14 @@ import java.util.Properties;
 @NoArgsConstructor
 public class LiquibaseUpdater implements SchemaUpdater
 {
+    private SchemaService schemaService;
+
     private String changelogPath;
+
     private DataSource internalDs;
     private DataSource tmpDs;
 
+    // TODO Insert SchemaService
     public LiquibaseUpdater(Properties properties)
     {
         this.changelogPath = properties.getProperty("changelog.path");
@@ -48,7 +55,7 @@ public class LiquibaseUpdater implements SchemaUpdater
     }
 
     @Override
-    public SchemaUpdateDto initSchemaUpdate(DataSource internalDs, DataSource tmpDs) throws Exception
+    public SchemaUpdate initSchemaUpdate(DataSource internalDs, DataSource tmpDs) throws Exception
     {
         if(changelogPath == null)
         {
@@ -61,6 +68,8 @@ public class LiquibaseUpdater implements SchemaUpdater
         }
 
         log.info("Initialising schema update");
+
+        // TODO Use tmp schema instead of tmp DB?
 
         this.internalDs = internalDs;
         this.tmpDs = tmpDs;
@@ -81,12 +90,6 @@ public class LiquibaseUpdater implements SchemaUpdater
                 // TODO Remove
                 new DiffToReport(diff, System.out).print();
 
-                System.out.println("Created:");
-                for(DatabaseObject obj : diff.getUnexpectedObjects(Table.class))
-                {
-                    System.out.println(String.format("%s (%s)", obj.getName(), obj.getObjectTypeName()));
-                }
-
                 log.info("Update initialised");
 
                 return diff2SchemaUpdateDto(diff);
@@ -95,7 +98,7 @@ public class LiquibaseUpdater implements SchemaUpdater
     }
 
     @Override
-    public void commitSchemaUpdate(SchemaUpdateDto update)
+    public void commitSchemaUpdate(SchemaUpdate update)
     {
         log.info("Committing schema update");
 
@@ -140,27 +143,41 @@ public class LiquibaseUpdater implements SchemaUpdater
         return tmpDs != null && internalDs != null;
     }
 
-    private SchemaUpdateDto diff2SchemaUpdateDto(DiffResult diff)
+    @Override
+    public void setSchemaService(SchemaService service)
     {
-        List<String> addedTables = new ArrayList<>();
-        List<String> changedTables = new ArrayList<>();
-        List<String> deletedTables = new ArrayList<>();
+        this.schemaService = service;
+    }
 
-        for(DatabaseObject obj : diff.getUnexpectedObjects(Table.class))
+    private SchemaUpdate diff2SchemaUpdateDto(DiffResult diff) throws SQLException, SchemaCrawlerException
+    {
+        List<String> untouchedTables = schemaService.getTableNames(internalDs);
+
+        List<Table> addedTables = new ArrayList<>();
+        List<Table> deletedTables = new ArrayList<>();
+        List<SchemaUpdate.Comparison> changedTables = new ArrayList<>();
+
+        for(liquibase.structure.core.Table obj : diff.getUnexpectedObjects(liquibase.structure.core.Table.class))
         {
-            addedTables.add(obj.getName());
+            addedTables.add(schemaService.getTable(tmpDs, obj.getName()));
         }
 
-        for(DatabaseObject obj : diff.getChangedObjects(Table.class).keySet())
+        for(liquibase.structure.core.Table obj : diff.getMissingObjects(liquibase.structure.core.Table.class))
         {
-            changedTables.add(obj.getName());
+            deletedTables.add(schemaService.getTable(internalDs, obj.getName()));
+            untouchedTables.remove(obj.getName());
         }
 
-        for(DatabaseObject obj : diff.getMissingObjects(Table.class))
+        // TODO Changed tables are either renamed ones or ones that have added/removed/changed columns or column attributes
+        for(DatabaseObject obj : diff.getChangedObjects(liquibase.structure.core.Table.class).keySet())
         {
-            deletedTables.add(obj.getName());
+            Table before = schemaService.getTable(internalDs, obj.getName());
+            Table after = schemaService.getTable(tmpDs, obj.getName());
+
+            changedTables.add(new SchemaUpdate.Comparison(before, after));
+            untouchedTables.remove(obj.getName());
         }
 
-        return new SchemaUpdateDto(addedTables, changedTables, deletedTables);
+        return new SchemaUpdate(untouchedTables, addedTables, deletedTables, changedTables);
     }
 }

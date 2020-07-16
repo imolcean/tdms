@@ -1,21 +1,12 @@
 package de.tu_berlin.imolcean.tdm.core;
 
-import de.danielbechler.diff.node.DiffNode;
 import de.tu_berlin.imolcean.tdm.core.deployment.MigrationDeployer;
-import de.tu_berlin.imolcean.tdm.core.utils.SchemaDiffPrinter;
 import org.pf4j.spring.SpringPluginManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import schemacrawler.schema.*;
-import schemacrawler.utility.SchemaCrawlerUtility;
-
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.List;
 
 @SpringBootApplication
 public class TdmApplication implements CommandLineRunner
@@ -24,7 +15,7 @@ public class TdmApplication implements CommandLineRunner
     private DataSourceService dsService;
 
     @Autowired
-    private SchemaService schemaService;
+    private de.tu_berlin.imolcean.tdm.api.services.SchemaService SchemaService;
 
     @Autowired
     private SchemaUpdaterService schemaUpdaterService;

@@ -9,7 +9,16 @@ import java.util.List;
 @AllArgsConstructor
 public class SchemaUpdateDto
 {
-    List<String> addedTables;
-    List<String> changedTables;
-    List<String> deletedTables;
+    @Data
+    @AllArgsConstructor
+    public static class Comparison
+    {
+        TableMetaDataDto before;
+        TableMetaDataDto after;
+    }
+
+    List<String> untouchedTables;
+    List<TableMetaDataDto> addedTables;
+    List<TableMetaDataDto> deletedTables;
+    List<Comparison> changedTables;
 }

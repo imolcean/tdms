@@ -5,8 +5,9 @@ import de.tu_berlin.imolcean.tdm.api.dto.TableMetaDataDto;
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoSchemaUpdaterSelectedException;
 import de.tu_berlin.imolcean.tdm.api.plugins.SchemaUpdater;
 import de.tu_berlin.imolcean.tdm.core.DataSourceService;
-import de.tu_berlin.imolcean.tdm.core.SchemaService;
+import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.core.SchemaUpdaterService;
+import de.tu_berlin.imolcean.tdm.core.controllers.mappers.SchemaUpdateMapper;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.TableMetaDataMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,11 +26,11 @@ public class SchemaController
     private final SchemaUpdaterService schemaUpdaterService;
 
     public SchemaController(DataSourceService dsService,
-                            SchemaService schemaService,
+                            SchemaService SchemaService,
                             SchemaUpdaterService schemaUpdaterService)
     {
         this.dsService = dsService;
-        this.schemaService = schemaService;
+        this.schemaService = SchemaService;
         this.schemaUpdaterService = schemaUpdaterService;
     }
 
@@ -61,9 +62,11 @@ public class SchemaController
         SchemaUpdater updater = schemaUpdaterService.getSelectedSchemaUpdater()
                 .orElseThrow(NoSchemaUpdaterSelectedException::new);
 
-        SchemaUpdateDto update = updater.initSchemaUpdate(dsService.getInternalDataSource(), dsService.getTmpDataSource());
+        updater.setSchemaService(schemaService);
 
-        return ResponseEntity.ok(update);
+        SchemaUpdater.SchemaUpdate update = updater.initSchemaUpdate(dsService.getInternalDataSource(), dsService.getTmpDataSource());
+
+        return ResponseEntity.ok(SchemaUpdateMapper.toDto(update));
     }
 
 //    @PutMapping("/internal/update/commit")
