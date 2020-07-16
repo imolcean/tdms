@@ -1,9 +1,9 @@
 package de.tu_berlin.imolcean.tdm.core.controllers;
 
 import de.tu_berlin.imolcean.tdm.api.dto.TableContentDto;
-import de.tu_berlin.imolcean.tdm.core.DataSourceService;
+import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
-import de.tu_berlin.imolcean.tdm.core.TableContentService;
+import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.TableContentMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

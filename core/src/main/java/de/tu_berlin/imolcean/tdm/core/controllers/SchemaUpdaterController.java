@@ -2,7 +2,7 @@ package de.tu_berlin.imolcean.tdm.core.controllers;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoSchemaUpdaterSelectedException;
 import de.tu_berlin.imolcean.tdm.api.plugins.SchemaUpdater;
-import de.tu_berlin.imolcean.tdm.core.SchemaUpdaterService;
+import de.tu_berlin.imolcean.tdm.core.services.SchemaUpdaterService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,8 +1,9 @@
-package de.tu_berlin.imolcean.tdm.core;
+package de.tu_berlin.imolcean.tdm.core.services;
 
-import de.tu_berlin.imolcean.tdm.api.dto.TableContentDto;
 import de.tu_berlin.imolcean.tdm.api.exceptions.IllegalSizeOfTableContentRowException;
 import de.tu_berlin.imolcean.tdm.api.exceptions.TableContentRowIndexOutOfBoundsException;
+import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
+import de.tu_berlin.imolcean.tdm.core.TableContentResultSetHandler;
 import de.tu_berlin.imolcean.tdm.core.utils.TableContentUtils;
 import lombok.extern.java.Log;
 import org.apache.logging.log4j.util.Strings;
@@ -17,13 +18,14 @@ import java.util.List;
 
 @Service
 @Log
-public class TableContentService
+public class DefaultTableContentService implements TableContentService
 {
     // TODO Log end of operation
     // TODO Receive XyzRequest instead of Object[]
     // TODO DRY?
     // TODO Model TableContentRow
 
+    @Override
     public int getTableRowCount(DataSource ds, Table table) throws SQLException
     {
         log.fine("Looking for row count of table " + table.getName());
@@ -38,6 +40,7 @@ public class TableContentService
         }
     }
 
+    @Override
     public List<Object[]> getTableContent(DataSource ds, Table table) throws SQLException
     {
         log.fine("Retrieving content of the table " + table.getName());
@@ -51,6 +54,7 @@ public class TableContentService
     }
 
     // TODO Return TableContentRow
+    @Override
     public void insertRow(DataSource ds, Table table, Object[] row) throws SQLException
     {
         // TODO Handle auto increment
@@ -82,6 +86,7 @@ public class TableContentService
     }
 
     // TODO Return TableContentRow
+    @Override
     public void updateRow(DataSource ds, Table table, int rowIndex, Object[] row) throws SQLException
     {
         log.fine(String.format("Updating the row nr. %s in table %s", rowIndex, table.getName()));
@@ -126,6 +131,7 @@ public class TableContentService
         log.fine("Row updated");
     }
 
+    @Override
     public void deleteRow(DataSource ds, Table table, int rowIndex) throws SQLException
     {
         log.fine(String.format("Deleting the row nr. %s from table %s", rowIndex, table.getName()));
@@ -159,6 +165,7 @@ public class TableContentService
     }
 
     // TODO
+    @Override
     public int countTableContentRowReferences(DataSource ds, Table table, Object[] row)
     {
         log.fine("Looking for rows in other tables that reference this row through FKs");

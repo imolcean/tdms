@@ -1,7 +1,7 @@
 package de.tu_berlin.imolcean.tdm.core.deployment;
 
 import de.danielbechler.util.Strings;
-import de.tu_berlin.imolcean.tdm.core.DataSourceService;
+import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
 import de.tu_berlin.imolcean.tdm.core.utils.QueryLoader;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package de.tu_berlin.imolcean.tdm.core;
+package de.tu_berlin.imolcean.tdm.core.services;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.TableNotFoundException;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
