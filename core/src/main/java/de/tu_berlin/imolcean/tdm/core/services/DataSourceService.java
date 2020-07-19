@@ -78,7 +78,7 @@ public class DataSourceService
         StageDataSourceParams params = stageDsParamsRepo.findByStageName(name)
                 .orElseThrow(() -> new StageDataSourceNotFoundException(name));
 
-        return new DataSourceWrapper(params);
+        return new DataSourceWrapper(params.getDriverClassName(), params.getUrl(), params.getUsername(), params.getPassword());
     }
 
     /**
@@ -93,7 +93,7 @@ public class DataSourceService
 
         for(StageDataSourceParams params : stageDsParamsRepo.findAll())
         {
-            map.put(params.getStageName(), new DataSourceWrapper(params));
+            map.put(params.getStageName(), new DataSourceWrapper(params.getDriverClassName(), params.getUrl(), params.getUsername(), params.getPassword()));
         }
 
         return map;
@@ -143,7 +143,9 @@ public class DataSourceService
             throw new StageDataSourceAlreadyExistsException(params.getStageName());
         }
 
-        return new DataSourceWrapper(stageDsParamsRepo.save(params));
+        StageDataSourceParams savedParams = stageDsParamsRepo.save(params);
+
+        return new DataSourceWrapper(savedParams.getDriverClassName(), savedParams.getUrl(), savedParams.getUsername(), savedParams.getPassword());
     }
 
     /**
@@ -159,7 +161,9 @@ public class DataSourceService
 
         params.setId(existing.getId());
 
-        return new DataSourceWrapper(stageDsParamsRepo.save(params));
+        StageDataSourceParams savedParams = stageDsParamsRepo.save(params);
+
+        return new DataSourceWrapper(savedParams.getDriverClassName(), savedParams.getUrl(), savedParams.getUsername(), savedParams.getPassword());
     }
 
     /**

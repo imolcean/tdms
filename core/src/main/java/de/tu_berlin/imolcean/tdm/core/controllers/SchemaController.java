@@ -69,10 +69,17 @@ public class SchemaController
         return ResponseEntity.ok(SchemaUpdateMapper.toDto(update));
     }
 
-//    @PutMapping("/internal/update/commit")
-//    public ResponseEntity<Void> commitUpdateSchemaInternal()
-//    {
-//    }
+    // TODO Take a DTO
+    @PutMapping("/internal/update/commit")
+    public ResponseEntity<Void> commitUpdateSchemaInternal() throws Exception
+    {
+        SchemaUpdater updater = schemaUpdaterService.getSelectedSchemaUpdater()
+                .orElseThrow(NoSchemaUpdaterSelectedException::new);
+
+        updater.commitSchemaUpdate(null);
+
+        return ResponseEntity.noContent().build();
+    }
 
     @PutMapping("/internal/update/cancel")
     public ResponseEntity<Void> cancelSchemaUpdate() throws Exception

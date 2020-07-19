@@ -39,7 +39,8 @@ public interface SchemaUpdater extends ExtensionPoint
      */
     SchemaUpdate initSchemaUpdate(DataSource internalDs, DataSource tmpDs) throws Exception;
 
-    void commitSchemaUpdate(SchemaUpdate update);
+    // TODO Take SchemaUpdateCommitRequest
+    void commitSchemaUpdate(SchemaUpdate update) throws Exception;
 
     void cancelSchemaUpdate() throws Exception;
 
