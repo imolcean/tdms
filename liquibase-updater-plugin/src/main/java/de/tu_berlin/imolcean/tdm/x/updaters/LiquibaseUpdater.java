@@ -1,5 +1,6 @@
 package de.tu_berlin.imolcean.tdm.x.updaters;
 
+import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateCommitRequest;
 import de.tu_berlin.imolcean.tdm.api.plugins.SchemaUpdater;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.x.DiffMapper;
@@ -16,11 +17,17 @@ import liquibase.resource.FileSystemResourceAccessor;
 import lombok.NoArgsConstructor;
 import lombok.extern.java.Log;
 import org.pf4j.Extension;
+import schemacrawler.schema.NamedObject;
+import schemacrawler.schema.Table;
+import schemacrawler.schemacrawler.SchemaCrawlerException;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 @Extension
 @Log
@@ -90,7 +97,8 @@ public class LiquibaseUpdater implements SchemaUpdater
     }
 
     @Override
-    public void commitSchemaUpdate(SchemaUpdate update) throws Exception
+    // TODO Test
+    public void commitSchemaUpdate(SchemaUpdateCommitRequest request) throws Exception
     {
         if(!isUpdateInProgress())
         {
@@ -99,18 +107,59 @@ public class LiquibaseUpdater implements SchemaUpdater
 
         log.info("Committing schema update");
 
-        // TODO Copy data from internalDs -> tmpDs for every untouched table
-        // TODO Perform SQL from SchemaUpdate for every other table
-
         try(Connection internalDsConnection = this.internalDs.getConnection();
             Connection tmpDsConnection = this.tmpDs.getConnection();
             Statement statement = tmpDsConnection.createStatement())
         {
-            statement.executeUpdate("INSERT INTO DABAG_IGORDAT06_EXP.dbo.address (id, line1, line2, city, country) SELECT id, col_a, '', 'BERN', 'CH' FROM DABAG_IGORDAT06.dbo.A");
+            // TODO Copy data from internalDs -> tmpDs for every untouched table
+            List<String> emptyTables = schemaService.getEmptyTableNames(internalDs);
+            List<String> tablesToAutoMigrate = request.getAutoMigrationTables().stream()
+                    .filter(table -> !emptyTables.contains(table))
+                    .collect(Collectors.toList());
+
+            log.fine("Migrating tables automatically:");
+
+            for(String tableName : tablesToAutoMigrate)
+            {
+                Table internal = schemaService.getTable(internalDs, tableName);
+                Table tmp = schemaService.getTable(tmpDs, tableName);
+
+                autoMigrateData(tmpDsConnection, internal, tmp);
+            }
+
+            // TODO Perform SQL from SchemaUpdateCommitRequest for every other table
+
+            log.fine("Migrating tables using provided migration scripts:");
+
+            for(SchemaUpdateCommitRequest.TableDataMigrationRequest req : request.getSqlMigrationTables())
+            {
+                sqlMigrateData(tmpDsConnection, req.getSql());
+            }
+
+//            statement.executeUpdate("INSERT INTO DABAG_IGORDAT06_EXP.dbo.address (id, line1, line2, city, country) SELECT id, col_a, '', 'BERN', 'CH' FROM DABAG_IGORDAT06.dbo.A");
+
+            // TODO Purge internalDs, migrate tmpDs -> internalDs
+            log.fine("Committing by moving schema and data from tmpDs into internalDs");
+
+            Database internalDb = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(internalDsConnection));
+
+            try(Liquibase liquibase = new Liquibase("", new FileSystemResourceAccessor(), internalDb))
+            {
+//                liquibase.dropAll();
+                // TODO
+            }
+
+            // TODO Purge tmpDs
+            log.fine("Purging tmpDs");
+
+            Database tmpDb = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(tmpDsConnection));
+
+            try(Liquibase liquibase = new Liquibase("", new FileSystemResourceAccessor(), tmpDb))
+            {
+//                liquibase.dropAll();
+            }
         }
 
-        // TODO Purge internalDs, migrate tmpDs -> internalDs
-        // TODO Purge tmpDs
         // TODO Transaction
 
         this.tmpDs = null;
@@ -155,5 +204,33 @@ public class LiquibaseUpdater implements SchemaUpdater
     public void setSchemaService(SchemaService service)
     {
         this.schemaService = service;
+    }
+
+    private void autoMigrateData(Connection connection, Table src, Table target) throws SQLException
+    {
+        String srcTableName = src.getFullName();
+        String targetTableName = target.getFullName();
+        String columnNames = src.getColumns().stream()
+                .map(NamedObject::getName)
+                .collect(Collectors.joining(", "));
+
+        String sql = String.format("INSERT INTO %s (%s) SELECT %s FROM %s", targetTableName, columnNames, columnNames, srcTableName);
+
+        log.fine(sql);
+
+        try(Statement statement = connection.createStatement())
+        {
+//            statement.executeUpdate(sql);
+        }
+    }
+
+    private void sqlMigrateData(Connection connection, String sql) throws SQLException
+    {
+        log.fine(sql);
+
+        try(Statement statement = connection.createStatement())
+        {
+//            statement.executeUpdate(sql);
+        }
     }
 }

@@ -68,8 +68,15 @@ public class DiffMapper
         return new SchemaUpdater.SchemaUpdate(untouchedTables, addedTables, deletedTables, changedTables);
     }
 
-    // TODO JavaDoc: Touched tables are either renamed ones or ones that have added/removed/changed columns or column attributes
-    // TODO Test
+    /**
+     * A table is considered touched if it was renamed or its columns or keys were added/removed/changed.
+     *
+     * TODO Test
+     *
+     * @param diff difference between the old and the new schema
+     * @param tableName name of the table that might be touched
+     * @return {@code true} if the table was touched, {@code false} otherwise
+     */
     private boolean isTableTouched(DiffResult diff, String tableName)
     {
         boolean tableChanged = diff.getChangedObjects(liquibase.structure.core.Table.class).keySet().stream()
@@ -89,6 +96,8 @@ public class DiffMapper
                 .anyMatch(name -> name.equals(tableName));
 
         // TODO Check column attributes
+        // TODO Check PK
+        // TODO Check FKs
 
         return tableChanged || hasAdddedColumns || hasMissingColumns || hasChangedColumns;
     }

@@ -1,5 +1,6 @@
 package de.tu_berlin.imolcean.tdm.api.plugins;
 
+import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateCommitRequest;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -40,7 +41,7 @@ public interface SchemaUpdater extends ExtensionPoint
     SchemaUpdate initSchemaUpdate(DataSource internalDs, DataSource tmpDs) throws Exception;
 
     // TODO Take SchemaUpdateCommitRequest
-    void commitSchemaUpdate(SchemaUpdate update) throws Exception;
+    void commitSchemaUpdate(SchemaUpdateCommitRequest request) throws Exception;
 
     void cancelSchemaUpdate() throws Exception;
 

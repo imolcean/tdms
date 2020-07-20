@@ -1,5 +1,6 @@
 package de.tu_berlin.imolcean.tdm.core.controllers;
 
+import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateCommitRequest;
 import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateDto;
 import de.tu_berlin.imolcean.tdm.api.dto.TableMetaDataDto;
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoSchemaUpdaterSelectedException;
@@ -69,14 +70,13 @@ public class SchemaController
         return ResponseEntity.ok(SchemaUpdateMapper.toDto(update));
     }
 
-    // TODO Take a DTO
     @PutMapping("/internal/update/commit")
-    public ResponseEntity<Void> commitUpdateSchemaInternal() throws Exception
+    public ResponseEntity<Void> commitUpdateSchemaInternal(@RequestBody SchemaUpdateCommitRequest request) throws Exception
     {
         SchemaUpdater updater = schemaUpdaterService.getSelectedSchemaUpdater()
                 .orElseThrow(NoSchemaUpdaterSelectedException::new);
 
-        updater.commitSchemaUpdate(null);
+        updater.commitSchemaUpdate(request);
 
         return ResponseEntity.noContent().build();
     }
@@ -106,6 +106,14 @@ public class SchemaController
     {
         return ResponseEntity.ok(
                 schemaService.getOccupiedTableNames(
+                        dsService.getDataSourceByAlias(alias)));
+    }
+
+    @GetMapping("/tables/{alias}/empty")
+    public ResponseEntity<List<String>> getEmptyTableNames(@PathVariable("alias") String alias) throws Exception
+    {
+        return ResponseEntity.ok(
+                schemaService.getEmptyTableNames(
                         dsService.getDataSourceByAlias(alias)));
     }
 

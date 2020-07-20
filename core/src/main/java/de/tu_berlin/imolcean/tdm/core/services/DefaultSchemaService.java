@@ -13,6 +13,7 @@ import schemacrawler.utility.SchemaCrawlerUtility;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -87,6 +88,17 @@ public class DefaultSchemaService implements SchemaService
                     .map(NamedObject::getName)
                     .collect(Collectors.toList());
         }
+    }
+
+    @Override
+    public List<String> getEmptyTableNames(DataSource ds) throws SQLException, SchemaCrawlerException
+    {
+        List<String> allTables = getTableNames(ds);
+        List<String> occupiedTables = getOccupiedTableNames(ds);
+
+        return allTables.stream()
+                .filter(table -> !occupiedTables.contains(table))
+                .collect(Collectors.toList());
     }
 
     @Override
