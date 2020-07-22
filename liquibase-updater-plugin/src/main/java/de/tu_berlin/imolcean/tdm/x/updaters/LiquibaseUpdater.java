@@ -1,6 +1,7 @@
 package de.tu_berlin.imolcean.tdm.x.updaters;
 
 import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateCommitRequest;
+import de.tu_berlin.imolcean.tdm.api.exceptions.TableNotFoundException;
 import de.tu_berlin.imolcean.tdm.api.plugins.SchemaUpdater;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.x.DiffMapper;
@@ -16,10 +17,10 @@ import liquibase.diff.output.report.DiffToReport;
 import liquibase.resource.FileSystemResourceAccessor;
 import lombok.NoArgsConstructor;
 import lombok.extern.java.Log;
+import org.apache.logging.log4j.util.Strings;
 import org.pf4j.Extension;
 import schemacrawler.schema.NamedObject;
 import schemacrawler.schema.Table;
-import schemacrawler.schemacrawler.SchemaCrawlerException;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -44,6 +45,7 @@ public class LiquibaseUpdater implements SchemaUpdater
     // TODO Pack Liquibase.Core in the plugin jar
     // TODO Store intermediate DB info in plugin's config?
     // TODO Insert SchemaService
+    @SuppressWarnings("unused")
     public LiquibaseUpdater(Properties properties)
     {
         this.changelogPath = properties.getProperty("changelog.path");
@@ -108,59 +110,90 @@ public class LiquibaseUpdater implements SchemaUpdater
         log.info("Committing schema update");
 
         try(Connection internalDsConnection = this.internalDs.getConnection();
-            Connection tmpDsConnection = this.tmpDs.getConnection();
-            Statement statement = tmpDsConnection.createStatement())
+            Connection tmpDsConnection = this.tmpDs.getConnection())
         {
-            // TODO Copy data from internalDs -> tmpDs for every untouched table
+            internalDsConnection.setAutoCommit(false);
+            tmpDsConnection.setAutoCommit(false);
+
+            // Copy data from internalDs -> tmpDs for every table that has no provided SQL migration script
+            // Empty tables are ignored for performance reason
+
+            log.info("Migrating tables automatically");
+
+            log.fine("Choosing tables for auto migration");
+
+            List<String> allTablesBeforeUpdate = schemaService.getTableNames(internalDs);
+            List<String> allTablesAfterUpdate = schemaService.getTableNames(tmpDs);
             List<String> emptyTables = schemaService.getEmptyTableNames(internalDs);
-            List<String> tablesToAutoMigrate = request.getAutoMigrationTables().stream()
+            List<String> tablesToMigrateManually = request.getSqlMigrationTables().stream()
+                    .map(SchemaUpdateCommitRequest.TableDataMigrationRequest::getTableName)
+                    .collect(Collectors.toList());
+
+            @SuppressWarnings("Convert2MethodRef")
+            List<String> tablesToMigrateAutomatically = allTablesAfterUpdate.stream()
+                    .filter(table -> allTablesBeforeUpdate.contains(table))
+                    .filter(table -> !tablesToMigrateManually.contains(table))
                     .filter(table -> !emptyTables.contains(table))
                     .collect(Collectors.toList());
 
-            log.fine("Migrating tables automatically:");
+            log.fine(String.format("%s tables chosen", tablesToMigrateAutomatically.size()));
 
-            for(String tableName : tablesToAutoMigrate)
+            for(String tableName : tablesToMigrateAutomatically)
             {
                 Table internal = schemaService.getTable(internalDs, tableName);
                 Table tmp = schemaService.getTable(tmpDs, tableName);
 
-                autoMigrateData(tmpDsConnection, internal, tmp);
+                migrateDataAutomatically(tmpDsConnection, internal, tmp);
             }
 
-            // TODO Perform SQL from SchemaUpdateCommitRequest for every other table
+            log.info("Automatic migration finished");
 
-            log.fine("Migrating tables using provided migration scripts:");
+
+            // Perform SQL from SchemaUpdateCommitRequest for every mentioned table
+
+            log.info("Migrating tables using provided migration scripts");
 
             for(SchemaUpdateCommitRequest.TableDataMigrationRequest req : request.getSqlMigrationTables())
             {
-                sqlMigrateData(tmpDsConnection, req.getSql());
+                if(!allTablesAfterUpdate.contains(req.getTableName()))
+                {
+                    throw new TableNotFoundException(req.getTableName());
+                }
+
+                migrateDataManually(tmpDsConnection, req);
             }
 
-//            statement.executeUpdate("INSERT INTO DABAG_IGORDAT06_EXP.dbo.address (id, line1, line2, city, country) SELECT id, col_a, '', 'BERN', 'CH' FROM DABAG_IGORDAT06.dbo.A");
+            log.info("Migration using scripts finished");
 
-            // TODO Purge internalDs, migrate tmpDs -> internalDs
-            log.fine("Committing by moving schema and data from tmpDs into internalDs");
 
-            Database internalDb = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(internalDsConnection));
+            // Commit: purge internalDs, migrate tmpDs -> internalDs, purge tmpDs
 
-            try(Liquibase liquibase = new Liquibase("", new FileSystemResourceAccessor(), internalDb))
-            {
-//                liquibase.dropAll();
-                // TODO
-            }
+            log.info("Committing");
 
-            // TODO Purge tmpDs
-            log.fine("Purging tmpDs");
+            log.fine("Purging Internal DB");
 
-            Database tmpDb = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(tmpDsConnection));
+            // TODO
 
-            try(Liquibase liquibase = new Liquibase("", new FileSystemResourceAccessor(), tmpDb))
-            {
-//                liquibase.dropAll();
-            }
+            log.fine("Moving schema and data from Temp DB into Internal DB");
+
+            // TODO
+
+            log.fine("Purging Temp DB");
+
+            // TODO
+
+
+            internalDsConnection.commit();
+            tmpDsConnection.commit();
+
+            internalDsConnection.setAutoCommit(true);
+            tmpDsConnection.setAutoCommit(true);
         }
-
-        // TODO Transaction
+        catch(Exception e)
+        {
+            log.severe("Schema update commit failed");
+            throw e;
+        }
 
         this.tmpDs = null;
         this.internalDs = null;
@@ -206,7 +239,7 @@ public class LiquibaseUpdater implements SchemaUpdater
         this.schemaService = service;
     }
 
-    private void autoMigrateData(Connection connection, Table src, Table target) throws SQLException
+    private void migrateDataAutomatically(Connection connection, Table src, Table target) throws SQLException
     {
         String srcTableName = src.getFullName();
         String targetTableName = target.getFullName();
@@ -216,21 +249,27 @@ public class LiquibaseUpdater implements SchemaUpdater
 
         String sql = String.format("INSERT INTO %s (%s) SELECT %s FROM %s", targetTableName, columnNames, columnNames, srcTableName);
 
-        log.fine(sql);
+        log.fine(String.format("%s: %s", srcTableName, sql));
 
         try(Statement statement = connection.createStatement())
         {
-//            statement.executeUpdate(sql);
+            statement.executeUpdate(sql);
         }
     }
 
-    private void sqlMigrateData(Connection connection, String sql) throws SQLException
+    private void migrateDataManually(Connection connection, SchemaUpdateCommitRequest.TableDataMigrationRequest request)
+            throws SQLException
     {
-        log.fine(sql);
+        log.fine(String.format("%s: %s", request.getTableName(), request.getSql()));
+
+        if(Strings.isBlank(request.getSql()))
+        {
+            return;
+        }
 
         try(Statement statement = connection.createStatement())
         {
-//            statement.executeUpdate(sql);
+            statement.executeUpdate(request.getSql());
         }
     }
 }
