@@ -1,4 +1,4 @@
-package de.tu_berlin.imolcean.tdm.api.plugins;
+package de.tu_berlin.imolcean.tdm.api.interfaces.importer;
 
 import javax.sql.DataSource;
 import java.io.IOException;

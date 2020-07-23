@@ -2,24 +2,24 @@ package de.tu_berlin.imolcean.tdm.core.controllers.mappers;
 
 import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateDto;
 import de.tu_berlin.imolcean.tdm.api.dto.TableMetaDataDto;
-import de.tu_berlin.imolcean.tdm.api.plugins.SchemaUpdater;
+import de.tu_berlin.imolcean.tdm.api.interfaces.updater.SchemaUpdater;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class SchemaUpdateMapper
 {
-    public static SchemaUpdateDto toDto(SchemaUpdater.SchemaUpdate update)
+    public static SchemaUpdateDto toDto(SchemaUpdater.SchemaUpdateReport report)
     {
-        List<TableMetaDataDto> addedTables = update.getAddedTables().stream()
+        List<TableMetaDataDto> addedTables = report.getAddedTables().stream()
                 .map(TableMetaDataMapper::toDto)
                 .collect(Collectors.toList());
 
-        List<TableMetaDataDto> deletedTables = update.getDeletedTables().stream()
+        List<TableMetaDataDto> deletedTables = report.getDeletedTables().stream()
                 .map(TableMetaDataMapper::toDto)
                 .collect(Collectors.toList());
 
-        List<SchemaUpdateDto.Comparison> changedTables = update.getChangedTables().stream()
+        List<SchemaUpdateDto.Comparison> changedTables = report.getChangedTables().stream()
                 .map(comparison ->
                 {
                     TableMetaDataDto before = TableMetaDataMapper.toDto(comparison.getBefore());
@@ -29,6 +29,6 @@ public class SchemaUpdateMapper
                 })
                 .collect(Collectors.toList());
 
-        return new SchemaUpdateDto(update.getUntouchedTables(), addedTables, deletedTables, changedTables);
+        return new SchemaUpdateDto(report.getUntouchedTables(), addedTables, deletedTables, changedTables);
     }
 }

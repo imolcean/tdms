@@ -1,6 +1,6 @@
 package de.tu_berlin.imolcean.tdm.x.importers;
 
-import de.tu_berlin.imolcean.tdm.api.plugins.SchemaAwareImporter;
+import de.tu_berlin.imolcean.tdm.api.interfaces.importer.SchemaAwareImporter;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -24,7 +24,6 @@ import java.util.Iterator;
 public class ExcelImporter implements SchemaAwareImporter
 {
     // TODO Do not accept Path as argument, take it from plugin configuration
-    // TODO Pack POI in the plugin jar
 
     @Override
     public void importPath(Path path, DataSource ds, Collection<Table> tables) throws IOException, SQLException

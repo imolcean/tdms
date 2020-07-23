@@ -1,8 +1,8 @@
 package de.tu_berlin.imolcean.tdm.core.controllers;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoSchemaUpdaterSelectedException;
-import de.tu_berlin.imolcean.tdm.api.plugins.SchemaUpdater;
-import de.tu_berlin.imolcean.tdm.core.services.SchemaUpdaterService;
+import de.tu_berlin.imolcean.tdm.api.interfaces.updater.SchemaUpdater;
+import de.tu_berlin.imolcean.tdm.core.services.managers.SchemaUpdateImplementationManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,20 +11,20 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/schema-updaters")
-public class SchemaUpdaterController
+public class SchemaUpdateImplementationController
 {
-    SchemaUpdaterService schemaUpdaterService;
+    SchemaUpdateImplementationManager schemaUpdateImplementationManager;
 
-    public SchemaUpdaterController(SchemaUpdaterService schemaUpdaterService)
+    public SchemaUpdateImplementationController(SchemaUpdateImplementationManager schemaUpdateImplementationManager)
     {
-        this.schemaUpdaterService = schemaUpdaterService;
+        this.schemaUpdateImplementationManager = schemaUpdateImplementationManager;
     }
 
     @GetMapping("/")
     public ResponseEntity<List<String>> getAvailable()
     {
         List<String> names =
-                schemaUpdaterService.getAvailableSchemaUpdaters().stream()
+                schemaUpdateImplementationManager.getAvailableImplementations().stream()
                         .map(updater -> updater.getClass().getName())
                         .collect(Collectors.toList());
 
@@ -34,7 +34,7 @@ public class SchemaUpdaterController
     @GetMapping("/selected")
     public ResponseEntity<String> getSelected()
     {
-        SchemaUpdater selected = schemaUpdaterService.getSelectedSchemaUpdater()
+        SchemaUpdater selected = schemaUpdateImplementationManager.getSelectedImplementation()
                 .orElseThrow(NoSchemaUpdaterSelectedException::new);
 
         return ResponseEntity.ok(selected.getClass().getName());
@@ -43,7 +43,7 @@ public class SchemaUpdaterController
     @PutMapping("/selected/{name}")
     public ResponseEntity<Void> select(@PathVariable("name") String name)
     {
-        schemaUpdaterService.selectSchemaUpdater(name);
+        schemaUpdateImplementationManager.selectImplementation(name);
 
         return ResponseEntity.noContent().build();
     }
@@ -51,7 +51,7 @@ public class SchemaUpdaterController
     @DeleteMapping("/selected")
     public ResponseEntity<Void> clear()
     {
-        schemaUpdaterService.clearSelection();
+        schemaUpdateImplementationManager.clearSelection();
 
         return ResponseEntity.noContent().build();
     }

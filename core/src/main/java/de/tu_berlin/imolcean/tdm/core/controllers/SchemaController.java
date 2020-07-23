@@ -4,7 +4,6 @@ import de.tu_berlin.imolcean.tdm.api.dto.TableMetaDataDto;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.TableMetaDataMapper;
-import de.tu_berlin.imolcean.tdm.core.services.SchemaUpdaterService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import schemacrawler.schemacrawler.SchemaCrawlerException;
@@ -21,8 +20,7 @@ public class SchemaController
     private final SchemaService schemaService;
 
     public SchemaController(DataSourceService dsService,
-                            SchemaService SchemaService,
-                            SchemaUpdaterService schemaUpdaterService)
+                            SchemaService SchemaService)
     {
         this.dsService = dsService;
         this.schemaService = SchemaService;

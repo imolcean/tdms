@@ -2,7 +2,7 @@ package de.tu_berlin.imolcean.tdm.core;
 
 import de.tu_berlin.imolcean.tdm.core.deployment.MigrationDeployer;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
-import de.tu_berlin.imolcean.tdm.core.services.SchemaUpdaterService;
+import de.tu_berlin.imolcean.tdm.core.services.managers.SchemaUpdateImplementationManager;
 import org.pf4j.spring.SpringPluginManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +20,7 @@ public class TdmApplication implements CommandLineRunner
     private de.tu_berlin.imolcean.tdm.api.services.SchemaService SchemaService;
 
     @Autowired
-    private SchemaUpdaterService schemaUpdaterService;
+    private SchemaUpdateImplementationManager schemaUpdateImplementationManager;
 
     @Autowired
     private MigrationDeployer deployer;
@@ -40,7 +40,7 @@ public class TdmApplication implements CommandLineRunner
     public void run(String... args) throws Exception
     {
         StageContextHolder.setStageName("dev0");
-        schemaUpdaterService.selectSchemaUpdater("de.tu_berlin.imolcean.tdm.x.updaters.LiquibaseUpdater");
+        schemaUpdateImplementationManager.selectImplementation("de.tu_berlin.imolcean.tdm.x.updaters.LiquibaseUpdater");
 
 
 //        Catalog internalDb = schemaService.getSchema(dsService.getInternalDataSource());

@@ -1,6 +1,6 @@
 package de.tu_berlin.imolcean.tdm.x;
 
-import de.tu_berlin.imolcean.tdm.api.plugins.SchemaUpdater;
+import de.tu_berlin.imolcean.tdm.api.interfaces.updater.SchemaUpdater;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import liquibase.diff.DiffResult;
 import liquibase.structure.core.Column;
@@ -28,13 +28,13 @@ public class DiffMapper
         this.tmpDs = tmpDs;
     }
 
-    public SchemaUpdater.SchemaUpdate toSchemaUpdate(DiffResult diff) throws SQLException, SchemaCrawlerException
+    public SchemaUpdater.SchemaUpdateReport toSchemaUpdate(DiffResult diff) throws SQLException, SchemaCrawlerException
     {
         List<String> untouchedTables = schemaService.getTableNames(internalDs);
 
         List<Table> addedTables = new ArrayList<>();
         List<Table> deletedTables = new ArrayList<>();
-        List<SchemaUpdater.SchemaUpdate.Comparison> changedTables = new ArrayList<>();
+        List<SchemaUpdater.SchemaUpdateReport.Comparison> changedTables = new ArrayList<>();
 
         // Collecting added tables
         for(liquibase.structure.core.Table obj : diff.getUnexpectedObjects(liquibase.structure.core.Table.class))
@@ -60,12 +60,12 @@ public class DiffMapper
                 Table before = schemaService.getTable(internalDs, tableName);
                 Table after = schemaService.getTable(tmpDs, tableName);
 
-                changedTables.add(new SchemaUpdater.SchemaUpdate.Comparison(before, after));
+                changedTables.add(new SchemaUpdater.SchemaUpdateReport.Comparison(before, after));
                 it.remove();
             }
         }
 
-        return new SchemaUpdater.SchemaUpdate(untouchedTables, addedTables, deletedTables, changedTables);
+        return new SchemaUpdater.SchemaUpdateReport(untouchedTables, addedTables, deletedTables, changedTables);
     }
 
     /**
