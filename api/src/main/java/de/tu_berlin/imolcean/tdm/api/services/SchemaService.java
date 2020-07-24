@@ -19,4 +19,8 @@ public interface SchemaService
     List<String> getEmptyTableNames(DataSource ds) throws SQLException, SchemaCrawlerException;
 
     Table getTable(DataSource ds, String tableName) throws SQLException, SchemaCrawlerException;
+
+    boolean tableExists(DataSource ds, String tableName) throws SQLException, SchemaCrawlerException;
+
+    void dropTable(DataSource ds, String tableName) throws SQLException, SchemaCrawlerException;
 }

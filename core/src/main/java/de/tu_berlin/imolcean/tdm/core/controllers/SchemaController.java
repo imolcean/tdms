@@ -74,4 +74,13 @@ public class SchemaController
                                 dsService.getDataSourceByAlias(alias),
                                 tableName)));
     }
+
+    @DeleteMapping("/table/{alias}/{table}")
+    public ResponseEntity<Void> dropTable(@PathVariable("alias") String alias,
+                                          @PathVariable("table") String tableName) throws SQLException, SchemaCrawlerException
+    {
+        schemaService.dropTable(dsService.getDataSourceByAlias(alias), tableName);
+
+        return ResponseEntity.noContent().build();
+    }
 }

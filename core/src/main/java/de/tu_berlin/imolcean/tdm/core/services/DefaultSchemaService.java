@@ -13,6 +13,7 @@ import schemacrawler.utility.SchemaCrawlerUtility;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -124,6 +125,36 @@ public class DefaultSchemaService implements SchemaService
             return catalog.getTables().stream()
                     .findFirst()
                     .orElseThrow(() -> new TableNotFoundException(tableName));
+        }
+    }
+
+    @Override
+    public boolean tableExists(DataSource ds, String tableName) throws SQLException, SchemaCrawlerException
+    {
+        try
+        {
+            getTable(ds, tableName);
+
+            return true;
+        }
+        catch(TableNotFoundException e)
+        {
+            return false;
+        }
+    }
+
+    @Override
+    public void dropTable(DataSource ds, String tableName) throws SQLException, SchemaCrawlerException
+    {
+        if(!tableExists(ds, tableName))
+        {
+            throw new TableNotFoundException(tableName);
+        }
+
+        try(Connection connection = ds.getConnection();
+            Statement statement = connection.createStatement())
+        {
+            statement.executeUpdate("DROP TABLE " + tableName);
         }
     }
 
