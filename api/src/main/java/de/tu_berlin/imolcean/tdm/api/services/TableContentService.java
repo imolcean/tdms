@@ -18,5 +18,7 @@ public interface TableContentService
 
     void deleteRow(DataSource ds, Table table, int rowIndex) throws SQLException;
 
+    void clearTable(DataSource ds, Table table) throws SQLException;
+
     int countTableContentRowReferences(DataSource ds, Table table, Object[] row);
 }

@@ -164,6 +164,32 @@ public class DefaultTableContentService implements TableContentService
         log.fine("Row deleted");
     }
 
+    @Override
+    public void clearTable(DataSource ds, Table table) throws SQLException
+    {
+        log.fine("Deleting all rows from table " + table.getName());
+
+        try(Connection connection = ds.getConnection();
+            Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE))
+        {
+            connection.setAutoCommit(false);
+
+            try
+            {
+                //noinspection SqlWithoutWhere
+                statement.executeUpdate("DELETE FROM " + table.getName());
+                connection.commit();
+            }
+            catch(SQLException e)
+            {
+                connection.rollback();
+                throw e;
+            }
+        }
+
+        log.fine("Table cleared");
+    }
+
     // TODO
     @Override
     public int countTableContentRowReferences(DataSource ds, Table table, Object[] row)

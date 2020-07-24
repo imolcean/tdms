@@ -81,4 +81,16 @@ public class TableContentController
 
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/{alias}/{table}")
+    public ResponseEntity<Void> deleteAll(@PathVariable("alias") String alias,
+                                          @PathVariable("table") String tableName) throws SQLException, SchemaCrawlerException
+    {
+        DataSource ds = dsService.getDataSourceByAlias(alias);
+        Table table = schemaService.getTable(ds, tableName);
+
+        tableContentService.clearTable(ds, table);
+
+        return ResponseEntity.noContent().build();
+    }
 }
