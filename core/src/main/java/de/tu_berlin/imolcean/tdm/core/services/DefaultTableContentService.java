@@ -6,17 +6,13 @@ import de.tu_berlin.imolcean.tdm.api.exceptions.TableContentRowIndexOutOfBoundsE
 import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
 import de.tu_berlin.imolcean.tdm.core.TableContentResultSetHandler;
 import de.tu_berlin.imolcean.tdm.core.utils.QueryLoader;
-import de.tu_berlin.imolcean.tdm.core.utils.TableContentUtils;
 import lombok.extern.java.Log;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import schemacrawler.schema.*;
-import schemacrawler.schemacrawler.SchemaCrawlerException;
 
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,7 +21,6 @@ import java.util.stream.Collectors;
 @Log
 public class DefaultTableContentService implements TableContentService
 {
-    // TODO Log end of operation
     // TODO Receive XyzRequest instead of Object[]
     // TODO DRY?
     // TODO Model TableContentRow
@@ -62,11 +57,10 @@ public class DefaultTableContentService implements TableContentService
         }
     }
 
-    // TODO Return TableContentRow
+    // TODO Return row
     @Override
     public void insertRow(DataSource ds, Table table, Object[] row) throws SQLException
     {
-        // TODO Handle auto increment
         log.info("Inserting a new row into table " + table.getName());
 
         try(Connection connection = ds.getConnection();
@@ -117,7 +111,7 @@ public class DefaultTableContentService implements TableContentService
         }
     }
 
-    // TODO Return TableContentRow
+    // TODO Return row
     @Override
     public void updateRow(DataSource ds, Table table, int rowIndex, Object[] row) throws SQLException
     {
@@ -196,7 +190,6 @@ public class DefaultTableContentService implements TableContentService
         log.info("Row deleted");
     }
 
-    // TODO Transaction
     @Override
     public void copyData(DataSource src, DataSource target, Collection<Table> tables) throws SQLException, IOException
     {
@@ -317,7 +310,6 @@ public class DefaultTableContentService implements TableContentService
         log.info("Rows inserted");
     }
 
-    // TODO
 //    @Override
 //    public int countTableContentRowReferences(DataSource ds, Table table, Object[] row)
 //    {
