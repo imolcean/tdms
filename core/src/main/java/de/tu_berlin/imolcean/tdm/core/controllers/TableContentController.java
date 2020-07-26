@@ -12,6 +12,7 @@ import schemacrawler.schemacrawler.SchemaCrawlerException;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -97,9 +98,23 @@ public class TableContentController
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{src_alias}/{target_alias}")
+    public ResponseEntity<Void> copyAllData(@PathVariable("src_alias") String srcAlias,
+                                            @PathVariable("target_alias") String targetAlias) throws SQLException, SchemaCrawlerException
+    {
+        DataSource src = dsService.getDataSourceByAlias(srcAlias);
+        DataSource target = dsService.getDataSourceByAlias(targetAlias);
+
+        Collection<Table> tables = schemaService.getSchema(src).getTables();
+
+        tableContentService.copyData(src, target, tables);
+
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{alias}/{table}")
-    public ResponseEntity<Void> deleteAll(@PathVariable("alias") String alias,
-                                          @PathVariable("table") String tableName) throws SQLException, SchemaCrawlerException
+    public ResponseEntity<Void> clearTable(@PathVariable("alias") String alias,
+                                           @PathVariable("table") String tableName) throws SQLException, SchemaCrawlerException
     {
         DataSource ds = dsService.getDataSourceByAlias(alias);
         Table table = schemaService.getTable(ds, tableName);

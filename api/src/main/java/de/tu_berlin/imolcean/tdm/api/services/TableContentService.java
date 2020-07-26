@@ -1,9 +1,11 @@
 package de.tu_berlin.imolcean.tdm.api.services;
 
 import schemacrawler.schema.Table;
+import schemacrawler.schemacrawler.SchemaCrawlerException;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 
 public interface TableContentService
@@ -21,7 +23,7 @@ public interface TableContentService
 
     void deleteRow(DataSource ds, Table table, int rowIndex) throws SQLException;
 
-    void clearTable(DataSource ds, Table table) throws SQLException;
+    void copyData(DataSource src, DataSource target, Collection<Table> tables) throws SQLException;
 
-    int countTableContentRowReferences(DataSource ds, Table table, Object[] row);
+    void clearTable(DataSource ds, Table table) throws SQLException;
 }

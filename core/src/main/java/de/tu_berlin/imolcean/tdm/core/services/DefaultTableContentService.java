@@ -10,10 +10,12 @@ import lombok.extern.java.Log;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import schemacrawler.schema.*;
+import schemacrawler.schemacrawler.SchemaCrawlerException;
 
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -89,52 +91,13 @@ public class DefaultTableContentService implements TableContentService
     @Override
     public void insertRows(DataSource ds, Table table, List<Object[]> rows) throws SQLException
     {
-        log.fine("Inserting multiple new rows into table " + table.getName());
-
-        List<String> columnNames = table.getColumns().stream()
-                .map(NamedObject::getName)
-                .collect(Collectors.toList());
-
-        List<JavaSqlType> columnTypes = table.getColumns().stream()
-                .map(col -> col.getColumnDataType().getJavaSqlType())
-                .collect(Collectors.toList());
-
-        String placeholders = new StringBuilder()
-                .append("?,".repeat(columnNames.size()))
-                .reverse()
-                .deleteCharAt(0)
-                .toString();
-
-        String insertSql = String
-                .format("INSERT INTO %s (%s) VALUES (%s)",
-                        table.getName(),
-                        Strings.join(",", columnNames),
-                        placeholders);
-
-        log.fine("Request template: " + insertSql);
-
         try(Connection connection = ds.getConnection())
         {
             connection.setAutoCommit(false);
 
-            try(PreparedStatement statement = connection.prepareStatement(insertSql))
+            try
             {
-                for(Object[] row : rows)
-                {
-                    statement.clearParameters();
-
-                    int i = 0;
-                    for(JavaSqlType type : columnTypes)
-                    {
-                        statement.setObject(i + 1, row[i], type);
-                        i++;
-                    }
-
-                    statement.addBatch();
-                }
-
-                statement.executeBatch();
-                connection.commit();
+                insertRows(ds.getConnection(), table, rows);
             }
             catch(SQLException e)
             {
@@ -143,9 +106,9 @@ public class DefaultTableContentService implements TableContentService
                 connection.rollback();
                 throw e;
             }
-        }
 
-        log.fine("Rows inserted");
+            connection.commit();
+        }
     }
 
     // TODO Return TableContentRow
@@ -227,6 +190,39 @@ public class DefaultTableContentService implements TableContentService
         log.fine("Row deleted");
     }
 
+    // TODO Transaction
+    @Override
+    public void copyData(DataSource src, DataSource target, Collection<Table> tables) throws SQLException
+    {
+        log.fine("Copying all data");
+
+        try(Connection targetConnection = target.getConnection())
+        {
+            targetConnection.setAutoCommit(false);
+
+            for(Table table : tables)
+            {
+                List<Object[]> data = getTableContent(src, table);
+
+                try
+                {
+                    insertRows(targetConnection, table, data);
+                }
+                catch(SQLException e)
+                {
+                    log.warning("Copying of data failed");
+
+                    targetConnection.rollback();
+                    throw e;
+                }
+            }
+
+            targetConnection.commit();
+        }
+
+        log.fine("All data copied");
+    }
+
     @Override
     public void clearTable(DataSource ds, Table table) throws SQLException
     {
@@ -241,64 +237,113 @@ public class DefaultTableContentService implements TableContentService
             {
                 //noinspection SqlWithoutWhere
                 statement.executeUpdate("DELETE FROM " + table.getName());
-                connection.commit();
             }
             catch(SQLException e)
             {
                 connection.rollback();
                 throw e;
             }
+
+            connection.commit();
         }
 
         log.fine("Table cleared");
     }
 
-    // TODO
-    @Override
-    public int countTableContentRowReferences(DataSource ds, Table table, Object[] row)
+    private void insertRows(Connection connection, Table table, List<Object[]> rows) throws SQLException
     {
-        log.fine("Looking for rows in other tables that reference this row through FKs");
+        log.fine("Inserting multiple new rows into table " + table.getName());
 
-        int cnt = 0;
+        List<String> columnNames = table.getColumns().stream()
+                .map(NamedObject::getName)
+                .collect(Collectors.toList());
 
-        for(ForeignKey fk : table.getExportedForeignKeys())
+        List<JavaSqlType> columnTypes = table.getColumns().stream()
+                .map(col -> col.getColumnDataType().getJavaSqlType())
+                .collect(Collectors.toList());
+
+        String placeholders = new StringBuilder()
+                .append("?,".repeat(columnNames.size()))
+                .reverse()
+                .deleteCharAt(0)
+                .toString();
+
+        String insertSql = String
+                .format("INSERT INTO %s (%s) VALUES (%s)",
+                        table.getName(),
+                        Strings.join(", ", columnNames),
+                        placeholders);
+
+        log.fine("Request template: " + insertSql);
+
+        try(PreparedStatement statement = connection.prepareStatement(insertSql))
         {
-            String fkTable = null;
-            List<String> whereClauseParts = new ArrayList<>();
-
-            for(ForeignKeyColumnReference ref : fk.getColumnReferences())
+            for(Object[] row : rows)
             {
-                Column pkCol = ref.getPrimaryKeyColumn();
-                Column fkCol = ref.getForeignKeyColumn();
+                statement.clearParameters();
 
-                if(Strings.isEmpty(fkTable))
+                int i = 0;
+                for(JavaSqlType type : columnTypes)
                 {
-                    fkTable = fkCol.getParent().getName();
+                    statement.setObject(i + 1, row[i], type);
+                    i++;
                 }
 
-                assert fkTable.equalsIgnoreCase(fkCol.getParent().getName());
-
-                int pkColumnIndex = TableContentUtils.getColumnIndex(table, pkCol.getName());
-                String pkValue = row[pkColumnIndex].toString();
-
-                whereClauseParts.add(String.format("%s = %s", fkCol.getName(), pkValue));
+                statement.addBatch();
             }
 
-            String req = String.format("SELECT COUNT(*) FROM %s WHERE %s",
-                    fkTable,
-                    String.join(", ", whereClauseParts));
-
-            log.fine(req);
-
-            int cntFk = new JdbcTemplate(ds).queryForObject(req, Integer.class);
-
-            log.fine(String.format("For FK %s, found %s rows that reference this row", fk.getName(), cntFk));
-
-            cnt += cntFk;
+            statement.executeBatch();
         }
 
-        log.fine(String.format("In total, %s rows found referencing this row", cnt));
-
-        return cnt;
+        log.fine("Rows inserted");
     }
+
+    // TODO
+//    @Override
+//    public int countTableContentRowReferences(DataSource ds, Table table, Object[] row)
+//    {
+//        log.fine("Looking for rows in other tables that reference this row through FKs");
+//
+//        int cnt = 0;
+//
+//        for(ForeignKey fk : table.getExportedForeignKeys())
+//        {
+//            String fkTable = null;
+//            List<String> whereClauseParts = new ArrayList<>();
+//
+//            for(ForeignKeyColumnReference ref : fk.getColumnReferences())
+//            {
+//                Column pkCol = ref.getPrimaryKeyColumn();
+//                Column fkCol = ref.getForeignKeyColumn();
+//
+//                if(Strings.isEmpty(fkTable))
+//                {
+//                    fkTable = fkCol.getParent().getName();
+//                }
+//
+//                assert fkTable.equalsIgnoreCase(fkCol.getParent().getName());
+//
+//                int pkColumnIndex = TableContentUtils.getColumnIndex(table, pkCol.getName());
+//                String pkValue = row[pkColumnIndex].toString();
+//
+//                whereClauseParts.add(String.format("%s = %s", fkCol.getName(), pkValue));
+//            }
+//
+//            String req = String.format("SELECT COUNT(*) FROM %s WHERE %s",
+//                    fkTable,
+//                    String.join(", ", whereClauseParts));
+//
+//            log.fine(req);
+//
+//            int cntFk = new JdbcTemplate(ds).queryForObject(req, Integer.class);
+//
+//            log.fine(String.format("For FK %s, found %s rows that reference this row", fk.getName(), cntFk));
+//
+//            cnt += cntFk;
+//        }
+//
+//        log.fine(String.format("In total, %s rows found referencing this row", cnt));
+//
+//        return cnt;
+//    }
 }
