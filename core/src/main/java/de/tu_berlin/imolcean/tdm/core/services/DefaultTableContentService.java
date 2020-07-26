@@ -5,6 +5,7 @@ import de.tu_berlin.imolcean.tdm.api.exceptions.IllegalSizeOfTableContentRowExce
 import de.tu_berlin.imolcean.tdm.api.exceptions.TableContentRowIndexOutOfBoundsException;
 import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
 import de.tu_berlin.imolcean.tdm.core.TableContentResultSetHandler;
+import de.tu_berlin.imolcean.tdm.core.utils.QueryLoader;
 import de.tu_berlin.imolcean.tdm.core.utils.TableContentUtils;
 import lombok.extern.java.Log;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,6 +14,7 @@ import schemacrawler.schema.*;
 import schemacrawler.schemacrawler.SchemaCrawlerException;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,13 +33,15 @@ public class DefaultTableContentService implements TableContentService
     @Override
     public int getTableRowCount(DataSource ds, Table table) throws SQLException
     {
-        log.fine("Looking for row count of table " + table.getName());
+        log.info("Retrieving for row count of table " + table.getName());
 
         try(Connection connection = ds.getConnection(); Statement statement = connection.createStatement())
         {
             ResultSet rs = statement.executeQuery("SELECT COUNT(*) FROM " + table.getName());
 
             rs.next();
+
+            log.info("Row count retrieved");
 
             return rs.getInt(1);
         }
@@ -46,11 +50,13 @@ public class DefaultTableContentService implements TableContentService
     @Override
     public List<Object[]> getTableContent(DataSource ds, Table table) throws SQLException
     {
-        log.fine("Retrieving content of the table " + table.getName());
+        log.info("Retrieving content of the table " + table.getName());
 
         try(Connection connection = ds.getConnection(); Statement statement = connection.createStatement())
         {
             ResultSet rs = statement.executeQuery("SELECT * FROM " + table.getName());
+
+            log.info("Content retrieved");
 
             return new TableContentResultSetHandler().handle(rs);
         }
@@ -61,7 +67,7 @@ public class DefaultTableContentService implements TableContentService
     public void insertRow(DataSource ds, Table table, Object[] row) throws SQLException
     {
         // TODO Handle auto increment
-        log.fine("Inserting a new row into table " + table.getName());
+        log.info("Inserting a new row into table " + table.getName());
 
         try(Connection connection = ds.getConnection();
             Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE))
@@ -85,7 +91,7 @@ public class DefaultTableContentService implements TableContentService
             rs.insertRow();
         }
 
-        log.fine("Row inserted");
+        log.info("Row inserted");
     }
 
     @Override
@@ -115,7 +121,7 @@ public class DefaultTableContentService implements TableContentService
     @Override
     public void updateRow(DataSource ds, Table table, int rowIndex, Object[] row) throws SQLException
     {
-        log.fine(String.format("Updating the row nr. %s in table %s", rowIndex, table.getName()));
+        log.info(String.format("Updating the row nr. %s in table %s", rowIndex, table.getName()));
 
         int rowCount = getTableRowCount(ds, table);
 
@@ -154,13 +160,13 @@ public class DefaultTableContentService implements TableContentService
             }
         }
 
-        log.fine("Row updated");
+        log.info("Row updated");
     }
 
     @Override
     public void deleteRow(DataSource ds, Table table, int rowIndex) throws SQLException
     {
-        log.fine(String.format("Deleting the row nr. %s from table %s", rowIndex, table.getName()));
+        log.info(String.format("Deleting the row nr. %s from table %s", rowIndex, table.getName()));
 
         int rowCount = getTableRowCount(ds, table);
 
@@ -187,17 +193,23 @@ public class DefaultTableContentService implements TableContentService
             }
         }
 
-        log.fine("Row deleted");
+        log.info("Row deleted");
     }
 
     // TODO Transaction
     @Override
-    public void copyData(DataSource src, DataSource target, Collection<Table> tables) throws SQLException
+    public void copyData(DataSource src, DataSource target, Collection<Table> tables) throws SQLException, IOException
     {
-        log.fine("Copying all data");
+        log.info("Copying all data");
 
         try(Connection targetConnection = target.getConnection())
         {
+            log.fine("Disabling database constraints");
+            try(Statement statement = targetConnection.createStatement())
+            {
+                statement.execute(QueryLoader.loadQuery("disable_constraints"));
+            }
+
             targetConnection.setAutoCommit(false);
 
             for(Table table : tables)
@@ -218,15 +230,22 @@ public class DefaultTableContentService implements TableContentService
             }
 
             targetConnection.commit();
+            targetConnection.setAutoCommit(true);
+
+            log.fine("Enabling database constraints");
+            try(Statement statement = targetConnection.createStatement())
+            {
+                statement.execute(QueryLoader.loadQuery("enable_constraints"));
+            }
         }
 
-        log.fine("All data copied");
+        log.info("All data copied");
     }
 
     @Override
     public void clearTable(DataSource ds, Table table) throws SQLException
     {
-        log.fine("Deleting all rows from table " + table.getName());
+        log.info("Clearing table " + table.getName());
 
         try(Connection connection = ds.getConnection();
             Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE))
@@ -247,12 +266,12 @@ public class DefaultTableContentService implements TableContentService
             connection.commit();
         }
 
-        log.fine("Table cleared");
+        log.info("Table cleared");
     }
 
     private void insertRows(Connection connection, Table table, List<Object[]> rows) throws SQLException
     {
-        log.fine("Inserting multiple new rows into table " + table.getName());
+        log.info("Inserting multiple new rows into table " + table.getName());
 
         List<String> columnNames = table.getColumns().stream()
                 .map(NamedObject::getName)
@@ -295,14 +314,14 @@ public class DefaultTableContentService implements TableContentService
             statement.executeBatch();
         }
 
-        log.fine("Rows inserted");
+        log.info("Rows inserted");
     }
 
     // TODO
 //    @Override
 //    public int countTableContentRowReferences(DataSource ds, Table table, Object[] row)
 //    {
-//        log.fine("Looking for rows in other tables that reference this row through FKs");
+//        log.info("Looking for rows in other tables that reference this row through FKs");
 //
 //        int cnt = 0;
 //
@@ -342,7 +361,7 @@ public class DefaultTableContentService implements TableContentService
 //            cnt += cntFk;
 //        }
 //
-//        log.fine(String.format("In total, %s rows found referencing this row", cnt));
+//        log.info(String.format("In total, %s rows found referencing this row", cnt));
 //
 //        return cnt;
 //    }

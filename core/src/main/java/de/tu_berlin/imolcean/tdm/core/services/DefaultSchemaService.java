@@ -70,7 +70,7 @@ public class DefaultSchemaService implements SchemaService
         Connection srcConnection = src.getConnection();
         Connection targetConnection = target.getConnection();
 
-        log.fine(String.format("Copying schema from %s to %s", srcConnection.getCatalog(), targetConnection.getCatalog()));
+        log.info(String.format("Copying schema from %s to %s", srcConnection.getCatalog(), targetConnection.getCatalog()));
 
         Database tmpDb = DatabaseFactory.getInstance()
                 .findCorrectDatabaseImplementation(new JdbcConnection(srcConnection));
@@ -124,13 +124,13 @@ public class DefaultSchemaService implements SchemaService
             }
         }
 
-        log.fine("Schema copied");
+        log.info("Schema copied");
     }
 
     @Override
     public void purgeSchema(DataSource ds) throws Exception
     {
-        log.fine("Purging schema");
+        log.info("Purging schema");
 
         Database db = DatabaseFactory.getInstance()
                 .findCorrectDatabaseImplementation(new JdbcConnection(ds.getConnection()));
@@ -140,7 +140,7 @@ public class DefaultSchemaService implements SchemaService
             liquibase.dropAll();
         }
 
-        log.fine("Schema purged");
+        log.info("Schema purged");
     }
 
     @Override

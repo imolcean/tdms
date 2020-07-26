@@ -4,6 +4,7 @@ import schemacrawler.schema.Table;
 import schemacrawler.schemacrawler.SchemaCrawlerException;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
@@ -23,7 +24,7 @@ public interface TableContentService
 
     void deleteRow(DataSource ds, Table table, int rowIndex) throws SQLException;
 
-    void copyData(DataSource src, DataSource target, Collection<Table> tables) throws SQLException;
+    void copyData(DataSource src, DataSource target, Collection<Table> tables) throws SQLException, IOException;
 
     void clearTable(DataSource ds, Table table) throws SQLException;
 }

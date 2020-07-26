@@ -11,6 +11,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.sql.SQLException;
 
+// TODO Return a specific code on SQLException, not HTTP 500
+
 @ControllerAdvice
 public class ControllerExceptionHandler extends ResponseEntityExceptionHandler
 {
