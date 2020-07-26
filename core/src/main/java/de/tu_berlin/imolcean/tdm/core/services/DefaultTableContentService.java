@@ -1,12 +1,12 @@
 package de.tu_berlin.imolcean.tdm.core.services;
 
+import de.danielbechler.util.Strings;
 import de.tu_berlin.imolcean.tdm.api.exceptions.IllegalSizeOfTableContentRowException;
 import de.tu_berlin.imolcean.tdm.api.exceptions.TableContentRowIndexOutOfBoundsException;
 import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
 import de.tu_berlin.imolcean.tdm.core.TableContentResultSetHandler;
 import de.tu_berlin.imolcean.tdm.core.utils.TableContentUtils;
 import lombok.extern.java.Log;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import schemacrawler.schema.*;
@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Log
@@ -83,6 +84,68 @@ public class DefaultTableContentService implements TableContentService
         }
 
         log.fine("Row inserted");
+    }
+
+    @Override
+    public void insertRows(DataSource ds, Table table, List<Object[]> rows) throws SQLException
+    {
+        log.fine("Inserting multiple new rows into table " + table.getName());
+
+        List<String> columnNames = table.getColumns().stream()
+                .map(NamedObject::getName)
+                .collect(Collectors.toList());
+
+        List<JavaSqlType> columnTypes = table.getColumns().stream()
+                .map(col -> col.getColumnDataType().getJavaSqlType())
+                .collect(Collectors.toList());
+
+        String placeholders = new StringBuilder()
+                .append("?,".repeat(columnNames.size()))
+                .reverse()
+                .deleteCharAt(0)
+                .toString();
+
+        String insertSql = String
+                .format("INSERT INTO %s (%s) VALUES (%s)",
+                        table.getName(),
+                        Strings.join(",", columnNames),
+                        placeholders);
+
+        log.fine("Request template: " + insertSql);
+
+        try(Connection connection = ds.getConnection())
+        {
+            connection.setAutoCommit(false);
+
+            try(PreparedStatement statement = connection.prepareStatement(insertSql))
+            {
+                for(Object[] row : rows)
+                {
+                    statement.clearParameters();
+
+                    int i = 0;
+                    for(JavaSqlType type : columnTypes)
+                    {
+                        statement.setObject(i + 1, row[i], type);
+                        i++;
+                    }
+
+                    statement.addBatch();
+                }
+
+                statement.executeBatch();
+                connection.commit();
+            }
+            catch(SQLException e)
+            {
+                log.warning("Insertion failed");
+
+                connection.rollback();
+                throw e;
+            }
+        }
+
+        log.fine("Rows inserted");
     }
 
     // TODO Return TableContentRow
@@ -208,7 +271,7 @@ public class DefaultTableContentService implements TableContentService
                 Column pkCol = ref.getPrimaryKeyColumn();
                 Column fkCol = ref.getForeignKeyColumn();
 
-                if(Strings.isBlank(fkTable))
+                if(Strings.isEmpty(fkTable))
                 {
                     fkTable = fkCol.getParent().getName();
                 }

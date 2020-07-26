@@ -12,6 +12,7 @@ import schemacrawler.schemacrawler.SchemaCrawlerException;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.List;
 
 @RestController
 @RequestMapping("api/data")
@@ -42,15 +43,29 @@ public class TableContentController
                         tableContentService.getTableContent(ds, table)));
     }
 
+    // TODO Remove and use only insertRows()?
+//    @PostMapping("/{alias}/{table}")
+//    public ResponseEntity<Void> insertRow(@PathVariable("alias") String alias,
+//                                          @PathVariable("table") String tableName,
+//                                          @RequestBody Object[] row) throws SQLException, SchemaCrawlerException
+//    {
+//        DataSource ds = dsService.getDataSourceByAlias(alias);
+//        Table table = schemaService.getTable(ds, tableName);
+//
+//        tableContentService.insertRow(ds, table, row);
+//
+//        return ResponseEntity.noContent().build();
+//    }
+
     @PostMapping("/{alias}/{table}")
-    public ResponseEntity<Void> insertRow(@PathVariable("alias") String alias,
-                                          @PathVariable("table") String tableName,
-                                          @RequestBody Object[] row) throws SQLException, SchemaCrawlerException
+    public ResponseEntity<Void> insertRows(@PathVariable("alias") String alias,
+                                           @PathVariable("table") String tableName,
+                                           @RequestBody List<Object[]> rows) throws SQLException, SchemaCrawlerException
     {
         DataSource ds = dsService.getDataSourceByAlias(alias);
         Table table = schemaService.getTable(ds, tableName);
 
-        tableContentService.insertRow(ds, table, row);
+        tableContentService.insertRows(ds, table, rows);
 
         return ResponseEntity.noContent().build();
     }

@@ -12,7 +12,10 @@ public interface TableContentService
 
     List<Object[]> getTableContent(DataSource ds, Table table) throws SQLException;
 
+    @Deprecated
     void insertRow(DataSource ds, Table table, Object[] row) throws SQLException;
+
+    void insertRows(DataSource ds, Table table, List<Object[]> rows) throws SQLException;
 
     void updateRow(DataSource ds, Table table, int rowIndex, Object[] row) throws SQLException;
 
