@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import schemacrawler.schemacrawler.SchemaCrawlerException;
 
+import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,6 +38,26 @@ public class SchemaController
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(list);
+    }
+
+    @PutMapping("copy/{src_alias}/{target_alias}")
+    public ResponseEntity<Void> copySchema(@PathVariable("src_alias") String srcAlias,
+                                           @PathVariable("target_alias") String targetAlias) throws Exception
+    {
+        DataSource src = dsService.getDataSourceByAlias(srcAlias);
+        DataSource target = dsService.getDataSourceByAlias(targetAlias);
+
+        schemaService.copySchema(src, target);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{alias}")
+    public ResponseEntity<Void> purgeSchema(@PathVariable("alias") String alias) throws Exception
+    {
+        schemaService.purgeSchema(dsService.getDataSourceByAlias(alias));
+
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/tables/{alias}")

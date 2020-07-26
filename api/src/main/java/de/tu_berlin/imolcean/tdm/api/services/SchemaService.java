@@ -12,6 +12,10 @@ public interface SchemaService
 {
     Catalog getSchema(DataSource ds) throws SQLException, SchemaCrawlerException;
 
+    void copySchema(DataSource src, DataSource target) throws Exception;
+
+    void purgeSchema(DataSource ds) throws Exception;
+
     List<String> getTableNames(DataSource ds) throws SQLException, SchemaCrawlerException;
 
     List<String> getOccupiedTableNames(DataSource ds) throws SQLException, SchemaCrawlerException;

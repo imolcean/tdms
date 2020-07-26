@@ -2,6 +2,19 @@ package de.tu_berlin.imolcean.tdm.core.services;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.TableNotFoundException;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
+import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
+import de.tu_berlin.imolcean.tdm.core.StreamResourceAccessor;
+import liquibase.Contexts;
+import liquibase.Liquibase;
+import liquibase.database.Database;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.diff.compare.CompareControl;
+import liquibase.diff.output.DiffOutputControl;
+import liquibase.diff.output.changelog.DiffToChangeLog;
+import liquibase.resource.FileSystemResourceAccessor;
+import liquibase.serializer.core.yaml.YamlChangeLogSerializer;
+import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 import schemacrawler.inclusionrule.RegularExpressionInclusionRule;
 import schemacrawler.schema.Catalog;
@@ -11,6 +24,9 @@ import schemacrawler.schemacrawler.*;
 import schemacrawler.utility.SchemaCrawlerUtility;
 
 import javax.sql.DataSource;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -18,9 +34,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Log
 public class DefaultSchemaService implements SchemaService
 {
     // TODO Cache
+
+    private final TableContentService tableContentService;
+
+    public DefaultSchemaService(TableContentService tableContentService)
+    {
+        this.tableContentService = tableContentService;
+    }
 
     @Override
     public Catalog getSchema(DataSource ds) throws SQLException, SchemaCrawlerException
@@ -38,6 +62,85 @@ public class DefaultSchemaService implements SchemaService
 
             return SchemaCrawlerUtility.getCatalog(connection, options);
         }
+    }
+
+    @Override
+    public void copySchema(DataSource src, DataSource target) throws Exception
+    {
+        Connection srcConnection = src.getConnection();
+        Connection targetConnection = target.getConnection();
+
+        log.fine(String.format("Copying schema from %s to %s", srcConnection.getCatalog(), targetConnection.getCatalog()));
+
+        Database tmpDb = DatabaseFactory.getInstance()
+                .findCorrectDatabaseImplementation(new JdbcConnection(srcConnection));
+        Database internalDb = DatabaseFactory.getInstance()
+                .findCorrectDatabaseImplementation(new JdbcConnection(targetConnection));
+
+        try(Liquibase liqSrc = new Liquibase("", new FileSystemResourceAccessor(), tmpDb);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintStream ps = new PrintStream(baos, true, StandardCharsets.UTF_8))
+        {
+            DiffToChangeLog writer =
+                    new DiffToChangeLog(
+                            new DiffOutputControl(
+                                    true,
+                                    true,
+                                    true,
+                                    new CompareControl.SchemaComparison[0]));
+
+            liqSrc.generateChangeLog(tmpDb.getDefaultSchema(), writer, ps, new YamlChangeLogSerializer());
+
+            // Change catalogName from src to tmp
+            // TODO Use Liquibase API to change fields in Change. Replacing with RegEx may have side effects.
+            String changelog = baos.toString().replaceAll(srcConnection.getCatalog(), targetConnection.getCatalog());
+
+            // TODO Remove
+            System.out.println(changelog);
+
+            try(Liquibase liqTarget = new Liquibase("changelog.yml", new StreamResourceAccessor(changelog), internalDb))
+            {
+                liqTarget.update(new Contexts());
+
+                // We use Liquibase as a service tool to copy schema from one DataSource to another,
+                // which means that we get non-empty tables DATABASECHANGELOG nad DATABASECHANGELOGLOCK
+                // as a side effect. After the schema is copied, we need to determine whether the source DB
+                // used to have these tables. If so, we will need to keep them in the target DB as well.
+                // The tables, however, will need to be cleared so they do not contain any rows.
+                // If the source DB did not have these tables, which means the source DB was not
+                // managed with Liquibase, we will need to remove the tables from the target DB
+                // too so the two schemas are identical.
+
+                if(tableExists(src, "DATABASECHANGELOG"))
+                {
+                    tableContentService.clearTable(target, getTable(target, "DATABASECHANGELOG"));
+                    tableContentService.clearTable(target, getTable(target, "DATABASECHANGELOGLOCK"));
+                }
+                else
+                {
+                    dropTable(target, "DATABASECHANGELOG");
+                    dropTable(target, "DATABASECHANGELOGLOCK");
+                }
+            }
+        }
+
+        log.fine("Schema copied");
+    }
+
+    @Override
+    public void purgeSchema(DataSource ds) throws Exception
+    {
+        log.fine("Purging schema");
+
+        Database db = DatabaseFactory.getInstance()
+                .findCorrectDatabaseImplementation(new JdbcConnection(ds.getConnection()));
+
+        try(Liquibase liquibase = new Liquibase("", new FileSystemResourceAccessor(), db))
+        {
+            liquibase.dropAll();
+        }
+
+        log.fine("Schema purged");
     }
 
     @Override
