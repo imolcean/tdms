@@ -1,9 +1,14 @@
 package de.tu_berlin.imolcean.tdm.core.controllers;
 
+import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateCommitRequest;
+import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateDto;
 import de.tu_berlin.imolcean.tdm.api.dto.TableMetaDataDto;
+import de.tu_berlin.imolcean.tdm.api.interfaces.updater.SchemaUpdater;
+import de.tu_berlin.imolcean.tdm.core.controllers.mappers.SchemaUpdateMapper;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.TableMetaDataMapper;
+import de.tu_berlin.imolcean.tdm.core.services.SchemaUpdateService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import schemacrawler.schemacrawler.SchemaCrawlerException;
@@ -19,12 +24,15 @@ public class SchemaController
 {
     private final DataSourceService dsService;
     private final SchemaService schemaService;
+    private final SchemaUpdateService schemaUpdateService;
 
     public SchemaController(DataSourceService dsService,
-                            SchemaService SchemaService)
+                            SchemaService SchemaService,
+                            SchemaUpdateService schemaUpdateService)
     {
         this.dsService = dsService;
         this.schemaService = SchemaService;
+        this.schemaUpdateService = schemaUpdateService;
     }
 
     @GetMapping("/{alias}")
@@ -101,6 +109,37 @@ public class SchemaController
                                           @PathVariable("table") String tableName) throws SQLException, SchemaCrawlerException
     {
         schemaService.dropTable(dsService.getDataSourceByAlias(alias), tableName);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/internal/update")
+    public ResponseEntity<Boolean> isSchemaUpdateInProgress()
+    {
+        return ResponseEntity.ok(schemaUpdateService.isUpdateInProgress());
+    }
+
+    @PutMapping("/internal/update/init")
+    public ResponseEntity<SchemaUpdateDto> initSchemaUpdate() throws Exception
+    {
+        SchemaUpdater.SchemaUpdateReport report =
+                schemaUpdateService.initSchemaUpdate(dsService.getInternalDataSource(), dsService.getTmpDataSource());
+
+        return ResponseEntity.ok(SchemaUpdateMapper.toDto(report));
+    }
+
+    @PutMapping("/internal/update/commit")
+    public ResponseEntity<Void> commitSchemaUpdate(@RequestBody SchemaUpdateCommitRequest request) throws Exception
+    {
+        schemaUpdateService.commitSchemaUpdate(request);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/internal/update/cancel")
+    public ResponseEntity<Void> cancelSchemaUpdate() throws Exception
+    {
+        schemaUpdateService.cancelSchemaUpdate();
 
         return ResponseEntity.noContent().build();
     }

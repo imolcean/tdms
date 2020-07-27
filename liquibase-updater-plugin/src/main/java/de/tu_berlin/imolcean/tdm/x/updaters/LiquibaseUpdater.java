@@ -1,10 +1,8 @@
 package de.tu_berlin.imolcean.tdm.x.updaters;
 
-import de.tu_berlin.imolcean.tdm.api.interfaces.updater.SchemaUpdater;
-import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
+import de.tu_berlin.imolcean.tdm.api.interfaces.updater.SimpleSchemaUpdater;
 import de.tu_berlin.imolcean.tdm.x.DiffMapper;
 import liquibase.Contexts;
-import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
@@ -18,25 +16,21 @@ import lombok.extern.java.Log;
 import org.pf4j.Extension;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
 import java.util.Properties;
 
 @Extension
 @Log
 @NoArgsConstructor
-public class LiquibaseUpdater implements SchemaUpdater
+public class LiquibaseUpdater extends SimpleSchemaUpdater
 {
-    private SchemaService schemaService;
-
     private String changelogPath;
 
-    // TODO Store intermediate DB info in plugin's config?
-    // TODO Use tmp schema instead of tmp DB?
-    // TODO Insert SchemaService through DI
     @SuppressWarnings("unused")
     public LiquibaseUpdater(Properties properties)
     {
         this.changelogPath = properties.getProperty("changelog.path");
+        this.internalDs = null;
+        this.tmpDs = null;
 
         log.fine("Liquibase changelog: " + this.changelogPath);
     }
@@ -44,44 +38,44 @@ public class LiquibaseUpdater implements SchemaUpdater
     @Override
     public SchemaUpdateReport initSchemaUpdate(DataSource internalDs, DataSource tmpDs) throws Exception
     {
+        if(isUpdateInProgress())
+        {
+            throw new IllegalStateException("Another schema update is already in progress");
+        }
+
         if(changelogPath == null)
         {
             throw new IllegalStateException("Changelog path is not configured");
         }
 
+        this.internalDs = internalDs;
+        this.tmpDs = tmpDs;
+
         log.info("Initialising schema update");
 
-        try(Connection internalDsConnection = internalDs.getConnection();
-            Connection tmpDsConnection = tmpDs.getConnection())
+        Database internalDb = DatabaseFactory.getInstance()
+                .findCorrectDatabaseImplementation(new JdbcConnection(internalDs.getConnection()));
+        Database tmpDb = DatabaseFactory.getInstance()
+                .findCorrectDatabaseImplementation(new JdbcConnection(tmpDs.getConnection()));
+
+        try(Liquibase liquibase = new Liquibase(changelogPath, new FileSystemResourceAccessor(), tmpDb))
         {
-            Database internalDb = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(internalDsConnection));
-            Database tmpDb = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(tmpDsConnection));
+            liquibase.dropAll(); // Clearing Temp DB, just in case
+            liquibase.update(new Contexts());
 
-            try(Liquibase liquibase = new Liquibase(changelogPath, new FileSystemResourceAccessor(), tmpDb))
-            {
-                liquibase.dropAll();
-                liquibase.update(new Contexts(), new LabelExpression());
+            DiffResult diff = liquibase.diff(internalDb, tmpDb, CompareControl.STANDARD);
 
-                DiffResult diff = liquibase.diff(internalDb, tmpDb, CompareControl.STANDARD);
+            // TODO Remove
+            new DiffToReport(diff, System.out).print();
 
-                // TODO Remove
-                new DiffToReport(diff, System.out).print();
+            log.info("Update initialised");
+            log.info("Preparing schema update report");
 
-                log.info("Update initialised");
-                log.info("Preparing schema update report");
+            SchemaUpdateReport report = new DiffMapper(schemaService, internalDs, tmpDs).toSchemaUpdate(diff);
 
-                SchemaUpdateReport report = new DiffMapper(schemaService, internalDs, tmpDs).toSchemaUpdate(diff);
+            log.info("Report is finished");
 
-                log.info("Report is finished");
-
-                return report;
-            }
+            return report;
         }
-    }
-
-    @Override
-    public void setSchemaService(SchemaService service)
-    {
-        this.schemaService = service;
     }
 }
