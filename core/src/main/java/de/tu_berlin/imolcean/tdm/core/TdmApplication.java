@@ -40,7 +40,8 @@ public class TdmApplication implements CommandLineRunner
     public void run(String... args) throws Exception
     {
         StageContextHolder.setStageName("exp");
-        schemaUpdateImplementationManager.selectImplementation("de.tu_berlin.imolcean.tdm.x.updaters.LiquibaseUpdater");
+        schemaUpdateImplementationManager
+                .selectImplementation("de.tu_berlin.imolcean.tdm.x.updaters.LiquibaseDiffSchemaUpdater");
 
 
 //        Catalog internalDb = schemaService.getSchema(dsService.getInternalDataSource());

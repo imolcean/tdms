@@ -38,9 +38,9 @@ public abstract class AbstractSchemaUpdater implements SchemaUpdater
             throw new IllegalStateException("There is no schema update in progress currently");
         }
 
-        if(this instanceof SimpleSchemaUpdater)
+        if(this instanceof DiffSchemaUpdater)
         {
-            ((SimpleSchemaUpdater) this).mapData(request);
+            ((DiffSchemaUpdater) this).mapData(request);
         }
         else
         {
@@ -59,8 +59,7 @@ public abstract class AbstractSchemaUpdater implements SchemaUpdater
 
         log.fine("Purging Temp DB");
 
-        // TODO
-//        purgeSchema(tmpDs);
+        schemaService.purgeSchema(tmpDs);
 
         log.info("Schema update committed");
 

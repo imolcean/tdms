@@ -1,6 +1,6 @@
 package de.tu_berlin.imolcean.tdm.x.updaters;
 
-import de.tu_berlin.imolcean.tdm.api.interfaces.updater.SimpleSchemaUpdater;
+import de.tu_berlin.imolcean.tdm.api.interfaces.updater.DiffSchemaUpdater;
 import de.tu_berlin.imolcean.tdm.x.DiffMapper;
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -21,12 +21,12 @@ import java.util.Properties;
 @Extension
 @Log
 @NoArgsConstructor
-public class LiquibaseUpdater extends SimpleSchemaUpdater
+public class LiquibaseDiffSchemaUpdater extends DiffSchemaUpdater
 {
     private String changelogPath;
 
     @SuppressWarnings("unused")
-    public LiquibaseUpdater(Properties properties)
+    public LiquibaseDiffSchemaUpdater(Properties properties)
     {
         this.changelogPath = properties.getProperty("changelog.path");
         this.internalDs = null;
@@ -62,6 +62,10 @@ public class LiquibaseUpdater extends SimpleSchemaUpdater
         {
             liquibase.dropAll(); // Clearing Temp DB, just in case
             liquibase.update(new Contexts());
+
+            // We don't use incremental updates here so we also don't need these tables
+            schemaService.dropTable(tmpDs, "DATABASECHANGELOG");
+            schemaService.dropTable(tmpDs, "DATABASECHANGELOGLOCK");
 
             DiffResult diff = liquibase.diff(internalDb, tmpDb, CompareControl.STANDARD);
 

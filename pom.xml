@@ -20,7 +20,7 @@
         <module>api</module>
         <module>core</module>
         <module>importers-plugin</module>
-        <module>liquibase-updater-plugin</module>
+        <module>liquibase-schema-updaters-plugin</module>
         <module>gui</module>
     </modules>
 

@@ -23,7 +23,7 @@ import java.util.List;
  * Some often-used functionality is already implemented in {@link AbstractSchemaUpdater} and its subclasses, so it's
  * rarely necessary to implement all methods of this interface. If the implementation handles data mapping from the
  * old schema to the new one by itself, it has to extend {@link IterativeSchemaUpdater}.
- * In case it does not handle the data mapping but only provides a new schema, {@link SimpleSchemaUpdater} has to
+ * In case it does not handle the data mapping but only provides a new schema, {@link DiffSchemaUpdater} has to
  * be extended. The default implementation will then take care of the mapping. It will request SQL
  * mapping scripts for every changed table to be provided by the user. The tables that do not get a mapping
  * script will be mapped automatically if possible.
@@ -74,7 +74,9 @@ public interface SchemaUpdater extends PublicInterface, ExtensionPoint
     /**
      * Finishes the process of a schema update by copying updated schema and data from Temp DB into Internal DB.
      *
-     * The commit process of {@link SimpleSchemaUpdater} includes an additional step before. It will map the data
+     * TODO: Separate data mapping from commit
+     *
+     * The commit process of {@link DiffSchemaUpdater} includes an additional step before. It will map the data
      * from the old schema to the new one. Data from the untouched tables will be handled automatically. Newly added or
      * modified tables may require an SQL mapping script provided by the user as part of the {@code request}. If there
      * is no such script provided for an added/modified table, then an automatic mapping will be attempted.

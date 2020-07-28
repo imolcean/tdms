@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 /**
  * Represents a special case of {@link SchemaUpdater} when the schema updates are not meant to be handled
- * as a list of successive changes.
+ * as a list of successive changes but rather as a difference between the old and new schemas.
  *
  * Every update is carrying a complete schema description that is applied to the empty Temp DB. Next, a difference
  * between two schemas (Internal DB and Temp DB) is built. For every untouched table (i.e. table that has the same
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * {@code commitSchemaUpdate} method.
  */
 @Log
-public abstract class SimpleSchemaUpdater extends AbstractSchemaUpdater
+public abstract class DiffSchemaUpdater extends AbstractSchemaUpdater
 {
     /**
      * Maps all data from the old schema to the new schema.
@@ -58,7 +58,7 @@ public abstract class SimpleSchemaUpdater extends AbstractSchemaUpdater
                 // Empty tables are ignored for performance reason
 
                 log.info("Mapping tables automatically");
-                log.fine("Choosing tables for auto migration");
+                log.fine("Choosing tables for auto mapping");
 
                 List<String> allTablesBeforeUpdate = schemaService.getTableNames(internalDs);
                 List<String> allTablesAfterUpdate = schemaService.getTableNames(tmpDs);
