@@ -1,6 +1,6 @@
 package de.tu_berlin.imolcean.tdm.api.interfaces.updater;
 
-import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateCommitRequest;
+import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateDataMappingRequest;
 import de.tu_berlin.imolcean.tdm.api.exceptions.TableNotFoundException;
 import lombok.extern.java.Log;
 import org.apache.logging.log4j.util.Strings;
@@ -8,6 +8,7 @@ import schemacrawler.schema.NamedObject;
 import schemacrawler.schema.Table;
 import schemacrawler.schemacrawler.SchemaCrawlerException;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -21,29 +22,26 @@ import java.util.stream.Collectors;
  * Every update is carrying a complete schema description that is applied to the empty Temp DB. Next, a difference
  * between two schemas (Internal DB and Temp DB) is built. For every untouched table (i.e. table that has the same
  * column names, data types, constraints, etc.), its data will be copied to the new schema automatically. Every other
- * table needs an SQL migration script. These scripts should be provided by the user when calling the
- * {@code commitSchemaUpdate} method.
+ * table needs an SQL migration script. These scripts should be provided by the user by calling the
+ * {@code mapData} method.
  */
 @Log
 public abstract class DiffSchemaUpdater extends AbstractSchemaUpdater
 {
-    /**
-     * Maps all data from the old schema to the new schema.
-     *
-     * This method determines which tables should be mapped automatically and which ones do not.
-     * In case something goes wrong during the process, the whole mapping will be rolled back,
-     * leaving the Temp DB in the state it was before.
-     *
-     * @param request describes how data from the old schema will be mapped to the new one
-     * @throws SQLException if something goes wrong while interacting with the database
-     * @throws SchemaCrawlerException if something goes wrong while extracting schema information
-     */
-    protected void mapData(SchemaUpdateCommitRequest request)
+    protected boolean dataMapped;
+
+    @Override
+    public void mapData(SchemaUpdateDataMappingRequest request)
             throws SQLException, SchemaCrawlerException
     {
         if(!isUpdateInProgress())
         {
             throw new IllegalStateException("There is no schema update in progress currently");
+        }
+
+        if(dataMapped)
+        {
+            throw new IllegalStateException("Data mapping has already been performed");
         }
 
         log.info("Mapping data to the new schema");
@@ -64,7 +62,7 @@ public abstract class DiffSchemaUpdater extends AbstractSchemaUpdater
                 List<String> allTablesAfterUpdate = schemaService.getTableNames(tmpDs);
                 List<String> emptyTables = schemaService.getEmptyTableNames(internalDs);
                 List<String> tablesToMigrateManually = request.getSqlMigrationTables().stream()
-                        .map(SchemaUpdateCommitRequest.TableDataMigrationRequest::getTableName)
+                        .map(SchemaUpdateDataMappingRequest.TableDataMigrationRequest::getTableName)
                         .collect(Collectors.toList());
 
                 @SuppressWarnings("Convert2MethodRef")
@@ -91,7 +89,7 @@ public abstract class DiffSchemaUpdater extends AbstractSchemaUpdater
 
                 log.info("Mapping tables using provided mapping scripts");
 
-                for(SchemaUpdateCommitRequest.TableDataMigrationRequest req : request.getSqlMigrationTables())
+                for(SchemaUpdateDataMappingRequest.TableDataMigrationRequest req : request.getSqlMigrationTables())
                 {
                     if(!allTablesAfterUpdate.contains(req.getTableName()))
                     {
@@ -114,7 +112,26 @@ public abstract class DiffSchemaUpdater extends AbstractSchemaUpdater
             tmpDsConnection.commit();
         }
 
+        dataMapped = true;
+
         log.info("Data mapping finished");
+    }
+
+    @Override
+    public void rollbackDataMapping() throws SQLException, SchemaCrawlerException, IOException
+    {
+        if(!dataMapped)
+        {
+            throw new IllegalStateException("Data mapping has not yet been performed");
+        }
+
+        log.info("Rolling back data mapping");
+
+        tableContentService.clearTables(tmpDs, schemaService.getSchema(tmpDs).getTables());
+
+        dataMapped = false;
+
+        log.info("Data mapping rolled back");
     }
 
     private void mapDataAutomatically(Connection connection, Table src, Table target) throws SQLException
@@ -137,7 +154,7 @@ public abstract class DiffSchemaUpdater extends AbstractSchemaUpdater
         }
     }
 
-    private void mapDataManually(Connection connection, SchemaUpdateCommitRequest.TableDataMigrationRequest request) throws SQLException
+    private void mapDataManually(Connection connection, SchemaUpdateDataMappingRequest.TableDataMigrationRequest request) throws SQLException
     {
         log.fine(String.format("%s: %s", request.getTableName(), request.getSql()));
 

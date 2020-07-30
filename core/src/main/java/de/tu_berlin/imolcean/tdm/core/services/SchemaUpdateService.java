@@ -1,6 +1,6 @@
 package de.tu_berlin.imolcean.tdm.core.services;
 
-import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateCommitRequest;
+import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateDataMappingRequest;
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoSchemaUpdaterSelectedException;
 import de.tu_berlin.imolcean.tdm.api.interfaces.updater.SchemaUpdater;
 import de.tu_berlin.imolcean.tdm.core.services.managers.SchemaUpdateImplementationManager;
@@ -11,10 +11,8 @@ import javax.sql.DataSource;
 
 @Service
 @Log
-public class SchemaUpdateService
+public class SchemaUpdateService implements SchemaUpdater
 {
-    // TODO JavaDoc
-
     private final SchemaUpdateImplementationManager schemaUpdateImplementationManager;
 
     public SchemaUpdateService(SchemaUpdateImplementationManager schemaUpdateImplementationManager)
@@ -22,21 +20,37 @@ public class SchemaUpdateService
         this.schemaUpdateImplementationManager = schemaUpdateImplementationManager;
     }
 
+    @Override
     public boolean isUpdateInProgress()
     {
         return getSchemaUpdater().isUpdateInProgress();
     }
 
+    @Override
     public SchemaUpdater.SchemaUpdateReport initSchemaUpdate(DataSource internalDs, DataSource tmpDs) throws Exception
     {
         return getSchemaUpdater().initSchemaUpdate(internalDs, tmpDs);
     }
 
-    public void commitSchemaUpdate(SchemaUpdateCommitRequest request) throws Exception
+    @Override
+    public void mapData(SchemaUpdateDataMappingRequest request) throws Exception
     {
-        getSchemaUpdater().commitSchemaUpdate(request);
+        getSchemaUpdater().mapData(request);
     }
 
+    @Override
+    public void rollbackDataMapping() throws Exception
+    {
+        getSchemaUpdater().rollbackDataMapping();
+    }
+
+    @Override
+    public void commitSchemaUpdate() throws Exception
+    {
+        getSchemaUpdater().commitSchemaUpdate();
+    }
+
+    @Override
     public void cancelSchemaUpdate() throws Exception
     {
         getSchemaUpdater().cancelSchemaUpdate();

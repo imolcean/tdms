@@ -1,6 +1,6 @@
 package de.tu_berlin.imolcean.tdm.api.interfaces.updater;
 
-import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateCommitRequest;
+import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateDataMappingRequest;
 import de.tu_berlin.imolcean.tdm.api.interfaces.PublicInterface;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
@@ -49,7 +49,7 @@ public interface SchemaUpdater extends PublicInterface, ExtensionPoint
     }
 
     @Deprecated
-    void setDependencies(SchemaService schemaService, TableContentService tableContentService);
+    default void setDependencies(SchemaService schemaService, TableContentService tableContentService) {}
 
     /**
      * Indicates whether a schema update is in progress.
@@ -63,8 +63,6 @@ public interface SchemaUpdater extends PublicInterface, ExtensionPoint
      * Applies new database schema to a Temp DB and provides a {@link SchemaUpdateReport}
      * that describes all changes in the new schema with respect to the old one.
      *
-     * TODO Throw SchemaUpdateException
-     *
      * @param internalDs internal storage of the test data with the old schema
      * @param tmpDs empty temporary storage that the new schema will be applied to
      * @return report of all changes in the new schema with respect to the old one
@@ -72,18 +70,35 @@ public interface SchemaUpdater extends PublicInterface, ExtensionPoint
     SchemaUpdateReport initSchemaUpdate(DataSource internalDs, DataSource tmpDs) throws Exception;
 
     /**
-     * Finishes the process of a schema update by copying updated schema and data from Temp DB into Internal DB.
+     * Maps all data from the old schema to the new schema.
      *
-     * TODO: Separate data mapping from commit
-     *
-     * The commit process of {@link DiffSchemaUpdater} includes an additional step before. It will map the data
-     * from the old schema to the new one. Data from the untouched tables will be handled automatically. Newly added or
-     * modified tables may require an SQL mapping script provided by the user as part of the {@code request}. If there
+     * Data from the untouched tables will be handled automatically. Newly added or
      * is no such script provided for an added/modified table, then an automatic mapping will be attempted.
+     * In case something goes wrong during the process, the whole mapping will be rolled back,
+     * leaving the Temp DB in the state it was before.
+     *
+     * Note that descendants of {@link IterativeSchemaUpdater} perform data mapping as part of
+     * schema update itself and therefore don't require this method to be called before commit.
      *
      * @param request describes how data from the old schema will be mapped to the new one
      */
-    void commitSchemaUpdate(SchemaUpdateCommitRequest request) throws Exception;
+    void mapData(SchemaUpdateDataMappingRequest request) throws Exception;
+
+    /**
+     * Removed data from Temp DB that were written there using {@code mapData} method.
+     *
+     * This method should be used in case Temp DB doesn't look as intended after data mapping was performed.
+     * This method will erase all data from Temp DB and allow to perform mapping again.
+     *
+     * Note that descendants of {@link IterativeSchemaUpdater} perform data mapping as part of
+     * schema update itself and therefore don't require this method to be called before commit.
+     */
+    void rollbackDataMapping() throws Exception;
+
+    /**
+     * Finishes the process of a schema update by copying updated schema and data from Temp DB into Internal DB.
+     */
+    void commitSchemaUpdate() throws Exception;
 
     /**
      * Cancels the schema update process started previously.

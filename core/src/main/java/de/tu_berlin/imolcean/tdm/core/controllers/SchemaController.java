@@ -1,6 +1,6 @@
 package de.tu_berlin.imolcean.tdm.core.controllers;
 
-import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateCommitRequest;
+import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateDataMappingRequest;
 import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateDto;
 import de.tu_berlin.imolcean.tdm.api.dto.TableMetaDataDto;
 import de.tu_berlin.imolcean.tdm.api.interfaces.updater.SchemaUpdater;
@@ -128,10 +128,26 @@ public class SchemaController
         return ResponseEntity.ok(SchemaUpdateMapper.toDto(report));
     }
 
-    @PutMapping("/internal/update/commit")
-    public ResponseEntity<Void> commitSchemaUpdate(@RequestBody SchemaUpdateCommitRequest request) throws Exception
+    @PutMapping("/internal/update/data/map")
+    public ResponseEntity<Void> schemaUpdateMapData(@RequestBody SchemaUpdateDataMappingRequest request) throws Exception
     {
-        schemaUpdateService.commitSchemaUpdate(request);
+        schemaUpdateService.mapData(request);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/internal/update/data/rollback")
+    public ResponseEntity<Void> schemaUpdateRollbackDataMapping() throws Exception
+    {
+        schemaUpdateService.rollbackDataMapping();
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/internal/update/commit")
+    public ResponseEntity<Void> commitSchemaUpdate() throws Exception
+    {
+        schemaUpdateService.commitSchemaUpdate();
 
         return ResponseEntity.noContent().build();
     }

@@ -29,6 +29,7 @@ public class LiquibaseDiffSchemaUpdater extends DiffSchemaUpdater
     public LiquibaseDiffSchemaUpdater(Properties properties)
     {
         this.changelogPath = properties.getProperty("changelog.path");
+        this.dataMapped = false;
         this.internalDs = null;
         this.tmpDs = null;
 

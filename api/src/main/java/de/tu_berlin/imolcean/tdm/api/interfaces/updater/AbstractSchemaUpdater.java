@@ -1,6 +1,6 @@
 package de.tu_berlin.imolcean.tdm.api.interfaces.updater;
 
-import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateCommitRequest;
+import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateDataMappingRequest;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
 import lombok.extern.java.Log;
@@ -31,20 +31,11 @@ public abstract class AbstractSchemaUpdater implements SchemaUpdater
     }
 
     @Override
-    public void commitSchemaUpdate(SchemaUpdateCommitRequest request) throws Exception
+    public void commitSchemaUpdate() throws Exception
     {
         if(!isUpdateInProgress())
         {
             throw new IllegalStateException("There is no schema update in progress currently");
-        }
-
-        if(this instanceof DiffSchemaUpdater)
-        {
-            ((DiffSchemaUpdater) this).mapData(request);
-        }
-        else
-        {
-            log.info("Skipping data mapping");
         }
 
         log.info("Committing schema update");

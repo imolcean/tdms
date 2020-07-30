@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SchemaUpdateCommitRequest
+public class SchemaUpdateDataMappingRequest
 {
     @Data
     @AllArgsConstructor

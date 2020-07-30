@@ -41,7 +41,7 @@ public class TdmApplication implements CommandLineRunner
     {
         StageContextHolder.setStageName("exp");
         schemaUpdateImplementationManager
-                .selectImplementation("de.tu_berlin.imolcean.tdm.x.updaters.LiquibaseIterativeSchemaUpdater");
+                .selectImplementation("de.tu_berlin.imolcean.tdm.x.updaters.LiquibaseDiffSchemaUpdater");
 
 
 //        Catalog internalDb = schemaService.getSchema(dsService.getInternalDataSource());

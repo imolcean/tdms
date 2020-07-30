@@ -1,5 +1,6 @@
 package de.tu_berlin.imolcean.tdm.api.interfaces.updater;
 
+import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateDataMappingRequest;
 import lombok.extern.java.Log;
 
 /**
@@ -25,5 +26,17 @@ public abstract class IterativeSchemaUpdater extends AbstractSchemaUpdater
         tableContentService.copyData(internalDs, tmpDs, schemaService.getSchema(internalDs).getTables());
 
         log.info("Temp DB prepared");
+    }
+
+    @Override
+    public void mapData(SchemaUpdateDataMappingRequest request)
+    {
+        throw new UnsupportedOperationException("Iterative schema updaters do not support data mapping as a separate step");
+    }
+
+    @Override
+    public void rollbackDataMapping()
+    {
+        throw new UnsupportedOperationException("Iterative schema updaters do not support data mapping as a separate step");
     }
 }
