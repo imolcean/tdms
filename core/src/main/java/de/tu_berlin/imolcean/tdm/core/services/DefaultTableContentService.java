@@ -9,6 +9,7 @@ import de.tu_berlin.imolcean.tdm.core.utils.QueryLoader;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 import schemacrawler.schema.*;
+import schemacrawler.schemacrawler.SchemaCrawlerException;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -240,15 +241,13 @@ public class DefaultTableContentService implements TableContentService
     {
         log.info("Clearing table " + table.getName());
 
-        try(Connection connection = ds.getConnection();
-            Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE))
+        try(Connection connection = ds.getConnection())
         {
             connection.setAutoCommit(false);
 
             try
             {
-                //noinspection SqlWithoutWhere
-                statement.executeUpdate("DELETE FROM " + table.getName());
+                clearTable(connection, table);
             }
             catch(SQLException e)
             {
@@ -260,6 +259,51 @@ public class DefaultTableContentService implements TableContentService
         }
 
         log.info("Table cleared");
+    }
+
+    @Override
+    public void clearTables(DataSource ds, Collection<Table> tables) throws SQLException, IOException
+    {
+        log.info("Clearing all tables");
+
+        try(Connection connection = ds.getConnection())
+        {
+            log.fine("Disabling database constraints");
+            try(Statement statement = connection.createStatement())
+            {
+                statement.execute(QueryLoader.loadQuery("disable_constraints"));
+            }
+
+            connection.setAutoCommit(false);
+
+            try
+            {
+                for(Table table : tables)
+                {
+                    log.fine("Clearing table " + table.getName());
+
+                    clearTable(connection, table);
+                }
+            }
+            catch(SQLException e)
+            {
+                log.warning("Clearing all tables failed");
+
+                connection.rollback();
+                throw e;
+            }
+
+            connection.commit();
+            connection.setAutoCommit(true);
+
+            log.fine("Enabling database constraints");
+            try(Statement statement = connection.createStatement())
+            {
+                statement.execute(QueryLoader.loadQuery("enable_constraints"));
+            }
+        }
+
+        log.info("All tables cleared");
     }
 
     private void insertRows(Connection connection, Table table, List<Object[]> rows) throws SQLException
@@ -308,6 +352,15 @@ public class DefaultTableContentService implements TableContentService
         }
 
         log.info("Rows inserted");
+    }
+
+    private void clearTable(Connection connection, Table table) throws SQLException
+    {
+        try(Statement statement = connection.createStatement())
+        {
+            //noinspection SqlWithoutWhere
+            statement.executeUpdate("DELETE FROM " + table.getName());
+        }
     }
 
 //    @Override

@@ -125,4 +125,15 @@ public class TableContentController
 
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/{alias}")
+    public ResponseEntity<Void> clearAllTables(@PathVariable("alias") String alias)
+            throws SQLException, IOException, SchemaCrawlerException
+    {
+        DataSource ds = dsService.getDataSourceByAlias(alias);
+
+        tableContentService.clearTables(ds, schemaService.getSchema(ds).getTables());
+
+        return ResponseEntity.noContent().build();
+    }
 }

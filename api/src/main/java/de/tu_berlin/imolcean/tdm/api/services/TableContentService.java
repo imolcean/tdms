@@ -27,4 +27,6 @@ public interface TableContentService
     void copyData(DataSource src, DataSource target, Collection<Table> tables) throws SQLException, IOException;
 
     void clearTable(DataSource ds, Table table) throws SQLException;
+
+    void clearTables(DataSource ds, Collection<Table> tables) throws SQLException, IOException;
 }
