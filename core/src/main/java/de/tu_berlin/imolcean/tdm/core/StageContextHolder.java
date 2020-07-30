@@ -11,7 +11,7 @@ public class StageContextHolder
     public static void setStageName(String name)
     {
         if(name.equalsIgnoreCase("internal")
-                || name.equalsIgnoreCase("import")
+                || name.equalsIgnoreCase("tmp")
                 || name.equalsIgnoreCase("current"))
         {
             throw new InvalidStageNameException(name);
