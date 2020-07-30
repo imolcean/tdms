@@ -103,6 +103,7 @@ public class DataSourceService
      * Returns {@link DataSourceWrapper} that is associated with the specified {@code name}.
      *
      * @param alias "internal" is an alias for the internal {@link DataSourceWrapper},
+     *              "tmp" is an alias for the Temp {@link DataSourceWrapper},
      *              "current" is an alias for the {@link DataSourceWrapper} of the currently selected stage
      * @throws InvalidDataSourceAliasException if the provided {@code alias} is invalid
      * @throws NoCurrentStageException if {@code alias} is "current" but there is no stage selected
