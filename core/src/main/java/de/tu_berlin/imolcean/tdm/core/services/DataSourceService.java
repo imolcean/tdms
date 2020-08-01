@@ -19,7 +19,7 @@ public class DataSourceService
     private final StageDataSourceParamsRepository stageDsParamsRepo;
 
     public DataSourceService(@Qualifier("InternalDataSource") DataSourceWrapper internalDs,
-                             @Qualifier("ImportDataSource") DataSourceWrapper tmpDs,
+                             @Qualifier("TmpDataSource") DataSourceWrapper tmpDs,
                              StageDataSourceParamsRepository stageDsParamsRepo)
     {
         this.internalDs = internalDs;

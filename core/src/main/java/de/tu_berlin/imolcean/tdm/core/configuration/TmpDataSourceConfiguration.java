@@ -6,22 +6,22 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ImportDataSourceConfiguration
+public class TmpDataSourceConfiguration
 {
-    @Value("${app.datasource.import.driver-class-name}")
+    @Value("${app.datasource.tmp.driver-class-name}")
     private String driver;
 
-    @Value("${app.datasource.import.url}")
+    @Value("${app.datasource.tmp.url}")
     private String url;
 
-    @Value("${app.datasource.import.username}")
+    @Value("${app.datasource.tmp.username}")
     private String username;
 
-    @Value("${app.datasource.import.password}")
+    @Value("${app.datasource.tmp.password}")
     private String password;
 
-    @Bean(name = "ImportDataSource")
-    public DataSourceWrapper internalDataSource()
+    @Bean(name = "TmpDataSource")
+    public DataSourceWrapper tmpDataSource()
     {
         return new DataSourceWrapper(driver, url, username, password);
     }
