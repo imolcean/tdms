@@ -23,15 +23,10 @@ public class ProjectController
         this.projectService = projectService;
     }
 
-    @PostMapping("/")
-    public ResponseEntity<Void> open(@RequestParam("file") MultipartFile file) throws IOException
+    @GetMapping("/name")
+    public ResponseEntity<String> currentName()
     {
-        Properties project = new Properties();
-        project.load(file.getInputStream());
-
-        projectService.open(project);
-
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(projectService.getProjectName());
     }
 
     @GetMapping(value = "/", produces = MediaType.TEXT_PLAIN_VALUE)
@@ -47,9 +42,21 @@ public class ProjectController
             try(ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray()))
             {
                 return ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"Project.properties\"")
+                        .header(HttpHeaders.CONTENT_DISPOSITION,
+                                String.format("attachment; filename=\"%s.properties\"", projectService.getProjectName()))
                         .body(new InputStreamResource(bais));
             }
         }
+    }
+
+    @PostMapping("/")
+    public ResponseEntity<Void> open(@RequestParam("file") MultipartFile file) throws IOException
+    {
+        Properties project = new Properties();
+        project.load(file.getInputStream());
+
+        projectService.open(project);
+
+        return ResponseEntity.noContent().build();
     }
 }

@@ -38,9 +38,10 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler
     @ExceptionHandler({
             InvalidStageNameException.class,
             InvalidDataSourceAliasException.class,
-            IllegalSizeOfTableContentRowException.class
+            IllegalSizeOfTableContentRowException.class,
+            IllegalArgumentException.class
     })
-    public final ResponseEntity<Object> handleInvalidArgument(Exception ex, WebRequest req)
+    public final ResponseEntity<Object> handleIllegalArgument(Exception ex, WebRequest req)
     {
         return this.handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY, req);
     }
@@ -48,10 +49,11 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler
     @ExceptionHandler({
             NoCurrentStageException.class,
             NoSchemaUpdaterSelectedException.class,
+            NoOpenProjectException.class,
             IllegalStateException.class,
             UnsupportedOperationException.class
     })
-    public final ResponseEntity<Object> handleInvalidState(Exception ex, WebRequest req)
+    public final ResponseEntity<Object> handleIllegalState(Exception ex, WebRequest req)
     {
         return this.handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.FAILED_DEPENDENCY, req);
     }

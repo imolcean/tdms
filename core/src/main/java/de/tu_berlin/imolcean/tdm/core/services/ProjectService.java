@@ -1,8 +1,10 @@
 package de.tu_berlin.imolcean.tdm.core.services;
 
+import de.tu_berlin.imolcean.tdm.api.exceptions.NoOpenProjectException;
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoSchemaUpdaterSelectedException;
 import de.tu_berlin.imolcean.tdm.core.DataSourceWrapper;
 import de.tu_berlin.imolcean.tdm.core.services.managers.SchemaUpdateImplementationManager;
+import lombok.Getter;
 import lombok.extern.java.Log;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
@@ -14,19 +16,57 @@ import java.util.Properties;
 @Log
 public class ProjectService
 {
-    // TODO Create project by requesting params for internal DS and tmp DS
-
     private final DataSourceService dsService;
     private final SchemaUpdateImplementationManager schemaUpdateManager;
+
+    private String projectName;
 
     public ProjectService(DataSourceService dsService, SchemaUpdateImplementationManager schemaUpdateManager)
     {
         this.dsService = dsService;
         this.schemaUpdateManager = schemaUpdateManager;
+        this.projectName = null;
+    }
+
+    public boolean isProjectOpen()
+    {
+        return projectName != null;
+    }
+
+    public String getProjectName()
+    {
+        if(!isProjectOpen())
+        {
+            throw new NoOpenProjectException();
+        }
+
+        return projectName;
+    }
+
+    public void renameProject(String name)
+    {
+        if(!isProjectOpen())
+        {
+            throw new NoOpenProjectException();
+        }
+
+        if(Strings.isBlank(name))
+        {
+            throw new IllegalArgumentException("Project name cannot be empty");
+        }
+
+        projectName = name;
     }
 
     public void open(@RequestBody Properties project)
     {
+        if(Strings.isBlank(project.getProperty("name")))
+        {
+            throw new IllegalArgumentException("Project file contains no project name");
+        }
+
+        projectName = project.getProperty("name");
+
         DataSourceWrapper internalDs = extractDs(project, "internal");
         DataSourceWrapper tmpDs = extractDs(project, "tmp");
 
@@ -40,7 +80,14 @@ public class ProjectService
 
     public Properties save()
     {
+        if(!isProjectOpen())
+        {
+            throw new NoOpenProjectException();
+        }
+
         Properties project = new Properties();
+
+        project.setProperty("name", projectName);
 
         DataSourceWrapper internalDs = dsService.getInternalDataSource();
         DataSourceWrapper tmpDs = dsService.getTmpDataSource();
