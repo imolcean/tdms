@@ -25,6 +25,8 @@ public class DataSourceWrapper implements DataSource
 
     private final String password;
 
+    // TODO Add property 'database'
+
     public DataSourceWrapper(String driverClassName, String url, String username, String password)
     {
         this.driverClassName = driverClassName;
