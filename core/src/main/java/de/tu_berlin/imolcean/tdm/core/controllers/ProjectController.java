@@ -24,16 +24,22 @@ public class ProjectController
     }
 
     @GetMapping("/name")
-    public ResponseEntity<String> currentName()
+    public ResponseEntity<String> name()
     {
+        return ResponseEntity.ok(projectService.getProjectName());
+    }
+
+    @PutMapping("/name/{name}")
+    public ResponseEntity<String> rename(@PathVariable("name") String name)
+    {
+        projectService.renameProject(name);
+
         return ResponseEntity.ok(projectService.getProjectName());
     }
 
     @GetMapping(value = "/", produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<Resource> save() throws IOException
     {
-        // TODO File name & top comment according to the project name
-
         try(ByteArrayOutputStream baos = new ByteArrayOutputStream())
         {
             Properties project = projectService.save();

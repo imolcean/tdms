@@ -4,7 +4,6 @@ import de.tu_berlin.imolcean.tdm.api.exceptions.NoOpenProjectException;
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoSchemaUpdaterSelectedException;
 import de.tu_berlin.imolcean.tdm.core.DataSourceWrapper;
 import de.tu_berlin.imolcean.tdm.core.services.managers.SchemaUpdateImplementationManager;
-import lombok.Getter;
 import lombok.extern.java.Log;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
@@ -67,10 +66,8 @@ public class ProjectService
 
         projectName = project.getProperty("name");
 
-        DataSourceWrapper internalDs = extractDs(project, "internal");
-        DataSourceWrapper tmpDs = extractDs(project, "tmp");
-
-        // TODO Set internal & tmp
+        dsService.setInternalDataSource(extractDs(project, "internal"));
+        dsService.setTmpDataSource(extractDs(project, "tmp"));
 
         if(!Strings.isBlank(project.getProperty("schemaUpdater")))
         {

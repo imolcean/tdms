@@ -5,46 +5,60 @@ import de.tu_berlin.imolcean.tdm.core.DataSourceWrapper;
 import de.tu_berlin.imolcean.tdm.core.StageContextHolder;
 import de.tu_berlin.imolcean.tdm.core.entities.StageDataSourceParams;
 import de.tu_berlin.imolcean.tdm.core.repositories.StageDataSourceParamsRepository;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@Log
 public class DataSourceService
 {
-    private final DataSourceWrapper internalDs;
-    private final DataSourceWrapper tmpDs;
     private final StageDataSourceParamsRepository stageDsParamsRepo;
 
-    public DataSourceService(@Qualifier("InternalDataSource") DataSourceWrapper internalDs,
-                             @Qualifier("TmpDataSource") DataSourceWrapper tmpDs,
-                             StageDataSourceParamsRepository stageDsParamsRepo)
+    private DataSourceWrapper internalDs;
+    private DataSourceWrapper tmpDs;
+
+    public DataSourceService(StageDataSourceParamsRepository stageDsParamsRepo)
     {
-        this.internalDs = internalDs;
-        this.tmpDs = tmpDs;
         this.stageDsParamsRepo = stageDsParamsRepo;
+        this.internalDs = null;
+        this.tmpDs = null;
     }
 
-    /**
-     * Provides access to the {@link DataSourceWrapper} of the internal database.
-     *
-     * @return {@link DataSourceWrapper} of the internal database
-     */
     public DataSourceWrapper getInternalDataSource()
     {
+        if(internalDs == null)
+        {
+            throw new NoOpenProjectException();
+        }
+
         return internalDs;
     }
 
-    /**
-     * Provides access to the {@link DataSourceWrapper} of the import database.
-     *
-     * @return {@link DataSourceWrapper} of the import database
-     */
+    public void setInternalDataSource(DataSourceWrapper ds)
+    {
+        this.internalDs = ds;
+
+        log.fine("Internal DS set to " + ds.getUrl());
+    }
+
     public DataSourceWrapper getTmpDataSource()
     {
+        if(tmpDs == null)
+        {
+            throw new NoOpenProjectException();
+        }
+
         return tmpDs;
+    }
+
+    public void setTmpDataSource(DataSourceWrapper ds)
+    {
+        this.tmpDs = ds;
+
+        log.fine("Temp DS set to " + ds.getUrl());
     }
 
     /**
