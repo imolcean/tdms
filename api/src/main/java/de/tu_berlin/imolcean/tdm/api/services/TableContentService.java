@@ -1,7 +1,6 @@
 package de.tu_berlin.imolcean.tdm.api.services;
 
 import schemacrawler.schema.Table;
-import schemacrawler.schemacrawler.SchemaCrawlerException;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -25,6 +24,10 @@ public interface TableContentService
     void deleteRow(DataSource ds, Table table, int rowIndex) throws SQLException;
 
     void copyData(DataSource src, DataSource target, Collection<Table> tables) throws SQLException, IOException;
+
+    boolean isTableEmpty(DataSource ds, Table table) throws SQLException;
+
+    boolean areTablesEmpty(DataSource ds, Collection<Table> tables) throws SQLException;
 
     void clearTable(DataSource ds, Table table) throws SQLException;
 

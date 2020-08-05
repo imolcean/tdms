@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.sql.SQLException;
-
 // TODO Return a specific code on SQLException, not HTTP 500
 
 @ControllerAdvice
@@ -20,7 +18,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler
             StageDataSourceNotFoundException.class,
             TableNotFoundException.class,
             TableContentRowIndexOutOfBoundsException.class,
-            SchemaUpdaterNotFoundException.class
+            ImplementationNotFoundException.class
     })
     public final ResponseEntity<Object> handleEntityNotFound(Exception ex, WebRequest req)
     {
@@ -48,7 +46,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler
 
     @ExceptionHandler({
             NoCurrentStageException.class,
-            NoSchemaUpdaterSelectedException.class,
+            NoImplementationSelectedException.class,
             NoOpenProjectException.class,
             IllegalStateException.class,
             UnsupportedOperationException.class
