@@ -9,7 +9,6 @@ import de.tu_berlin.imolcean.tdm.core.utils.QueryLoader;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 import schemacrawler.schema.*;
-import schemacrawler.schemacrawler.SchemaCrawlerException;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -29,7 +28,7 @@ public class DefaultTableContentService implements TableContentService
     @Override
     public int getTableRowCount(DataSource ds, Table table) throws SQLException
     {
-        log.info("Retrieving for row count of table " + table.getName());
+        log.info("Retrieving row count of table " + table.getName());
 
         try(Connection connection = ds.getConnection(); Statement statement = connection.createStatement())
         {
@@ -234,6 +233,26 @@ public class DefaultTableContentService implements TableContentService
         }
 
         log.info("All data copied");
+    }
+
+    @Override
+    public boolean isTableEmpty(DataSource ds, Table table) throws SQLException
+    {
+        return getTableRowCount(ds, table) == 0;
+    }
+
+    @Override
+    public boolean areTablesEmpty(DataSource ds, Collection<Table> tables) throws SQLException
+    {
+        for(Table table : tables)
+        {
+            if(!isTableEmpty(ds, table))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override
