@@ -2,7 +2,6 @@ package de.tu_berlin.imolcean.tdm.core.services.managers;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.ImplementationNotFoundException;
 import de.tu_berlin.imolcean.tdm.api.interfaces.PublicInterface;
-import de.tu_berlin.imolcean.tdm.core.PublicInterfaceImplementationManager;
 import lombok.extern.java.Log;
 import org.pf4j.spring.SpringPluginManager;
 

@@ -1,8 +1,10 @@
 package de.tu_berlin.imolcean.tdm.core.services;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoOpenProjectException;
-import de.tu_berlin.imolcean.tdm.api.exceptions.NoSchemaUpdaterSelectedException;
+import de.tu_berlin.imolcean.tdm.api.exceptions.NoImplementationSelectedException;
+import de.tu_berlin.imolcean.tdm.api.interfaces.updater.SchemaUpdater;
 import de.tu_berlin.imolcean.tdm.core.DataSourceWrapper;
+import de.tu_berlin.imolcean.tdm.core.services.managers.DataImportImplementationManager;
 import de.tu_berlin.imolcean.tdm.core.services.managers.SchemaUpdateImplementationManager;
 import lombok.extern.java.Log;
 import org.apache.logging.log4j.util.Strings;
@@ -17,13 +19,17 @@ public class ProjectService
 {
     private final DataSourceService dsService;
     private final SchemaUpdateImplementationManager schemaUpdateManager;
+    private final DataImportImplementationManager dataImportManager;
 
     private String projectName;
 
-    public ProjectService(DataSourceService dsService, SchemaUpdateImplementationManager schemaUpdateManager)
+    public ProjectService(DataSourceService dsService,
+                          SchemaUpdateImplementationManager schemaUpdateManager,
+                          DataImportImplementationManager dataImportManager)
     {
         this.dsService = dsService;
         this.schemaUpdateManager = schemaUpdateManager;
+        this.dataImportManager = dataImportManager;
         this.projectName = null;
     }
 
@@ -73,6 +79,11 @@ public class ProjectService
         {
             schemaUpdateManager.selectImplementation(project.getProperty("schemaUpdater"));
         }
+
+        if(!Strings.isBlank(project.getProperty("dataImporter")))
+        {
+            dataImportManager.selectImplementation(project.getProperty("dataImporter"));
+        }
     }
 
     public Properties save()
@@ -102,16 +113,18 @@ public class ProjectService
         try
         {
             String schemaUpdater = schemaUpdateManager.getSelectedImplementation()
-                    .orElseThrow(NoSchemaUpdaterSelectedException::new)
+                    .orElseThrow(() -> new NoImplementationSelectedException(SchemaUpdater.class))
                     .getClass()
                     .getName();
 
             project.setProperty("schemaUpdater", schemaUpdater);
         }
-        catch(NoSchemaUpdaterSelectedException e)
+        catch(NoImplementationSelectedException e)
         {
             project.setProperty("schemaUpdater", "");
         }
+
+        // TODO Add DataImporter
 
         return project;
     }

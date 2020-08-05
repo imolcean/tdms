@@ -2,13 +2,17 @@ package de.tu_berlin.imolcean.tdm.core;
 
 import de.tu_berlin.imolcean.tdm.core.deployment.MigrationDeployer;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
+import de.tu_berlin.imolcean.tdm.core.services.ProjectService;
+import de.tu_berlin.imolcean.tdm.core.services.managers.DataImportImplementationManager;
 import de.tu_berlin.imolcean.tdm.core.services.managers.SchemaUpdateImplementationManager;
 import org.pf4j.spring.SpringPluginManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.core.io.ClassPathResource;
+
+import java.util.Properties;
 
 @SpringBootApplication
 public class TdmApplication implements CommandLineRunner
@@ -23,13 +27,16 @@ public class TdmApplication implements CommandLineRunner
     private SchemaUpdateImplementationManager schemaUpdateImplementationManager;
 
     @Autowired
+    private DataImportImplementationManager dataImportImplementationManager;
+
+    @Autowired
+    private ProjectService projectService;
+
+    @Autowired
     private MigrationDeployer deployer;
 
     @Autowired
     private SpringPluginManager plugins;
-
-    @Value("${app.data.excel.path}")
-    private String excelImportDir;
 
     public static void main(String[] args)
     {
@@ -39,9 +46,11 @@ public class TdmApplication implements CommandLineRunner
     @Override
     public void run(String... args) throws Exception
     {
+        Properties project = new Properties();
+        project.load(new ClassPathResource("DABAG.tdm.properties").getInputStream());
+        projectService.open(project);
+
         StageContextHolder.setStageName("exp");
-        schemaUpdateImplementationManager
-                .selectImplementation("de.tu_berlin.imolcean.tdm.x.updaters.LiquibaseDiffSchemaUpdater");
 
 
 //        Catalog internalDb = schemaService.getSchema(dsService.getInternalDataSource());

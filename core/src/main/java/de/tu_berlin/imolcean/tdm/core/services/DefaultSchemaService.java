@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 public class DefaultSchemaService implements SchemaService
 {
     // TODO Cache
+    // TODO Remove dependency on TableContentService
 
     private final TableContentService tableContentService;
 

@@ -1,4 +1,4 @@
-package de.tu_berlin.imolcean.tdm.core;
+package de.tu_berlin.imolcean.tdm.core.services.managers;
 
 import de.tu_berlin.imolcean.tdm.api.interfaces.PublicInterface;
 

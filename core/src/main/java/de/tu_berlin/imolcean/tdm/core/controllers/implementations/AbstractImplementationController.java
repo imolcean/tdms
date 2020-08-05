@@ -2,7 +2,7 @@ package de.tu_berlin.imolcean.tdm.core.controllers.implementations;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoImplementationSelectedException;
 import de.tu_berlin.imolcean.tdm.api.interfaces.PublicInterface;
-import de.tu_berlin.imolcean.tdm.core.PublicInterfaceImplementationManager;
+import de.tu_berlin.imolcean.tdm.core.services.managers.PublicInterfaceImplementationManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
