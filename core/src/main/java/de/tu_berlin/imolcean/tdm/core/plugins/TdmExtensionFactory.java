@@ -29,7 +29,6 @@ public class TdmExtensionFactory extends SingletonSpringExtensionFactory
         try
         {
             Properties props = extractPropertiesFromConfig(findExtensionConfig(extensionClass));
-
             Constructor<?> ctr = extensionClass.getConstructor(Properties.class);
 
             return (T) ctr.newInstance(props);
@@ -68,7 +67,6 @@ public class TdmExtensionFactory extends SingletonSpringExtensionFactory
         try(InputStream input = new FileInputStream(config.toFile()))
         {
             Properties props = new Properties();
-
             props.load(input);
 
             return props;
