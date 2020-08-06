@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public interface TableContentService
 {
@@ -18,6 +19,8 @@ public interface TableContentService
     void insertRow(DataSource ds, Table table, Object[] row) throws SQLException;
 
     void insertRows(DataSource ds, Table table, List<Object[]> rows) throws SQLException;
+
+    void importData(DataSource ds, Map<Table, List<Object[]>> data) throws SQLException, IOException;
 
     void updateRow(DataSource ds, Table table, int rowIndex, Object[] row) throws SQLException;
 

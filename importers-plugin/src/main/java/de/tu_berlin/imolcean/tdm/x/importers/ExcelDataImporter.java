@@ -7,10 +7,7 @@ import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.pf4j.Extension;
 import schemacrawler.schema.Column;
@@ -21,8 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.*;
 
 @Extension
@@ -30,7 +25,6 @@ import java.util.*;
 public class ExcelDataImporter implements DataImporter
 {
     // TODO Throw DataImportException
-    // TODO Transactions
 
     private final Path excelDir;
 
@@ -66,146 +60,147 @@ public class ExcelDataImporter implements DataImporter
         }
 
         log.fine("Database is empty");
-
         log.info("Importing " + excelDir.toString());
 
-        int sheetsImported;
+        Map<Table, List<Object[]>> map;
 
         if(excelDir.toFile().isDirectory())
         {
-            sheetsImported = importDirectory(excelDir, ds, tables);
+            map = handleDirectory(excelDir, tables);
         }
         else
         {
-            sheetsImported = importFile(excelDir, ds, tables);
+            map = handleFile(excelDir, tables);
         }
 
-        log.info(String.format("Import finished. %s tables affected.", sheetsImported));
+        // TODO Remove
+//        displayData(map);
+
+        tableContentService.importData(ds, map);
+
+        log.info(String.format("Import finished. %s tables affected.", map.keySet().size()));
     }
 
-    private int importDirectory(Path excelDirPath, DataSource ds, Collection<Table> tables) throws IOException, InvalidFormatException, SQLException
+    private Map<Table, List<Object[]>> handleDirectory(Path path, Collection<Table> tables)
+            throws IOException, InvalidFormatException
     {
-        log.fine("Importing " + excelDirPath.toString());
+        log.fine("Handling " + path.toString());
 
-        int importedSheets = 0;
+        Map<Table, List<Object[]>> map = new HashMap<>();
 
-        Iterator<File> it = FileUtils.iterateFiles(excelDirPath.toFile(), null, true);
+        Iterator<File> it = FileUtils.iterateFiles(path.toFile(), null, true);
         while(it.hasNext())
         {
-            importedSheets += importFile(it.next().toPath(), ds, tables);
+            map.putAll(handleFile(it.next().toPath(), tables));
         }
 
-        log.fine(String.format("Import of %s finished", excelDirPath.toString()));
+        log.fine(String.format("Finished with %s", path.toString()));
 
-        return importedSheets;
+        return map;
     }
 
-    private int importFile(Path path,DataSource ds, Collection<Table> tables) throws IOException, InvalidFormatException, SQLException
+    private Map<Table, List<Object[]>> handleFile(Path path, Collection<Table> tables)
+            throws IOException, InvalidFormatException
     {
-        log.fine("Importing " + path.toString());
+        log.fine("Handling " + path.toString());
 
-        int importedSheets = 0;
+        Map<Table, List<Object[]>> map = new HashMap<>();
 
         try(Workbook workbook = new XSSFWorkbook(path.toFile()))
         {
             for(int i = 0; i < workbook.getNumberOfSheets(); i++)
             {
-                String sheetName = workbook.getSheetName(i);
+                Sheet sheet = workbook.getSheetAt(i);
+
+                log.fine(String.format("Handling sheet %s", sheet.getSheetName()));
 
                 try
                 {
                     Table table = tables.stream()
-                            .filter(t -> t.getName().equals(sheetName))
+                            .filter(t -> t.getName().equals(sheet.getSheetName()))
                             .findFirst()
-                            .orElseThrow(() -> new TableNotFoundException(sheetName));
+                            .orElseThrow(() -> new TableNotFoundException(sheet.getSheetName()));
 
-                    importSheet(workbook.getSheetAt(i), ds, table);
-                    importedSheets++;
+                    if(!columnNamesMatch(table, sheet))
+                    {
+                        log.warning("Column names mismatch. I will ignore this sheet.");
+                        continue;
+                    }
+
+                    map.put(table, handleSheet(workbook.getSheetAt(i), table));
                 }
                 catch(TableNotFoundException e)
                 {
-                    log.warning(String.format("No corresponding table found for the sheet %s. I will ignore it.", sheetName));
+                    log.warning(String.format("No corresponding table found for the sheet %s. I will ignore it.", sheet.getSheetName()));
                 }
             }
         }
 
-        log.fine(String.format("Import of %s finished", path.toString()));
+        log.fine(String.format("Finished with %s", path.toString()));
 
-        return importedSheets;
+        return map;
     }
 
     /**
-     * Imports content of the given Excel {@code sheet} into the given {@code table}.
+     * Extracts content of the given Excel {@code sheet} that corresponds to the {@code table}.
      *
-     * Import is only made, if the {@code table} has the same columns as the {@code sheet}.
+     * The {@code table} must have the same columns as the {@code sheet}.
      * The first row of the sheet must contain column names.
      * The second row must contain column data types.
      * The third row must contain nullability info. "NotNull" must be present in columns that are not nullable,
-     * empty string should be found otherwise.
+     * an empty string should be found otherwise.
      * Rows starting from the fourth are considered data rows, i.e. they contain data to be imported.
      *
      * @param sheet Excel {@link Sheet} to be imported
-     * @param ds {@link DataSource} to the database that accepts imported data
      * @param table table that is mapped by the {@code sheet}
+     * @return List of table rows extracted from the {@code sheet}
      */
-    private void importSheet(Sheet sheet, DataSource ds, Table table) throws SQLException
+    private List<Object[]> handleSheet(Sheet sheet, Table table)
     {
-        log.fine("Importing " + table.getName());
+        List<Object[]> dbRows = new ArrayList<>();
 
-        if(!columnNamesMatch(table, sheet))
+        for(Row row : sheet)
         {
-            log.warning("Column names mismatch. I will ignore the sheet.");
-            return;
-        }
+            // First three rows are headers
+            if(row.getRowNum() < 3)
+            {
+                continue;
+            }
 
-//        List<Object[]> dbRows = new ArrayList<>();
-//
-//        for(Row row : sheet)
-//        {
-//            // First three rows are headers
-//            if(row.getRowNum() < 3)
-//            {
-//                continue;
-//            }
-//
-//            Object[] dbRow = new Object[table.getColumns().size()];
-//
-//            for(int i = 0; i < table.getColumns().size(); i++)
-//            {
-//                String val = row.getCell(i).getStringCellValue();
-//
+            Object[] dbRow = new Object[table.getColumns().size()];
+
+            for(int i = 0; i < table.getColumns().size(); i++)
+            {
+                Object val = getCellValue(row.getCell(i));
+
+                // TODO Remove
 //                System.out.printf("%s.%s: %s%n", row.getRowNum(), i, val);
-//
-//                if(val.equalsIgnoreCase("NULL"))
-//                {
-//                    val = null;
-//                }
-//
-//                dbRow[i] = val;
-//            }
-//
-//            dbRows.add(dbRow);
-//        }
-//
-////        tableContentService.insertRows(ds, table, dbRows);
-//        displayRows(dbRows, table.getName());
 
-        log.fine(String.format("Import of %s finished", table.getName()));
+                dbRow[i] = val;
+            }
+
+            dbRows.add(dbRow);
+        }
+        
+        return dbRows;
     }
 
     // TODO Remove
-    private void displayRows(List<Object[]> rows, String tableName)
+    private void displayData(Map<Table, List<Object[]>> data)
     {
-        System.out.println(tableName + ":");
-
-        for(Object[] row : rows)
+        for(Map.Entry<Table, List<Object[]>> entry : data.entrySet())
         {
-            for(Object col : row)
-            {
-                System.out.print(col.toString() + ", ");
-            }
+            System.out.println(entry.getKey().getName() + ":");
 
-            System.out.println();
+            for(Object[] row : entry.getValue())
+            {
+                for(Object col : row)
+                {
+                    System.out.print(col + ", ");
+                }
+
+                System.out.println();
+            }
         }
     }
 
@@ -246,5 +241,35 @@ public class ExcelDataImporter implements DataImporter
         }
 
         return true;
+    }
+
+    private Object getCellValue(Cell cell)
+    {
+        switch(cell.getCellType())
+        {
+            case BLANK:
+                return null;
+            case BOOLEAN:
+                return cell.getBooleanCellValue();
+            case ERROR:
+                log.warning(String.format("Cell %s.%s has an error, I will treat it as a NULL", cell.getRowIndex(), cell.getColumnIndex()));
+                return null;
+            case NUMERIC:
+                return cell.getNumericCellValue();
+            case STRING:
+                String str = cell.getStringCellValue();
+                if(str.equalsIgnoreCase("NULL"))
+                {
+                    return null;
+                }
+                return str;
+            case FORMULA:
+                log.warning(String.format("Cell %s.%s contains a formula, I will try to evaluate the value", cell.getRowIndex(), cell.getColumnIndex()));
+                FormulaEvaluator evaluator =cell.getRow().getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
+                return new DataFormatter().formatCellValue(cell, evaluator);
+            default:
+                log.warning(String.format("Unknown type of cell %s.%s, I will treat it as a NULL", cell.getRowIndex(), cell.getColumnIndex()));
+                return null;
+        }
     }
 }

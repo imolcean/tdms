@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -111,6 +112,35 @@ public class DefaultTableContentService implements TableContentService
         }
     }
 
+    @Override
+    public void importData(DataSource ds, Map<Table, List<Object[]>> data) throws SQLException, IOException
+    {
+        try(Connection connection = ds.getConnection())
+        {
+            disableConstraints(connection);
+            connection.setAutoCommit(false);
+
+            try
+            {
+                for(Map.Entry<Table, List<Object[]>> entry : data.entrySet())
+                {
+                    insertRows(connection, entry.getKey(), entry.getValue());
+                }
+            }
+            catch(SQLException e)
+            {
+                log.warning("Import failed");
+
+                connection.rollback();
+                throw e;
+            }
+
+            connection.commit();
+            connection.setAutoCommit(true);
+            enableConstraints(connection);
+        }
+    }
+
     // TODO Return row
     @Override
     public void updateRow(DataSource ds, Table table, int rowIndex, Object[] row) throws SQLException
@@ -197,12 +227,7 @@ public class DefaultTableContentService implements TableContentService
 
         try(Connection targetConnection = target.getConnection())
         {
-            log.fine("Disabling database constraints");
-            try(Statement statement = targetConnection.createStatement())
-            {
-                statement.execute(QueryLoader.loadQuery("disable_constraints"));
-            }
-
+            disableConstraints(targetConnection);
             targetConnection.setAutoCommit(false);
 
             for(Table table : tables)
@@ -224,12 +249,7 @@ public class DefaultTableContentService implements TableContentService
 
             targetConnection.commit();
             targetConnection.setAutoCommit(true);
-
-            log.fine("Enabling database constraints");
-            try(Statement statement = targetConnection.createStatement())
-            {
-                statement.execute(QueryLoader.loadQuery("enable_constraints"));
-            }
+            enableConstraints(targetConnection);
         }
 
         log.info("All data copied");
@@ -287,12 +307,7 @@ public class DefaultTableContentService implements TableContentService
 
         try(Connection connection = ds.getConnection())
         {
-            log.fine("Disabling database constraints");
-            try(Statement statement = connection.createStatement())
-            {
-                statement.execute(QueryLoader.loadQuery("disable_constraints"));
-            }
-
+            disableConstraints(connection);
             connection.setAutoCommit(false);
 
             try
@@ -314,12 +329,7 @@ public class DefaultTableContentService implements TableContentService
 
             connection.commit();
             connection.setAutoCommit(true);
-
-            log.fine("Enabling database constraints");
-            try(Statement statement = connection.createStatement())
-            {
-                statement.execute(QueryLoader.loadQuery("enable_constraints"));
-            }
+            enableConstraints(connection);
         }
 
         log.info("All tables cleared");
@@ -380,6 +390,30 @@ public class DefaultTableContentService implements TableContentService
             //noinspection SqlWithoutWhere
             statement.executeUpdate("DELETE FROM " + table.getName());
         }
+    }
+
+    private void disableConstraints(Connection connection) throws SQLException, IOException
+    {
+        log.fine("Disabling database constraints");
+
+        try(Statement statement = connection.createStatement())
+        {
+            statement.execute(QueryLoader.loadQuery("disable_constraints"));
+        }
+
+        log.fine("Database constraints disabled");
+    }
+
+    private void enableConstraints(Connection connection) throws SQLException, IOException
+    {
+        log.fine("Enabling database constraints");
+
+        try(Statement statement = connection.createStatement())
+        {
+            statement.execute(QueryLoader.loadQuery("enable_constraints"));
+        }
+
+        log.fine("Database constraints enabled");
     }
 
 //    @Override
