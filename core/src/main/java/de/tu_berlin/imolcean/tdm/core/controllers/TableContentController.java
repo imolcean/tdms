@@ -1,6 +1,7 @@
 package de.tu_berlin.imolcean.tdm.core.controllers;
 
 import de.tu_berlin.imolcean.tdm.api.dto.TableContentDto;
+import de.tu_berlin.imolcean.tdm.core.services.proxies.DataExportProxy;
 import de.tu_berlin.imolcean.tdm.core.services.proxies.DataImportProxy;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
@@ -25,16 +26,19 @@ public class TableContentController
     private final SchemaService schemaService;
     private final TableContentService tableContentService;
     private final DataImportProxy dataImportProxy;
+    private final DataExportProxy dataExportProxy;
 
     public TableContentController(DataSourceService dsService,
                                   SchemaService SchemaService,
                                   TableContentService tableContentService,
-                                  DataImportProxy dataImportProxy)
+                                  DataImportProxy dataImportProxy,
+                                  DataExportProxy dataExportProxy)
     {
         this.dsService = dsService;
         this.schemaService = SchemaService;
         this.tableContentService = tableContentService;
         this.dataImportProxy = dataImportProxy;
+        this.dataExportProxy = dataExportProxy;
     }
 
     @GetMapping("/{alias}/{table}")
@@ -145,6 +149,14 @@ public class TableContentController
     public ResponseEntity<Void> importData() throws Exception
     {
         dataImportProxy.importData(dsService.getInternalDataSource());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/internal/export")
+    public ResponseEntity<Void> exportData() throws Exception
+    {
+        dataExportProxy.exportData(dsService.getInternalDataSource());
 
         return ResponseEntity.noContent().build();
     }

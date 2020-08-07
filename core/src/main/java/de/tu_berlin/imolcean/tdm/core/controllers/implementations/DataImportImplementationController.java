@@ -2,7 +2,8 @@ package de.tu_berlin.imolcean.tdm.core.controllers.implementations;
 
 import de.tu_berlin.imolcean.tdm.api.interfaces.importer.DataImporter;
 import de.tu_berlin.imolcean.tdm.core.services.managers.DataImportImplementationManager;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("api/data-importers")

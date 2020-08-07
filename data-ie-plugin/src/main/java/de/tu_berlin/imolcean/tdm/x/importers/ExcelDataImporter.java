@@ -24,9 +24,7 @@ import java.util.*;
 @Log
 public class ExcelDataImporter implements DataImporter
 {
-    // TODO Throw DataImportException
-
-    private final Path excelDir;
+    private final Path importDir;
 
     private SchemaService schemaService;
     private TableContentService tableContentService;
@@ -34,9 +32,9 @@ public class ExcelDataImporter implements DataImporter
     @SuppressWarnings("unused")
     public ExcelDataImporter(Properties properties)
     {
-        this.excelDir = Paths.get(properties.getProperty("excel.path"));
+        this.importDir = Paths.get(properties.getProperty("excel.path"));
 
-        log.fine("Excel import directory: " + excelDir.toString());
+        log.fine("Import directory: " + importDir.toString());
     }
 
     // TODO Insert SchemaService through DI
@@ -60,17 +58,17 @@ public class ExcelDataImporter implements DataImporter
         }
 
         log.fine("Database is empty");
-        log.info("Importing " + excelDir.toString());
+        log.info("Importing " + importDir.toString());
 
         Map<Table, List<Object[]>> map;
 
-        if(excelDir.toFile().isDirectory())
+        if(importDir.toFile().isDirectory())
         {
-            map = handleDirectory(excelDir, tables);
+            map = handleDirectory(importDir, tables);
         }
         else
         {
-            map = handleFile(excelDir, tables);
+            map = handleFile(importDir, tables);
         }
 
         // TODO Remove

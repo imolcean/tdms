@@ -32,6 +32,8 @@ public class LiquibaseIterativeSchemaUpdater extends IterativeSchemaUpdater
         this.internalDs = null;
         this.tmpDs = null;
 
+        // TODO Fail here if path == null
+
         log.fine("Liquibase changelog: " + this.changelogPath);
     }
 

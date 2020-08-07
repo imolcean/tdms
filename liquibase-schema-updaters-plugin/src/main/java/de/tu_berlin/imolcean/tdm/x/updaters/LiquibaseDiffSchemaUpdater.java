@@ -33,6 +33,8 @@ public class LiquibaseDiffSchemaUpdater extends DiffSchemaUpdater
         this.internalDs = null;
         this.tmpDs = null;
 
+        // TODO Fail here if path == null
+
         log.fine("Liquibase changelog: " + this.changelogPath);
     }
 

@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>importers-plugin</artifactId>
+    <artifactId>data-ie-plugin</artifactId>
 
     <dependencies>
         <dependency>
@@ -31,10 +31,10 @@
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                         <manifestEntries>
-                            <Plugin-Id>importers-plugin</Plugin-Id>
+                            <Plugin-Id>data-ie-plugin</Plugin-Id>
                             <Plugin-Version>0.0.1</Plugin-Version>
                             <Plugin-Description>
-                                Plugin contains importers that are shipped together with the TDM software but are not part of its core.
+                                Plugin contains data importers and exporters that are shipped together with the TDM software but are not part of its core.
                             </Plugin-Description>
                             <Plugin-Provider>Igor Molcean</Plugin-Provider>
                         </manifestEntries>

@@ -2,8 +2,11 @@ package de.tu_berlin.imolcean.tdm.core.services;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoOpenProjectException;
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoImplementationSelectedException;
+import de.tu_berlin.imolcean.tdm.api.interfaces.exporter.DataExporter;
+import de.tu_berlin.imolcean.tdm.api.interfaces.importer.DataImporter;
 import de.tu_berlin.imolcean.tdm.api.interfaces.updater.SchemaUpdater;
 import de.tu_berlin.imolcean.tdm.core.DataSourceWrapper;
+import de.tu_berlin.imolcean.tdm.core.services.managers.DataExportImplementationManager;
 import de.tu_berlin.imolcean.tdm.core.services.managers.DataImportImplementationManager;
 import de.tu_berlin.imolcean.tdm.core.services.managers.SchemaUpdateImplementationManager;
 import lombok.extern.java.Log;
@@ -20,19 +23,23 @@ public class ProjectService
     private final DataSourceService dsService;
     private final SchemaUpdateImplementationManager schemaUpdateManager;
     private final DataImportImplementationManager dataImportManager;
+    private final DataExportImplementationManager dataExportManager;
 
     private String projectName;
 
     public ProjectService(DataSourceService dsService,
                           SchemaUpdateImplementationManager schemaUpdateManager,
-                          DataImportImplementationManager dataImportManager)
+                          DataImportImplementationManager dataImportManager,
+                          DataExportImplementationManager dataExportManager)
     {
         this.dsService = dsService;
         this.schemaUpdateManager = schemaUpdateManager;
         this.dataImportManager = dataImportManager;
+        this.dataExportManager = dataExportManager;
         this.projectName = null;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isProjectOpen()
     {
         return projectName != null;
@@ -84,6 +91,11 @@ public class ProjectService
         {
             dataImportManager.selectImplementation(project.getProperty("dataImporter"));
         }
+
+        if(!Strings.isBlank(project.getProperty("dataExporter")))
+        {
+            dataExportManager.selectImplementation(project.getProperty("dataExporter"));
+        }
     }
 
     public Properties save()
@@ -124,7 +136,33 @@ public class ProjectService
             project.setProperty("schemaUpdater", "");
         }
 
-        // TODO Add DataImporter
+        try
+        {
+            String dataImporter = dataImportManager.getSelectedImplementation()
+                    .orElseThrow(() -> new NoImplementationSelectedException(DataImporter.class))
+                    .getClass()
+                    .getName();
+
+            project.setProperty("dataImporter", dataImporter);
+        }
+        catch(NoImplementationSelectedException e)
+        {
+            project.setProperty("dataImporter", "");
+        }
+
+        try
+        {
+            String dataExporter = dataExportManager.getSelectedImplementation()
+                    .orElseThrow(() -> new NoImplementationSelectedException(DataExporter.class))
+                    .getClass()
+                    .getName();
+
+            project.setProperty("dataExporter", dataExporter);
+        }
+        catch(NoImplementationSelectedException e)
+        {
+            project.setProperty("dataExporter", "");
+        }
 
         return project;
     }
