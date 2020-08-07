@@ -4,14 +4,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.tu_berlin.imolcean.tdm.api.interfaces.exporter.DataExporter;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
+import de.tu_berlin.imolcean.tdm.x.JsonTableContent;
 import lombok.extern.java.Log;
 import org.pf4j.Extension;
+import schemacrawler.schema.NamedObject;
+import schemacrawler.schema.Table;
 
 import javax.sql.DataSource;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 @Extension
 @Log
@@ -40,11 +44,21 @@ public class JsonDataExporter implements DataExporter
     @Override
     public void exportData(DataSource ds) throws Exception
     {
-        List<Object[]> rows = tableContentService.getTableContent(ds, schemaService.getTable(ds, "address"));
-
         ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writeValueAsString(rows);
 
-        System.out.println(json);
+        for(String tableName : schemaService.getOccupiedTableNames(ds))
+        {
+            Table table = schemaService.getTable(ds, tableName);
+
+            List<String> columnNames = table.getColumns().stream()
+                    .map(NamedObject::getName)
+                    .collect(Collectors.toList());
+            List<Object[]> rows = tableContentService.getTableContent(ds, table);
+
+            JsonTableContent t = new JsonTableContent(tableName, columnNames, rows);
+
+            String json = mapper.writeValueAsString(t);
+            System.out.println(json);
+        }
     }
 }
