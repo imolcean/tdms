@@ -1,10 +1,10 @@
 package de.tu_berlin.imolcean.tdm.x.exporters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.tu_berlin.imolcean.tdm.api.dto.TableContentDto;
 import de.tu_berlin.imolcean.tdm.api.interfaces.exporter.DataExporter;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
-import de.tu_berlin.imolcean.tdm.x.JsonTableContent;
 import lombok.extern.java.Log;
 import org.pf4j.Extension;
 import schemacrawler.schema.NamedObject;
@@ -55,9 +55,9 @@ public class JsonDataExporter implements DataExporter
                     .collect(Collectors.toList());
             List<Object[]> rows = tableContentService.getTableContent(ds, table);
 
-            JsonTableContent t = new JsonTableContent(tableName, columnNames, rows);
+            TableContentDto dto = new TableContentDto(tableName, columnNames, rows);
 
-            String json = mapper.writeValueAsString(t);
+            String json = mapper.writeValueAsString(dto);
             System.out.println(json);
         }
     }
