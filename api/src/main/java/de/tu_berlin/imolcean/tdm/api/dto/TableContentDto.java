@@ -9,5 +9,7 @@ import java.util.List;
 @AllArgsConstructor
 public class TableContentDto
 {
+    private String tableName;
+    private List<String> columnNames;
     private List<Object[]> data;
 }

@@ -50,6 +50,7 @@ public class TableContentController
 
         return ResponseEntity.ok(
                 TableContentMapper.toDto(
+                        table,
                         tableContentService.getTableContent(ds, table)));
     }
 
