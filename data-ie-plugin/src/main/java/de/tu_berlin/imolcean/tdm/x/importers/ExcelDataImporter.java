@@ -24,15 +24,16 @@ import java.util.*;
 @Log
 public class ExcelDataImporter implements DataImporter
 {
+    // TODO Facilitate: only accept directories as importDir
+
     private final Path importDir;
 
     private SchemaService schemaService;
     private TableContentService tableContentService;
 
-    @SuppressWarnings("unused")
     public ExcelDataImporter(Properties properties)
     {
-        this.importDir = Paths.get(properties.getProperty("excel.path"));
+        this.importDir = Paths.get(properties.getProperty("import.path"));
 
         log.fine("Import directory: " + importDir.toString());
     }
