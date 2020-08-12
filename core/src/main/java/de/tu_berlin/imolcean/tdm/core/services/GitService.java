@@ -42,7 +42,7 @@ public class GitService
             throw new NoOpenProjectException();
         }
 
-        return repo.getDirectory().toPath();
+        return repo.getDirectory().toPath().getParent();
     }
 
     public String getUrl()
