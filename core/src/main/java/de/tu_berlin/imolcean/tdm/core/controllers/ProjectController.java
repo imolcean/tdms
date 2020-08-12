@@ -56,7 +56,7 @@ public class ProjectController
     }
 
     @PostMapping("/")
-    public ResponseEntity<Void> open(@RequestParam("file") MultipartFile file) throws IOException
+    public ResponseEntity<Void> open(@RequestParam("file") MultipartFile file) throws Exception
     {
         Properties project = new Properties();
         project.load(file.getInputStream());
