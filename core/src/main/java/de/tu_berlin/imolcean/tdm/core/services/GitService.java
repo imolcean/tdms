@@ -1,6 +1,7 @@
 package de.tu_berlin.imolcean.tdm.core.services;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoOpenProjectException;
+import lombok.Getter;
 import lombok.extern.java.Log;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -23,10 +24,15 @@ public class GitService
     private Repository repo;
     private CredentialsProvider credentials;
 
+    // TODO
+    @Getter
+    private String token;
+
     public GitService()
     {
         repo = null;
         credentials = null;
+        token = null;
     }
 
     public Path getDir()
@@ -54,7 +60,8 @@ public class GitService
         log.info("Opening git repository");
         log.fine("Looking for an existing repository at " + dir.toString());
 
-        credentials = new UsernamePasswordCredentialsProvider(token, "");
+        this.token = token;
+        this.credentials = new UsernamePasswordCredentialsProvider(token, "");
 
         Path gitDir = Paths.get(dir.toAbsolutePath().toString(), ".git");
 
