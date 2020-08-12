@@ -44,6 +44,13 @@ public class DataSourceService
         log.fine("Internal DS set to " + ds.getUrl());
     }
 
+    public void clearInternalDataSource()
+    {
+        this.internalDs = null;
+
+        log.fine("Internal DS cleared");
+    }
+
     public DataSourceWrapper getTmpDataSource()
     {
         if(tmpDs == null)
@@ -59,6 +66,13 @@ public class DataSourceService
         this.tmpDs = ds;
 
         log.fine("Temp DS set to " + ds.getUrl());
+    }
+
+    public void clearTmpDataSource()
+    {
+        this.tmpDs = null;
+
+        log.fine("Temp DS cleared");
     }
 
     /**

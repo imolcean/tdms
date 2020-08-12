@@ -1,0 +1,27 @@
+{
+  "projectName": "DABAG",
+
+  "internal": {
+    "driverClassName": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+    "url": "jdbc:sqlserver://localhost:1434;databaseName=DABAG_IGORDAT06",
+    "username": "DABAG_DEV",
+    "password": "DABAG_DEV"
+  },
+
+  "tmp": {
+    "driverClassName": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+    "url": "jdbc:sqlserver://localhost:1434;databaseName=DABAG_IGORDAT06_EXP",
+    "username": "DABAG_DEV",
+    "password": "DABAG_DEV"
+  },
+
+  "gitRepository": {
+    "url": "https://github.com/imolcean/exp.git",
+    "dir": "C:\\tdm\\repo",
+    "token": "914a332435833eb10e2f9fcf526f9f8b20878a07"
+  },
+
+  "schemaUpdater": null,
+  "dataImporter": "de.tu_berlin.imolcean.tdm.x.importers.JsonDataImporter",
+  "dataExporter": "de.tu_berlin.imolcean.tdm.x.exporters.JsonDataExporter"
+}

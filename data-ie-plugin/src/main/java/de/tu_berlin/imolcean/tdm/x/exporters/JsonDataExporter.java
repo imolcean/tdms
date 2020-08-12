@@ -32,20 +32,13 @@ public class JsonDataExporter implements DataExporter
     private SchemaService schemaService;
     private TableContentService tableContentService;
 
-    public JsonDataExporter(Properties properties) throws IOException
+    public JsonDataExporter(Properties properties)
     {
         this.exportDir = Paths.get(properties.getProperty("export.path"));
 
-        try
+        if(Files.exists(exportDir) && !Files.isDirectory(exportDir))
         {
-            Files.createDirectory(this.exportDir);
-        }
-        catch(FileAlreadyExistsException e)
-        {
-            if(!Files.isDirectory(this.exportDir))
-            {
-                throw new IllegalArgumentException("Provided export dir exists and is not a directory");
-            }
+            throw new IllegalArgumentException("Provided export dir exists and is not a directory");
         }
 
         log.fine("Export directory: " + exportDir.toString());

@@ -1,32 +1,25 @@
 package de.tu_berlin.imolcean.tdm.core.services;
 
+import de.tu_berlin.imolcean.tdm.api.dto.DataSourceDto;
+import de.tu_berlin.imolcean.tdm.api.dto.GitRepositoryDto;
+import de.tu_berlin.imolcean.tdm.api.dto.ProjectDto;
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoOpenProjectException;
-import de.tu_berlin.imolcean.tdm.api.exceptions.NoImplementationSelectedException;
-import de.tu_berlin.imolcean.tdm.api.interfaces.exporter.DataExporter;
-import de.tu_berlin.imolcean.tdm.api.interfaces.importer.DataImporter;
-import de.tu_berlin.imolcean.tdm.api.interfaces.updater.SchemaUpdater;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
-import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
 import de.tu_berlin.imolcean.tdm.core.DataSourceWrapper;
+import de.tu_berlin.imolcean.tdm.core.controllers.mappers.DataSourceMapper;
 import de.tu_berlin.imolcean.tdm.core.services.managers.DataExportImplementationManager;
 import de.tu_berlin.imolcean.tdm.core.services.managers.DataImportImplementationManager;
 import de.tu_berlin.imolcean.tdm.core.services.managers.SchemaUpdateImplementationManager;
 import lombok.extern.java.Log;
 import org.apache.logging.log4j.util.Strings;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Properties;
 
 @Service
 @Log
 public class ProjectService
 {
-    // TODO Rewrite to use ProjectDto and JSON serialisation
-
     private final DataSourceService dsService;
     private final SchemaService schemaService;
     private final GitService gitService;
@@ -38,7 +31,6 @@ public class ProjectService
 
     public ProjectService(DataSourceService dsService,
                           SchemaService schemaService,
-                          TableContentService tableContentService,
                           GitService gitService,
                           SchemaUpdateImplementationManager schemaUpdateManager,
                           DataImportImplementationManager dataImportManager,
@@ -50,6 +42,7 @@ public class ProjectService
         this.schemaUpdateManager = schemaUpdateManager;
         this.dataImportManager = dataImportManager;
         this.dataExportManager = dataExportManager;
+
         this.projectName = null;
     }
 
@@ -84,154 +77,100 @@ public class ProjectService
         projectName = name;
     }
 
-    public void open(@RequestBody Properties project) throws Exception
+    public void open(ProjectDto project) throws Exception
     {
-        if(Strings.isBlank(project.getProperty("name")))
+        // TODO Close open project first
+
+        projectName = project.getProjectName();
+
+        log.info("Opening project " + projectName);
+
+        dsService.setInternalDataSource(createDs(project.getInternal()));
+        dsService.setTmpDataSource(createDs(project.getTmp()));
+
+        gitService.openRepository(
+                project.getGitRepository().getUrl(),
+                Path.of(project.getGitRepository().getDir()),
+                project.getGitRepository().getToken());
+
+        if(project.getSchemaUpdater() != null)
         {
-            throw new IllegalArgumentException("Project file contains no project name");
+            schemaUpdateManager.selectImplementation(project.getSchemaUpdater());
+        }
+        else
+        {
+            log.warning("SchemaUpdater not configured");
         }
 
-        projectName = project.getProperty("name");
-
-
-        dsService.setInternalDataSource(extractDs(project, "internal"));
-        dsService.setTmpDataSource(extractDs(project, "tmp"));
-
-
-        String gitUrl = project.getProperty("git.url");
-        String gitDir = project.getProperty("git.dir");
-        String gitToken = project.getProperty("git.token");
-
-        if(Strings.isBlank(gitUrl) || Strings.isBlank(gitDir) || Strings.isBlank(gitToken))
+        if(project.getDataImporter() != null)
         {
-            throw new IllegalArgumentException("Git repository is wrongly configured");
+            dataImportManager.selectImplementation(project.getDataImporter());
+        }
+        else
+        {
+            log.warning("DataImporter not configured");
         }
 
-        gitService.openRepository(gitUrl, Path.of(gitDir), gitToken);
-
-
-        if(!Strings.isBlank(project.getProperty("schemaUpdater")))
+        if(project.getDataExporter() != null)
         {
-            schemaUpdateManager.selectImplementation(project.getProperty("schemaUpdater"));
+            dataExportManager.selectImplementation(project.getDataExporter());
+        }
+        else
+        {
+            log.warning("DataExporter not configured");
         }
 
-        if(!Strings.isBlank(project.getProperty("dataImporter")))
-        {
-            dataImportManager.selectImplementation(project.getProperty("dataImporter"));
-        }
-
-        if(!Strings.isBlank(project.getProperty("dataExporter")))
-        {
-            dataExportManager.selectImplementation(project.getProperty("dataExporter"));
-        }
-
-
-        // TODO
-//        schemaService.purgeSchema(dsService.getInternalDataSource());
-//        schemaService.purgeSchema(dsService.getTmpDataSource());
-//
-//        SchemaUpdater schemaUpdater = schemaUpdateManager.getSelectedImplementation()
-//                .orElseThrow(() -> new NoImplementationSelectedException(SchemaUpdater.class));
-//
-//        schemaUpdater.initSchemaUpdate(dsService.getInternalDataSource(), dsService.getTmpDataSource());
-//        schemaUpdater.commitSchemaUpdate();
-//
-//        dataImportManager.getSelectedImplementation()
-//                .orElseThrow(() -> new NoImplementationSelectedException(DataImporter.class))
-//                .importData(dsService.getInternalDataSource());
+        log.info(String.format("Project %s opened successfully", projectName));
     }
 
-    public Properties save()
+    public ProjectDto save()
     {
         if(!isProjectOpen())
         {
             throw new NoOpenProjectException();
         }
 
-        Properties project = new Properties();
-
-        project.setProperty("name", projectName);
-
-        DataSourceWrapper internalDs = dsService.getInternalDataSource();
-        DataSourceWrapper tmpDs = dsService.getTmpDataSource();
-
-        project.setProperty("internal.driverClassName", internalDs.getDriverClassName());
-        project.setProperty("internal.url", internalDs.getUrl());
-        project.setProperty("internal.username", internalDs.getUsername());
-        project.setProperty("internal.password", internalDs.getPassword());
-
-        project.setProperty("tmp.driverClassName", tmpDs.getDriverClassName());
-        project.setProperty("tmp.url", tmpDs.getUrl());
-        project.setProperty("tmp.username", tmpDs.getUsername());
-        project.setProperty("tmp.password", tmpDs.getPassword());
-
-        // TODO Test
-        project.setProperty("git.url", gitService.getUrl());
-        project.setProperty("git.dir", gitService.getDir().toString());
-
-        try
-        {
-            String schemaUpdater = schemaUpdateManager.getSelectedImplementation()
-                    .orElseThrow(() -> new NoImplementationSelectedException(SchemaUpdater.class))
-                    .getClass()
-                    .getName();
-
-            project.setProperty("schemaUpdater", schemaUpdater);
-        }
-        catch(NoImplementationSelectedException e)
-        {
-            project.setProperty("schemaUpdater", "");
-        }
-
-        try
-        {
-            String dataImporter = dataImportManager.getSelectedImplementation()
-                    .orElseThrow(() -> new NoImplementationSelectedException(DataImporter.class))
-                    .getClass()
-                    .getName();
-
-            project.setProperty("dataImporter", dataImporter);
-        }
-        catch(NoImplementationSelectedException e)
-        {
-            project.setProperty("dataImporter", "");
-        }
-
-        try
-        {
-            String dataExporter = dataExportManager.getSelectedImplementation()
-                    .orElseThrow(() -> new NoImplementationSelectedException(DataExporter.class))
-                    .getClass()
-                    .getName();
-
-            project.setProperty("dataExporter", dataExporter);
-        }
-        catch(NoImplementationSelectedException e)
-        {
-            project.setProperty("dataExporter", "");
-        }
-
-        return project;
+        return new ProjectDto(
+                projectName,
+                DataSourceMapper.toDto(dsService.getInternalDataSource()),
+                DataSourceMapper.toDto(dsService.getTmpDataSource()),
+                new GitRepositoryDto(gitService.getUrl(), gitService.getDir().toString(), gitService.getToken()),
+                schemaUpdateManager.getSelectedImplementation()
+                        .map(impl -> impl.getClass().getName())
+                        .orElse(null),
+                dataImportManager.getSelectedImplementation()
+                        .map(impl -> impl.getClass().getName())
+                        .orElse(null),
+                dataExportManager.getSelectedImplementation()
+                        .map(impl -> impl.getClass().getName())
+                        .orElse(null));
     }
 
-    private DataSourceWrapper extractDs(Properties project, String dsName)
+    public void close()
     {
-        String driverClassName;
-        String url;
-        String username;
-        String password;
-
-        driverClassName = project.getProperty(dsName + ".driverClassName");
-        url = project.getProperty(dsName + ".url");
-        username = project.getProperty(dsName + ".username");
-        password = project.getProperty(dsName + ".password");
-
-        // TODO Check with Strings::isBlank()
-        if(driverClassName == null || url == null || username == null || password == null)
+        if(!isProjectOpen())
         {
-            throw new IllegalArgumentException(String.format("Data source '%s' is wrongly configured", dsName));
+            throw new NoOpenProjectException();
         }
 
-        return new DataSourceWrapper(driverClassName, url, username, password);
+        log.info("Closing project " + projectName);
+
+        projectName = null;
+
+        dsService.clearInternalDataSource();
+        dsService.clearTmpDataSource();
+
+        gitService.closeRepository();
+
+        schemaUpdateManager.clearSelection();
+        dataImportManager.clearSelection();
+        dataExportManager.clearSelection();
+
+        log.info("Project close successfully");
+    }
+
+    private DataSourceWrapper createDs(DataSourceDto dto)
+    {
+        return new DataSourceWrapper(dto.getDriverClassName(), dto.getUrl(), dto.getUsername(), dto.getPassword());
     }
 }

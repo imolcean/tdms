@@ -95,6 +95,23 @@ public class GitService
         log.info("Git repository open");
     }
 
+    @PreDestroy
+    public void closeRepository()
+    {
+        log.info("Closing repository");
+
+        if(repo != null)
+        {
+            repo.close();
+        }
+
+        repo = null;
+        credentials = null;
+        token = null;
+
+        log.info("Repository closed");
+    }
+
     public void loadData()
     {
         // TODO
@@ -103,17 +120,5 @@ public class GitService
     public void saveData()
     {
         // TODO
-    }
-
-    @PreDestroy
-    public void destroy()
-    {
-        if(repo != null)
-        {
-            repo.close();
-        }
-
-        repo = null;
-        credentials = null;
     }
 }
