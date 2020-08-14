@@ -5,6 +5,7 @@ import de.tu_berlin.imolcean.tdm.api.exceptions.NoGitRepositoryOpenException;
 import lombok.Getter;
 import lombok.extern.java.Log;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -23,9 +24,6 @@ public class GitService
 {
     private Repository repo;
     private CredentialsProvider credentials;
-
-    // TODO
-    @Getter
     private String token;
 
     public GitService()
@@ -53,6 +51,16 @@ public class GitService
         }
 
         return repo.getConfig().getString("remote", "origin", "url");
+    }
+
+    public String getToken()
+    {
+        if(repo == null)
+        {
+            throw new NoGitRepositoryOpenException();
+        }
+
+        return this.token;
     }
 
     public void openRepository(String url, Path dir, String token) throws GitAPIException, IOException
@@ -89,6 +97,8 @@ public class GitService
                 .setGitDir(gitDir.toFile())
                 .build();
 
+        // TODO Pull
+
         String currentUrl = repo.getConfig().getString("remote", "origin", "url");
 
         if(!currentUrl.equalsIgnoreCase(url))
@@ -117,13 +127,13 @@ public class GitService
         log.info("Repository closed");
     }
 
-    public void loadData()
-    {
-        // TODO
-    }
-
-    public void saveData()
-    {
-        // TODO
-    }
+//    public void pull() throws GitAPIException
+//    {
+//        try(Git git = new Git(repo))
+//        {
+//            PullResult pull = git.pull().call();
+//
+////            pull.getMergeResult().getMergeStatus()
+//        }
+//    }
 }

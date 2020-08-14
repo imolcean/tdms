@@ -19,8 +19,9 @@ public interface DataImporter extends PublicInterface, ExtensionPoint
      * in before calling this method.
      *
      * @param ds {@link DataSource} of the database that accepts imported data
+     * @param importDir directory where the serialised data is located
      */
-    void importData(DataSource ds) throws Exception;
+    void importData(DataSource ds, Path importDir) throws Exception;
 
     @Deprecated
     default void setDependencies(SchemaService schemaService, TableContentService tableContentService) {}

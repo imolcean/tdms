@@ -21,7 +21,9 @@
     "token": "914a332435833eb10e2f9fcf526f9f8b20878a07"
   },
 
-  "schemaUpdater": null,
+  "schemaUpdater": "de.tu_berlin.imolcean.tdm.x.updaters.LiquibaseIterativeSchemaUpdater",
   "dataImporter": "de.tu_berlin.imolcean.tdm.x.importers.JsonDataImporter",
-  "dataExporter": "de.tu_berlin.imolcean.tdm.x.exporters.JsonDataExporter"
+  "dataExporter": "de.tu_berlin.imolcean.tdm.x.exporters.JsonDataExporter",
+
+  "dataDir": "C:\\tdm\\repo\\data"
 }

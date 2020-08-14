@@ -1,6 +1,8 @@
 package de.tu_berlin.imolcean.tdm.core.controllers;
 
 import de.tu_berlin.imolcean.tdm.api.dto.TableContentDto;
+import de.tu_berlin.imolcean.tdm.core.services.GitService;
+import de.tu_berlin.imolcean.tdm.core.services.ProjectService;
 import de.tu_berlin.imolcean.tdm.core.services.proxies.DataExportProxy;
 import de.tu_berlin.imolcean.tdm.core.services.proxies.DataImportProxy;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
@@ -22,21 +24,27 @@ import java.util.List;
 @RequestMapping("api/data")
 public class TableContentController
 {
+    private final ProjectService projectService;
     private final DataSourceService dsService;
     private final SchemaService schemaService;
     private final TableContentService tableContentService;
+    private final GitService gitService;
     private final DataImportProxy dataImportProxy;
     private final DataExportProxy dataExportProxy;
 
-    public TableContentController(DataSourceService dsService,
+    public TableContentController(ProjectService projectService,
+                                  DataSourceService dsService,
                                   SchemaService SchemaService,
                                   TableContentService tableContentService,
+                                  GitService gitService,
                                   DataImportProxy dataImportProxy,
                                   DataExportProxy dataExportProxy)
     {
+        this.projectService = projectService;
         this.dsService = dsService;
         this.schemaService = SchemaService;
         this.tableContentService = tableContentService;
+        this.gitService = gitService;
         this.dataImportProxy = dataImportProxy;
         this.dataExportProxy = dataExportProxy;
     }
@@ -149,7 +157,7 @@ public class TableContentController
     @PutMapping("/internal/import")
     public ResponseEntity<Void> importData() throws Exception
     {
-        dataImportProxy.importData(dsService.getInternalDataSource());
+        dataImportProxy.importData(dsService.getInternalDataSource(), projectService.getDataDir());
 
         return ResponseEntity.noContent().build();
     }
@@ -157,8 +165,13 @@ public class TableContentController
     @PutMapping("/internal/export")
     public ResponseEntity<Void> exportData() throws Exception
     {
-        dataExportProxy.exportData(dsService.getInternalDataSource());
+        dataExportProxy.exportData(dsService.getInternalDataSource(), projectService.getDataDir());
 
         return ResponseEntity.noContent().build();
     }
+
+//    @PutMapping("/internal/update")
+//    public ResponseEntity<Void> updateDataFromGit()
+//    {
+//    }
 }

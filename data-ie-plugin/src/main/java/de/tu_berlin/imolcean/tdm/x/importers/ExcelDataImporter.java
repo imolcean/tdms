@@ -17,7 +17,6 @@ import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 @Extension
@@ -26,17 +25,8 @@ public class ExcelDataImporter implements DataImporter
 {
     // TODO Facilitate: only accept directories as importDir
 
-    private final Path importDir;
-
     private SchemaService schemaService;
     private TableContentService tableContentService;
-
-    public ExcelDataImporter(Properties properties)
-    {
-        this.importDir = Paths.get(properties.getProperty("import.path"));
-
-        log.fine("Import directory: " + importDir.toString());
-    }
 
     // TODO Insert SchemaService through DI
     @Override
@@ -47,7 +37,7 @@ public class ExcelDataImporter implements DataImporter
     }
 
     @Override
-    public void importData(DataSource ds) throws Exception
+    public void importData(DataSource ds, Path importDir) throws Exception
     {
         Collection<Table> tables = schemaService.getSchema(ds).getTables();
 

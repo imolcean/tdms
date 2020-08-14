@@ -14,35 +14,18 @@ import schemacrawler.schema.NamedObject;
 import schemacrawler.schema.Table;
 
 import javax.sql.DataSource;
-import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 @Extension
 @Log
 public class JsonDataExporter implements DataExporter
 {
-    private final Path exportDir;
-
     private SchemaService schemaService;
     private TableContentService tableContentService;
-
-    public JsonDataExporter(Properties properties)
-    {
-        this.exportDir = Paths.get(properties.getProperty("export.path"));
-
-        if(Files.exists(exportDir) && !Files.isDirectory(exportDir))
-        {
-            throw new IllegalArgumentException("Provided export dir exists and is not a directory");
-        }
-
-        log.fine("Export directory: " + exportDir.toString());
-    }
 
     // TODO Insert SchemaService through DI
     @Override
@@ -53,15 +36,21 @@ public class JsonDataExporter implements DataExporter
     }
 
     @Override
-    public void exportData(DataSource ds) throws Exception
+    public void exportData(DataSource ds, Path exportDir) throws Exception
     {
         log.info("Exporting data");
+        log.fine("Export dir: " + exportDir);
+
+        if(Files.exists(exportDir) && !Files.isDirectory(exportDir))
+        {
+            throw new IllegalArgumentException("Provided export dir exists and is not a directory");
+        }
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.setDefaultPrettyPrinter(
                 new DefaultPrettyPrinter().withArrayIndenter(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE));
 
-        FileUtils.cleanDirectory(this.exportDir.toFile());
+        FileUtils.cleanDirectory(exportDir.toFile());
 
         for(String tableName : schemaService.getOccupiedTableNames(ds))
         {

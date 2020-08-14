@@ -6,6 +6,7 @@ import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
 import org.pf4j.ExtensionPoint;
 
 import javax.sql.DataSource;
+import java.nio.file.Path;
 
 public interface DataExporter extends PublicInterface, ExtensionPoint
 {
@@ -20,7 +21,7 @@ public interface DataExporter extends PublicInterface, ExtensionPoint
      *
      * @param ds the source for the exported data
      */
-    void exportData(DataSource ds) throws Exception;
+    void exportData(DataSource ds, Path exportDir) throws Exception;
 
     @Deprecated
     default void setDependencies(SchemaService schemaService, TableContentService tableContentService) {}

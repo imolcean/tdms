@@ -1,7 +1,6 @@
 package de.tu_berlin.imolcean.tdm.core.services;
 
 import de.tu_berlin.imolcean.tdm.api.dto.DataSourceDto;
-import de.tu_berlin.imolcean.tdm.api.dto.GitRepositoryDto;
 import de.tu_berlin.imolcean.tdm.api.dto.ProjectDto;
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoOpenProjectException;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
@@ -29,6 +28,7 @@ public class ProjectService
     private final DataExportImplementationManager dataExportManager;
 
     private String projectName;
+    private Path dataDir;
 
     public ProjectService(DataSourceService dsService,
                           SchemaService schemaService,
@@ -78,16 +78,37 @@ public class ProjectService
         projectName = name;
     }
 
+    public Path getDataDir()
+    {
+        if(!isProjectOpen())
+        {
+            throw new NoOpenProjectException();
+        }
+
+        return dataDir;
+    }
+
+    public void changeDataDir(Path dir)
+    {
+        if(!isProjectOpen())
+        {
+            throw new NoOpenProjectException();
+        }
+
+        dataDir = dir;
+    }
+
     public void open(ProjectDto project) throws Exception
     {
         // TODO Close open project first
 
+        log.info("Opening project");
+
         projectName = project.getProjectName();
+        dataDir = Path.of(project.getDataDir());
 
-        log.info("Opening project " + projectName);
-
-        dsService.setInternalDataSource(createDs(project.getInternal()));
-        dsService.setTmpDataSource(createDs(project.getTmp()));
+        dsService.setInternalDataSource(createDsFromDto(project.getInternal()));
+        dsService.setTmpDataSource(createDsFromDto(project.getTmp()));
 
         gitService.openRepository(
                 project.getGitRepository().getUrl(),
@@ -148,7 +169,8 @@ public class ProjectService
                         .orElse(null),
                 dataExportManager.getSelectedImplementation()
                         .map(impl -> impl.getClass().getName())
-                        .orElse(null));
+                        .orElse(null),
+                dataDir.toString());
     }
 
     public void close()
@@ -161,6 +183,7 @@ public class ProjectService
         log.info("Closing project " + projectName);
 
         projectName = null;
+        dataDir = null;
 
         dsService.clearInternalDataSource();
         dsService.clearTmpDataSource();
@@ -174,7 +197,7 @@ public class ProjectService
         log.info("Project closed successfully");
     }
 
-    private DataSourceWrapper createDs(DataSourceDto dto)
+    private DataSourceWrapper createDsFromDto(DataSourceDto dto)
     {
         return new DataSourceWrapper(dto.getDriverClassName(), dto.getUrl(), dto.getUsername(), dto.getPassword());
     }

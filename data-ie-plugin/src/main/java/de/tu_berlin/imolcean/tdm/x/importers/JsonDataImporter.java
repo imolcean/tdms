@@ -13,24 +13,14 @@ import schemacrawler.schema.Table;
 import javax.sql.DataSource;
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 @Extension
 @Log
 public class JsonDataImporter implements DataImporter
 {
-    private final Path importDir;
-
     private SchemaService schemaService;
     private TableContentService tableContentService;
-
-    public JsonDataImporter(Properties properties)
-    {
-        this.importDir = Paths.get(properties.getProperty("import.path"));
-
-        log.fine("Import directory: " + importDir.toString());
-    }
 
     // TODO Insert SchemaService through DI
     @Override
@@ -41,18 +31,8 @@ public class JsonDataImporter implements DataImporter
     }
 
     @Override
-    public void importData(DataSource ds) throws Exception
+    public void importData(DataSource ds, Path importDir) throws Exception
     {
-        Collection<Table> tables = schemaService.getSchema(ds).getTables();
-
-        log.fine("Checking that the database is empty");
-
-        if(!tableContentService.areTablesEmpty(ds, tables))
-        {
-            throw new Exception("Cannot import into non-empty database");
-        }
-
-        log.fine("Database is empty");
         log.info("Importing " + importDir.toString());
 
         ObjectMapper mapper = new ObjectMapper();
@@ -62,8 +42,14 @@ public class JsonDataImporter implements DataImporter
         while(it.hasNext())
         {
             TableContentDto dto = mapper.readValue(it.next(), TableContentDto.class);
+            Table table = schemaService.getTable(ds, dto.getTableName());
 
-            map.put(schemaService.getTable(ds, dto.getTableName()), dto.getData());
+            if(!tableContentService.isTableEmpty(ds, table))
+            {
+                throw new IllegalStateException("Cannot import into non-empty table " + table.getName());
+            }
+
+            map.put(table, dto.getData());
         }
 
         tableContentService.importData(ds, map);
