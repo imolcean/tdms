@@ -31,7 +31,7 @@ public class DataSourceService
     {
         if(internalDs == null)
         {
-            throw new NoOpenProjectException();
+            throw new NoDataSourceSelectedException();
         }
 
         return internalDs;
@@ -55,7 +55,7 @@ public class DataSourceService
     {
         if(tmpDs == null)
         {
-            throw new NoOpenProjectException();
+            throw new NoDataSourceSelectedException();
         }
 
         return tmpDs;

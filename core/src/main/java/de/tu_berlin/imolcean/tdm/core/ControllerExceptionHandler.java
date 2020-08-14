@@ -45,9 +45,12 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler
     }
 
     @ExceptionHandler({
+            NoDataSourceSelectedException.class,
             NoCurrentStageException.class,
             NoImplementationSelectedException.class,
             NoOpenProjectException.class,
+            NoGitRepositoryOpenException.class,
+            GitRepositoryAlreadyOpenException.class,
             IllegalStateException.class,
             UnsupportedOperationException.class
     })

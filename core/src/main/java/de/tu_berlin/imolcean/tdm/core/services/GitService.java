@@ -1,6 +1,7 @@
 package de.tu_berlin.imolcean.tdm.core.services;
 
-import de.tu_berlin.imolcean.tdm.api.exceptions.NoOpenProjectException;
+import de.tu_berlin.imolcean.tdm.api.exceptions.GitRepositoryAlreadyOpenException;
+import de.tu_berlin.imolcean.tdm.api.exceptions.NoGitRepositoryOpenException;
 import lombok.Getter;
 import lombok.extern.java.Log;
 import org.eclipse.jgit.api.Git;
@@ -38,7 +39,7 @@ public class GitService
     {
         if(repo == null)
         {
-            throw new NoOpenProjectException();
+            throw new NoGitRepositoryOpenException();
         }
 
         return repo.getDirectory().toPath().getParent();
@@ -48,7 +49,7 @@ public class GitService
     {
         if(repo == null)
         {
-            throw new NoOpenProjectException();
+            throw new NoGitRepositoryOpenException();
         }
 
         return repo.getConfig().getString("remote", "origin", "url");
@@ -56,6 +57,11 @@ public class GitService
 
     public void openRepository(String url, Path dir, String token) throws GitAPIException, IOException
     {
+        if(repo != null)
+        {
+            throw new GitRepositoryAlreadyOpenException();
+        }
+
         log.info("Opening git repository");
         log.fine("Looking for an existing repository at " + dir.toString());
 

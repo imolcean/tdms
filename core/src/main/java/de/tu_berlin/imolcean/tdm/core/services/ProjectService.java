@@ -7,6 +7,7 @@ import de.tu_berlin.imolcean.tdm.api.exceptions.NoOpenProjectException;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.core.DataSourceWrapper;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.DataSourceMapper;
+import de.tu_berlin.imolcean.tdm.core.controllers.mappers.GitRepositoryMapper;
 import de.tu_berlin.imolcean.tdm.core.services.managers.DataExportImplementationManager;
 import de.tu_berlin.imolcean.tdm.core.services.managers.DataImportImplementationManager;
 import de.tu_berlin.imolcean.tdm.core.services.managers.SchemaUpdateImplementationManager;
@@ -120,6 +121,8 @@ public class ProjectService
             log.warning("DataExporter not configured");
         }
 
+        // TODO Update schema, pull and import data
+
         log.info(String.format("Project %s opened successfully", projectName));
     }
 
@@ -130,11 +133,13 @@ public class ProjectService
             throw new NoOpenProjectException();
         }
 
+        // TODO Export and push data
+
         return new ProjectDto(
                 projectName,
                 DataSourceMapper.toDto(dsService.getInternalDataSource()),
                 DataSourceMapper.toDto(dsService.getTmpDataSource()),
-                new GitRepositoryDto(gitService.getUrl(), gitService.getDir().toString(), gitService.getToken()),
+                GitRepositoryMapper.toDto(gitService),
                 schemaUpdateManager.getSelectedImplementation()
                         .map(impl -> impl.getClass().getName())
                         .orElse(null),
@@ -166,7 +171,7 @@ public class ProjectService
         dataImportManager.clearSelection();
         dataExportManager.clearSelection();
 
-        log.info("Project close successfully");
+        log.info("Project closed successfully");
     }
 
     private DataSourceWrapper createDs(DataSourceDto dto)
