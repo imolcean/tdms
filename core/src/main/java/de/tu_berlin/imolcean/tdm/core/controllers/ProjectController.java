@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.file.Path;
 
 @RestController
 @RequestMapping("api/project")
@@ -42,6 +43,20 @@ public class ProjectController
         projectService.renameProject(name);
 
         return ResponseEntity.ok(projectService.getProjectName());
+    }
+
+    @GetMapping("/data-dir")
+    public ResponseEntity<String> dataDir()
+    {
+        return ResponseEntity.ok(projectService.getDataDir().toString());
+    }
+
+    @PutMapping("/data-dir")
+    public ResponseEntity<String> changeDataDir(@RequestHeader("X-Dir") String dir)
+    {
+        projectService.changeDataDir(Path.of(dir));
+
+        return ResponseEntity.ok(projectService.getDataDir().toString());
     }
 
     @GetMapping(value = "/")

@@ -23,8 +23,6 @@ import java.util.*;
 @Log
 public class ExcelDataImporter implements DataImporter
 {
-    // TODO Facilitate: only accept directories as importDir
-
     private SchemaService schemaService;
     private TableContentService tableContentService;
 
@@ -51,16 +49,12 @@ public class ExcelDataImporter implements DataImporter
         log.fine("Database is empty");
         log.info("Importing " + importDir.toString());
 
-        Map<Table, List<Object[]>> map;
+        if(!importDir.toFile().isDirectory())
+        {
+            throw new IllegalArgumentException(String.format("%s is not a directory", importDir.toString()));
+        }
 
-        if(importDir.toFile().isDirectory())
-        {
-            map = handleDirectory(importDir, tables);
-        }
-        else
-        {
-            map = handleFile(importDir, tables);
-        }
+        Map<Table, List<Object[]>> map = handleDirectory(importDir, tables);
 
         // TODO Remove
 //        displayData(map);
