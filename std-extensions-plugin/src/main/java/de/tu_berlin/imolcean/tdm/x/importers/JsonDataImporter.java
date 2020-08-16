@@ -8,6 +8,8 @@ import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
 import org.pf4j.Extension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import schemacrawler.schema.Table;
 
 import javax.sql.DataSource;
@@ -15,20 +17,16 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
 
+@Component
 @Extension
 @Log
 public class JsonDataImporter implements DataImporter
 {
+    @Autowired
     private SchemaService schemaService;
-    private TableContentService tableContentService;
 
-    // TODO Insert SchemaService through DI
-    @Override
-    public void setDependencies(SchemaService schemaService, TableContentService tableContentService)
-    {
-        this.schemaService = schemaService;
-        this.tableContentService = tableContentService;
-    }
+    @Autowired
+    private TableContentService tableContentService;
 
     @Override
     public void importData(DataSource ds, Path importDir) throws Exception

@@ -24,7 +24,7 @@
   "schemaUpdater": "de.tu_berlin.imolcean.tdm.x.updaters.LiquibaseIterativeSchemaUpdater",
   "dataImporter": "de.tu_berlin.imolcean.tdm.x.importers.JsonDataImporter",
   "dataExporter": "de.tu_berlin.imolcean.tdm.x.exporters.JsonDataExporter",
-  "deployer": "de.tu_berlin.imolcean.tdm.core.x.MigrationDeployer",
+  "deployer": "de.tu_berlin.imolcean.tdm.x.deployers.MigrationDeployer",
 
   "dataDir": "C:\\tdm\\repo\\data"
 }

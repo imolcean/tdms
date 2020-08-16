@@ -22,7 +22,4 @@ public interface DataExporter extends PublicInterface, ExtensionPoint
      * @param ds the source for the exported data
      */
     void exportData(DataSource ds, Path exportDir) throws Exception;
-
-    @Deprecated
-    default void setDependencies(SchemaService schemaService, TableContentService tableContentService) {}
 }

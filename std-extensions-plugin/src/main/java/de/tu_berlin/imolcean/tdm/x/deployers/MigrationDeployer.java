@@ -1,10 +1,12 @@
-package de.tu_berlin.imolcean.tdm.core.x;
+package de.tu_berlin.imolcean.tdm.x.deployers;
 
 import de.tu_berlin.imolcean.tdm.api.interfaces.deployment.Deployer;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
 import lombok.extern.java.Log;
 import org.pf4j.Extension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import schemacrawler.schema.Table;
 
 import javax.sql.DataSource;
@@ -21,20 +23,16 @@ import java.util.List;
  * This {@link Deployer} also does not perform any checks of schema similarity between the source and target
  * databases. The two, however, need to have compliant schemas not to cause SQL errors during the data is copied.
  */
+@Component
 @Extension
 @Log
 public class MigrationDeployer implements Deployer
 {
+    @Autowired
     private SchemaService schemaService;
-    private TableContentService tableContentService;
 
-    // TODO Use DI
-    @Override
-    public void setDependencies(SchemaService schemaService, TableContentService tableContentService)
-    {
-        this.schemaService = schemaService;
-        this.tableContentService = tableContentService;
-    }
+    @Autowired
+    private TableContentService tableContentService;
 
     @Override
     public void deploy(DataSource src, DataSource target) throws Exception

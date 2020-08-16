@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>liquibase-schema-updaters-plugin</artifactId>
+    <artifactId>std-extensions-plugin</artifactId>
 
     <dependencies>
         <dependency>
@@ -31,10 +31,10 @@
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                         <manifestEntries>
-                            <Plugin-Id>liquibase-updater-plugin</Plugin-Id>
+                            <Plugin-Id>std-extensions-plugin</Plugin-Id>
                             <Plugin-Version>0.0.1</Plugin-Version>
                             <Plugin-Description>
-                                Plugin contains Liquibase Schema Updater which is shipped together with the TDM software but is not part of its core.
+                                Plugin contains extensions that are shipped together with the TDM software but are not part of its core.
                             </Plugin-Description>
                             <Plugin-Provider>Igor Molcean</Plugin-Provider>
                         </manifestEntries>

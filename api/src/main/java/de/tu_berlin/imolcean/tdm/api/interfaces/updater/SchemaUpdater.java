@@ -2,8 +2,6 @@ package de.tu_berlin.imolcean.tdm.api.interfaces.updater;
 
 import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateDataMappingRequest;
 import de.tu_berlin.imolcean.tdm.api.interfaces.PublicInterface;
-import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
-import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.pf4j.ExtensionPoint;
@@ -47,9 +45,6 @@ public interface SchemaUpdater extends PublicInterface, ExtensionPoint
         List<Table> deletedTables;
         List<Comparison> changedTables;
     }
-
-    @Deprecated
-    default void setDependencies(SchemaService schemaService, TableContentService tableContentService) {}
 
     /**
      * Indicates whether a schema update is in progress.

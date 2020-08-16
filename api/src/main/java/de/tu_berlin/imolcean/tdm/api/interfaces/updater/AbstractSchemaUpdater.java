@@ -3,25 +3,23 @@ package de.tu_berlin.imolcean.tdm.api.interfaces.updater;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
 import lombok.extern.java.Log;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 
+@Component
 @Log
 public abstract class AbstractSchemaUpdater implements SchemaUpdater
 {
+    @Autowired
     protected SchemaService schemaService;
+
+    @Autowired
     protected TableContentService tableContentService;
 
     protected DataSource internalDs;
     protected DataSource tmpDs;
-
-    // TODO Insert SchemaService through DI
-    @Override
-    public void setDependencies(SchemaService schemaService, TableContentService tableContentService)
-    {
-        this.schemaService = schemaService;
-        this.tableContentService = tableContentService;
-    }
 
     @Override
     public boolean isUpdateInProgress()

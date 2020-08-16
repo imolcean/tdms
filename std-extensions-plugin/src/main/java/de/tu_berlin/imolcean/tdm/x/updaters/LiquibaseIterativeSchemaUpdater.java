@@ -1,7 +1,6 @@
 package de.tu_berlin.imolcean.tdm.x.updaters;
 
 import de.tu_berlin.imolcean.tdm.api.interfaces.updater.IterativeSchemaUpdater;
-import de.tu_berlin.imolcean.tdm.x.DiffMapper;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.database.Database;

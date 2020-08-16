@@ -1,4 +1,4 @@
-package de.tu_berlin.imolcean.tdm.x;
+package de.tu_berlin.imolcean.tdm.x.updaters;
 
 import de.tu_berlin.imolcean.tdm.api.interfaces.updater.SchemaUpdater;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;

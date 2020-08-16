@@ -10,6 +10,8 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.pf4j.Extension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import schemacrawler.schema.Column;
 import schemacrawler.schema.Table;
 
@@ -19,20 +21,16 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 
+@Component
 @Extension
 @Log
 public class ExcelDataImporter implements DataImporter
 {
+    @Autowired
     private SchemaService schemaService;
-    private TableContentService tableContentService;
 
-    // TODO Insert SchemaService through DI
-    @Override
-    public void setDependencies(SchemaService schemaService, TableContentService tableContentService)
-    {
-        this.schemaService = schemaService;
-        this.tableContentService = tableContentService;
-    }
+    @Autowired
+    private TableContentService tableContentService;
 
     @Override
     public void importData(DataSource ds, Path importDir) throws Exception

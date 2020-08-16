@@ -22,7 +22,4 @@ public interface DataImporter extends PublicInterface, ExtensionPoint
      * @param importDir directory where the serialised data is located
      */
     void importData(DataSource ds, Path importDir) throws Exception;
-
-    @Deprecated
-    default void setDependencies(SchemaService schemaService, TableContentService tableContentService) {}
 }

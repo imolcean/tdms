@@ -19,8 +19,7 @@
     <modules>
         <module>api</module>
         <module>core</module>
-        <module>data-ie-plugin</module>
-        <module>liquibase-schema-updaters-plugin</module>
+        <module>std-extensions-plugin</module>
         <module>gui</module>
     </modules>
 
