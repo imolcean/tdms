@@ -9,6 +9,7 @@ import de.tu_berlin.imolcean.tdm.core.controllers.mappers.DataSourceMapper;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.GitRepositoryMapper;
 import de.tu_berlin.imolcean.tdm.core.services.managers.DataExportImplementationManager;
 import de.tu_berlin.imolcean.tdm.core.services.managers.DataImportImplementationManager;
+import de.tu_berlin.imolcean.tdm.core.services.managers.DeploymentImplementationManager;
 import de.tu_berlin.imolcean.tdm.core.services.managers.SchemaUpdateImplementationManager;
 import lombok.extern.java.Log;
 import org.apache.logging.log4j.util.Strings;
@@ -26,6 +27,7 @@ public class ProjectService
     private final SchemaUpdateImplementationManager schemaUpdateManager;
     private final DataImportImplementationManager dataImportManager;
     private final DataExportImplementationManager dataExportManager;
+    private final DeploymentImplementationManager deploymentManager;
 
     private String projectName;
     private Path dataDir;
@@ -35,7 +37,8 @@ public class ProjectService
                           GitService gitService,
                           SchemaUpdateImplementationManager schemaUpdateManager,
                           DataImportImplementationManager dataImportManager,
-                          DataExportImplementationManager dataExportManager)
+                          DataExportImplementationManager dataExportManager,
+                          DeploymentImplementationManager deploymentManager)
     {
         this.dsService = dsService;
         this.schemaService = schemaService;
@@ -43,6 +46,7 @@ public class ProjectService
         this.schemaUpdateManager = schemaUpdateManager;
         this.dataImportManager = dataImportManager;
         this.dataExportManager = dataExportManager;
+        this.deploymentManager = deploymentManager;
 
         this.projectName = null;
     }
@@ -142,6 +146,15 @@ public class ProjectService
             log.warning("DataExporter not configured");
         }
 
+        if(project.getDeployer() != null)
+        {
+            deploymentManager.selectImplementation(project.getDeployer());
+        }
+        else
+        {
+            log.warning("Deployer not configured");
+        }
+
         // TODO Update schema, pull and import data
 
         log.info(String.format("Project %s opened successfully", projectName));
@@ -170,6 +183,9 @@ public class ProjectService
                 dataExportManager.getSelectedImplementation()
                         .map(impl -> impl.getClass().getName())
                         .orElse(null),
+                deploymentManager.getSelectedImplementation()
+                        .map(impl -> impl.getClass().getName())
+                .orElse(null),
                 dataDir.toString());
     }
 

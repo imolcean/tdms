@@ -30,6 +30,8 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -230,6 +232,19 @@ public class DefaultSchemaService implements SchemaService
                     .findFirst()
                     .orElseThrow(() -> new TableNotFoundException(tableName));
         }
+    }
+
+    @Override
+    public List<Table> getTables(DataSource ds, Collection<String> tableNames) throws SQLException, SchemaCrawlerException
+    {
+        List<Table> tables = new ArrayList<>(tableNames.size());
+
+        for(String tableName : tableNames)
+        {
+            tables.add(getTable(ds, tableName));
+        }
+
+        return tables;
     }
 
     @Override

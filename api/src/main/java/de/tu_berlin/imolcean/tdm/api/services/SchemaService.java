@@ -6,6 +6,7 @@ import schemacrawler.schemacrawler.SchemaCrawlerException;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 
 public interface SchemaService
@@ -23,6 +24,8 @@ public interface SchemaService
     List<String> getEmptyTableNames(DataSource ds) throws SQLException, SchemaCrawlerException;
 
     Table getTable(DataSource ds, String tableName) throws SQLException, SchemaCrawlerException;
+
+    List<Table> getTables(DataSource ds, Collection<String> tableNames) throws SQLException, SchemaCrawlerException;
 
     boolean tableExists(DataSource ds, String tableName) throws SQLException, SchemaCrawlerException;
 

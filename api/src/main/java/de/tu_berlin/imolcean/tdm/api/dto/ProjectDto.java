@@ -19,6 +19,7 @@ public class ProjectDto
     private String schemaUpdater;
     private String dataImporter;
     private String dataExporter;
+    private String deployer;
 
     private String dataDir;
 }

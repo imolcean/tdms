@@ -4,12 +4,8 @@ import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.tu_berlin.imolcean.tdm.api.dto.ProjectDto;
-import de.tu_berlin.imolcean.tdm.core.deployment.MigrationDeployer;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
 import de.tu_berlin.imolcean.tdm.core.services.ProjectService;
-import de.tu_berlin.imolcean.tdm.core.services.managers.DataImportImplementationManager;
-import de.tu_berlin.imolcean.tdm.core.services.managers.SchemaUpdateImplementationManager;
-import org.pf4j.spring.SpringPluginManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -23,22 +19,10 @@ public class TdmApplication implements CommandLineRunner
     private DataSourceService dsService;
 
     @Autowired
-    private de.tu_berlin.imolcean.tdm.api.services.SchemaService SchemaService;
-
-    @Autowired
-    private SchemaUpdateImplementationManager schemaUpdateImplementationManager;
-
-    @Autowired
-    private DataImportImplementationManager dataImportImplementationManager;
+    private de.tu_berlin.imolcean.tdm.api.services.SchemaService schemaService;
 
     @Autowired
     private ProjectService projectService;
-
-    @Autowired
-    private MigrationDeployer deployer;
-
-    @Autowired
-    private SpringPluginManager plugins;
 
     private final ObjectMapper mapper = new ObjectMapper()
             .setDefaultPrettyPrinter(
@@ -63,19 +47,8 @@ public class TdmApplication implements CommandLineRunner
 //
 //        final DiffNode diff = new SchemaDifferBuilder().build().compare(importDb, internalDb);
 //        SchemaDiffPrinter.print(diff);
-
-
-
-//        SchemaUpdater liquibase = plugins.getExtensions(SchemaUpdater.class).stream()
-//                .findFirst()
-//                .orElseThrow();
 //
-//        liquibase.updateSchema(dsService.getInternalDataSource());
-
-
-//        deployer.deploy();
-
-
+//
 //        Table table = schemaService.getTable(internalDs, "PERSON");
 //
 //        for(ForeignKey fk : table.getExportedForeignKeys())

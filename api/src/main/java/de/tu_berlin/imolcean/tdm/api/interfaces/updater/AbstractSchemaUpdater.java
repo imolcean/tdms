@@ -1,6 +1,5 @@
 package de.tu_berlin.imolcean.tdm.api.interfaces.updater;
 
-import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateDataMappingRequest;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
 import lombok.extern.java.Log;
