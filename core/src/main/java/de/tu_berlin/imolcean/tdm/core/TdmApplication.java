@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.tu_berlin.imolcean.tdm.api.dto.ProjectDto;
-import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
 import de.tu_berlin.imolcean.tdm.core.services.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -15,12 +14,6 @@ import org.springframework.core.io.ClassPathResource;
 @SpringBootApplication
 public class TdmApplication implements CommandLineRunner
 {
-    @Autowired
-    private DataSourceService dsService;
-
-    @Autowired
-    private de.tu_berlin.imolcean.tdm.api.services.SchemaService schemaService;
-
     @Autowired
     private ProjectService projectService;
 
@@ -36,38 +29,10 @@ public class TdmApplication implements CommandLineRunner
     @Override
     public void run(String... args) throws Exception
     {
-        ProjectDto project = mapper.readValue(new ClassPathResource("DABAG.tdm.json").getInputStream(), ProjectDto.class);
+        ProjectDto project = mapper.readValue(new ClassPathResource("EXP.tdm.json").getInputStream(), ProjectDto.class);
         projectService.open(project);
 
         StageContextHolder.setStageName("exp");
-
-
-//        Catalog internalDb = schemaService.getSchema(dsService.getInternalDataSource());
-//        Catalog importDb = schemaService.getSchema(dsService.getImportDataSource());
-//
-//        final DiffNode diff = new SchemaDifferBuilder().build().compare(importDb, internalDb);
-//        SchemaDiffPrinter.print(diff);
-//
-//
-//        Table table = schemaService.getTable(internalDs, "PERSON");
-//
-//        for(ForeignKey fk : table.getExportedForeignKeys())
-//        {
-//            System.out.println(fk.getFullName());
-//
-//            for(ForeignKeyColumnReference ref : fk.getColumnReferences())
-//            {
-//                Column pkCol = ref.getPrimaryKeyColumn();
-//                Column fkCol = ref.getForeignKeyColumn();
-//
-//                System.out.print(fkCol.getParent() + " . " + fkCol.getName());
-//                System.out.print("   ->   ");
-//                System.out.print(pkCol.getParent() + " . " + pkCol.getName());
-//                System.out.println();
-//            }
-//
-//            System.out.println("---");
-//        }
 
 
         System.out.println("DONE!");

@@ -1,5 +1,5 @@
 {
-  "projectName": "DABAG",
+  "projectName": "EXP",
 
   "internal": {
     "driverClassName": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
@@ -10,7 +10,7 @@
 
   "tmp": {
     "driverClassName": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-    "url": "jdbc:sqlserver://localhost:1434;databaseName=DABAG_IGORDAT06_EXP",
+    "url": "jdbc:sqlserver://localhost:1434;databaseName=DABAG_IGORDAT06_TMP",
     "username": "DABAG_DEV",
     "password": "DABAG_DEV"
   },

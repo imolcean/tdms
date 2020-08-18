@@ -18,10 +18,11 @@ import java.util.List;
  * Migration is the default deployment method for test data. It means that content of
  * every non-empty table in the source database will be copied into the target database.
  *
- * Note that the target database does not necessarily have to be empty but it should be in order
- * to guarantee that no primary-key or other constraints are violated during the data is copied.
- * This {@link Deployer} also does not perform any checks of schema similarity between the source and target
- * databases. The two, however, need to have compliant schemas not to cause SQL errors during the data is copied.
+ * Note that the target database does not necessarily have to be empty because it will be cleared
+ * before deployment in order to guarantee that no primary-key or other constraints are
+ * violated during the data is copied. This {@link Deployer} also does not perform any checks of schema
+ * similarity between the source and target databases. The two, however, need to have compliant schemas
+ * not to cause SQL errors during the data is copied.
  */
 @Component
 @Extension
@@ -38,13 +39,20 @@ public class MigrationDeployer implements Deployer
     public void deploy(DataSource src, DataSource target) throws Exception
     {
         log.info("Starting deployment");
+        log.fine("Looking for non-empty tables in the source DB");
 
         List<Table> tablesToCopy = schemaService.getTables(src, schemaService.getOccupiedTableNames(src));
-
         if(tablesToCopy.isEmpty())
         {
             throw new IllegalStateException("There is no data to deploy");
         }
+
+        log.fine("Clearing the target DB");
+
+        List<Table> tablesToClear = schemaService.getTables(target, schemaService.getOccupiedTableNames(target));
+        tableContentService.clearTables(target, tablesToClear);
+
+        log.fine("Copying data from the source DB into the target DB");
 
         tableContentService.copyData(src, target, schemaService.getTables(src, schemaService.getOccupiedTableNames(src)));
 
