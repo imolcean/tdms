@@ -1,12 +1,11 @@
 package de.tu_berlin.imolcean.tdm.api.interfaces.updater;
 
+import de.tu_berlin.imolcean.tdm.api.DataSourceWrapper;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import javax.sql.DataSource;
 
 @Component
 @Log
@@ -18,8 +17,8 @@ public abstract class AbstractSchemaUpdater implements SchemaUpdater
     @Autowired
     protected TableContentService tableContentService;
 
-    protected DataSource internalDs;
-    protected DataSource tmpDs;
+    protected DataSourceWrapper internalDs;
+    protected DataSourceWrapper tmpDs;
 
     @Override
     public boolean isUpdateInProgress()

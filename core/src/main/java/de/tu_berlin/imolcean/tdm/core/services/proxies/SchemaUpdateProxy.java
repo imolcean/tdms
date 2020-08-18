@@ -1,11 +1,10 @@
 package de.tu_berlin.imolcean.tdm.core.services.proxies;
 
+import de.tu_berlin.imolcean.tdm.api.DataSourceWrapper;
 import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateDataMappingRequest;
 import de.tu_berlin.imolcean.tdm.api.interfaces.updater.SchemaUpdater;
 import de.tu_berlin.imolcean.tdm.core.services.managers.SchemaUpdateImplementationManager;
 import org.springframework.stereotype.Service;
-
-import javax.sql.DataSource;
 
 @Service
 public class SchemaUpdateProxy extends AbstractPublicInterfaceProxy<SchemaUpdater> implements SchemaUpdater
@@ -22,7 +21,7 @@ public class SchemaUpdateProxy extends AbstractPublicInterfaceProxy<SchemaUpdate
     }
 
     @Override
-    public SchemaUpdater.SchemaUpdateReport initSchemaUpdate(DataSource internalDs, DataSource tmpDs) throws Exception
+    public SchemaUpdater.SchemaUpdateReport initSchemaUpdate(DataSourceWrapper internalDs, DataSourceWrapper tmpDs) throws Exception
     {
         return getImplementation().initSchemaUpdate(internalDs, tmpDs);
     }

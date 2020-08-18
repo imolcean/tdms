@@ -1,5 +1,6 @@
 package de.tu_berlin.imolcean.tdm.api.interfaces.updater;
 
+import de.tu_berlin.imolcean.tdm.api.DataSourceWrapper;
 import de.tu_berlin.imolcean.tdm.api.dto.SchemaUpdateDataMappingRequest;
 import de.tu_berlin.imolcean.tdm.api.interfaces.PublicInterface;
 import lombok.AllArgsConstructor;
@@ -7,7 +8,6 @@ import lombok.Data;
 import org.pf4j.ExtensionPoint;
 import schemacrawler.schema.Table;
 
-import javax.sql.DataSource;
 import java.util.List;
 
 /**
@@ -62,7 +62,7 @@ public interface SchemaUpdater extends PublicInterface, ExtensionPoint
      * @param tmpDs empty temporary storage that the new schema will be applied to
      * @return report of all changes in the new schema with respect to the old one
      */
-    SchemaUpdateReport initSchemaUpdate(DataSource internalDs, DataSource tmpDs) throws Exception;
+    SchemaUpdateReport initSchemaUpdate(DataSourceWrapper internalDs, DataSourceWrapper tmpDs) throws Exception;
 
     /**
      * Maps all data from the old schema to the new schema.

@@ -42,6 +42,7 @@ public class DataSourceController
                 name,
                 dto.getDriverClassName(),
                 dto.getUrl(),
+                dto.getDatabase(),
                 dto.getUsername(),
                 dto.getPassword());
 
@@ -58,6 +59,7 @@ public class DataSourceController
                 name,
                 dto.getDriverClassName(),
                 dto.getUrl(),
+                dto.getDatabase(),
                 dto.getUsername(),
                 dto.getPassword());
 

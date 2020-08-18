@@ -3,14 +3,16 @@
 
   "internal": {
     "driverClassName": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-    "url": "jdbc:sqlserver://localhost:1434;databaseName=DABAG_IGORDAT06",
+    "url": "jdbc:sqlserver://localhost:1434",
+    "database": "DABAG_IGORDAT06",
     "username": "DABAG_DEV",
     "password": "DABAG_DEV"
   },
 
   "tmp": {
     "driverClassName": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-    "url": "jdbc:sqlserver://localhost:1434;databaseName=DABAG_IGORDAT06_TMP",
+    "url": "jdbc:sqlserver://localhost:1434",
+    "database": "DABAG_IGORDAT06_TMP",
     "username": "DABAG_DEV",
     "password": "DABAG_DEV"
   },
@@ -21,7 +23,7 @@
     "token": "914a332435833eb10e2f9fcf526f9f8b20878a07"
   },
 
-  "schemaUpdater": "de.tu_berlin.imolcean.tdm.x.updaters.LiquibaseIterativeSchemaUpdater",
+  "schemaUpdater": "de.tu_berlin.imolcean.tdm.x.updaters.LiquibaseDiffSchemaUpdater",
   "dataImporter": "de.tu_berlin.imolcean.tdm.x.importers.JsonDataImporter",
   "dataExporter": "de.tu_berlin.imolcean.tdm.x.exporters.JsonDataExporter",
   "deployer": "de.tu_berlin.imolcean.tdm.x.deployers.MigrationDeployer",

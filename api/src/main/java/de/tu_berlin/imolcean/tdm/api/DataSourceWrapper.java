@@ -1,4 +1,4 @@
-package de.tu_berlin.imolcean.tdm.core;
+package de.tu_berlin.imolcean.tdm.api;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -18,25 +18,22 @@ public class DataSourceWrapper implements DataSource
     private final DataSource ds;
 
     private final String driverClassName;
-
     private final String url;
-
+    private final String database;
     private final String username;
-
     private final String password;
 
-    // TODO Add property 'database'
-
-    public DataSourceWrapper(String driverClassName, String url, String username, String password)
+    public DataSourceWrapper(String driverClassName, String url, String database, String username, String password)
     {
         this.driverClassName = driverClassName;
         this.url = url;
+        this.database = database;
         this.username = username;
         this.password = password;
 
         this.ds = DataSourceBuilder.create()
                 .driverClassName(this.driverClassName)
-                .url(this.url)
+                .url(String.format("%s;databaseName=%s", this.url, this.database))
                 .username(this.username)
                 .password(this.password)
                 .build();

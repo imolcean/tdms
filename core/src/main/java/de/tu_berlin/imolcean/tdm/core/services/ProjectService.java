@@ -4,7 +4,7 @@ import de.tu_berlin.imolcean.tdm.api.dto.DataSourceDto;
 import de.tu_berlin.imolcean.tdm.api.dto.ProjectDto;
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoOpenProjectException;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
-import de.tu_berlin.imolcean.tdm.core.DataSourceWrapper;
+import de.tu_berlin.imolcean.tdm.api.DataSourceWrapper;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.DataSourceMapper;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.GitRepositoryMapper;
 import de.tu_berlin.imolcean.tdm.core.services.managers.DataExportImplementationManager;
@@ -215,6 +215,11 @@ public class ProjectService
 
     private DataSourceWrapper createDsFromDto(DataSourceDto dto)
     {
-        return new DataSourceWrapper(dto.getDriverClassName(), dto.getUrl(), dto.getUsername(), dto.getPassword());
+        return new DataSourceWrapper(
+                dto.getDriverClassName(),
+                dto.getUrl(),
+                dto.getDatabase(),
+                dto.getUsername(),
+                dto.getPassword());
     }
 }

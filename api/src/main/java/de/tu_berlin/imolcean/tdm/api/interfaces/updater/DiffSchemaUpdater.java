@@ -31,8 +31,7 @@ public abstract class DiffSchemaUpdater extends AbstractSchemaUpdater
     protected boolean dataMapped;
 
     @Override
-    public void mapData(SchemaUpdateDataMappingRequest request)
-            throws SQLException, SchemaCrawlerException
+    public void mapData(SchemaUpdateDataMappingRequest request) throws SQLException, SchemaCrawlerException
     {
         if(!isUpdateInProgress())
         {
@@ -163,9 +162,15 @@ public abstract class DiffSchemaUpdater extends AbstractSchemaUpdater
             return;
         }
 
+        String sql = request.getSql()
+                .replaceAll("(?i)old", internalDs.getDatabase())
+                .replaceAll("(?i)new", tmpDs.getDatabase());
+
+        log.fine(sql);
+
         try(Statement statement = connection.createStatement())
         {
-            statement.executeUpdate(request.getSql());
+            statement.executeUpdate(sql);
         }
     }
 }

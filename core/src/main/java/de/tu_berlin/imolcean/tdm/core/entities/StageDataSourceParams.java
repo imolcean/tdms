@@ -32,6 +32,10 @@ public class StageDataSourceParams
 
     @Column(nullable = false)
     @NonNull
+    private String database;
+
+    @Column(nullable = false)
+    @NonNull
     private String username;
 
     @Column(nullable = false)

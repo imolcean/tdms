@@ -1,5 +1,6 @@
 package de.tu_berlin.imolcean.tdm.x.updaters;
 
+import de.tu_berlin.imolcean.tdm.api.DataSourceWrapper;
 import de.tu_berlin.imolcean.tdm.api.interfaces.updater.DiffSchemaUpdater;
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -14,7 +15,6 @@ import lombok.NoArgsConstructor;
 import lombok.extern.java.Log;
 import org.pf4j.Extension;
 
-import javax.sql.DataSource;
 import java.util.Properties;
 
 @Extension
@@ -38,7 +38,7 @@ public class LiquibaseDiffSchemaUpdater extends DiffSchemaUpdater
     }
 
     @Override
-    public SchemaUpdateReport initSchemaUpdate(DataSource internalDs, DataSource tmpDs) throws Exception
+    public SchemaUpdateReport initSchemaUpdate(DataSourceWrapper internalDs, DataSourceWrapper tmpDs) throws Exception
     {
         if(isUpdateInProgress())
         {
