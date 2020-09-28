@@ -51,29 +51,23 @@ public class TdmApplication implements CommandLineRunner
         StageContextHolder.setStageName("exp");
 
 
-        ScriptEngine js = new ScriptEngineManager().getEngineByName("JavaScript");
-
-        if(js == null)
-        {
-            System.err.println("JS failed :(");
-            System.exit(10);
-        }
-
-        js.put("Rand", new RandBooleanGenerationMethod());
-//        js.eval("print(Rand.generate(null, null));");
-//        js.eval("print(Rand.generate(null, 3.3));");
-//        js.eval("print(Rand.generate(3e1, null));");
-//        js.eval("print(Rand.generate(129, -130));");
-        js.eval("print(Rand.generate());");
-
-
-//        RandLongGenerationMethod rand = new RandLongGenerationMethod();
+//        ScriptEngine js = new ScriptEngineManager().getEngineByName("JavaScript");
 //
-//        System.out.println(rand.generate(null, null));
-//        System.out.println(rand.generate(null, 100.25));
-//        System.out.println(rand.generate(-43.33, null));
-//        System.out.println(rand.generate(-43, 100));
-//        System.out.println(rand.generate(-129000000000L, 129000000000L));
+//        if(js == null)
+//        {
+//            System.err.println("JS failed :(");
+//            System.exit(10);
+//        }
+//
+//        js.put("Rand", new RegexGenerationMethod());
+//        js.eval("print(Rand.generate('(a|b|c){3,5}'));");
+//        js.eval("print(Rand.generate('\\\\w'));");
+
+
+//        RegexGenerationMethod rand = new RegexGenerationMethod();
+//
+//        System.out.println(rand.generate("(a|b|c){3,5}"));
+//        System.out.println(rand.generate("\\w"));
 
 
         System.out.println("DONE!");
