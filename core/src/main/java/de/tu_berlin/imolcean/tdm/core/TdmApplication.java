@@ -59,15 +59,22 @@ public class TdmApplication implements CommandLineRunner
 //            System.exit(10);
 //        }
 //
-//        js.put("Rand", new RegexGenerationMethod());
-//        js.eval("print(Rand.generate('(a|b|c){3,5}'));");
-//        js.eval("print(Rand.generate('\\\\w'));");
+//        js.put("Rand", new RandStringGenerationMethod());
+//        js.eval("print(Rand.generate(1, 43, 'lower'));");
+//        js.eval("print(Rand.generate(1, 43, 'UpPer'));");
+//        js.eval("print(Rand.generate(1, 43, 'FIRST_UPPER'));");
+//        js.eval("print(Rand.generate(1, 43, 'mixed'));");
+//        js.eval("print(Rand.generate(1, 43, 'foobar'));");
+//        js.eval("print(Rand.generate(1, 43, undefined));");
 
 
-//        RegexGenerationMethod rand = new RegexGenerationMethod();
+//        RandStringGenerationMethod rand = new RandStringGenerationMethod();
 //
-//        System.out.println(rand.generate("(a|b|c){3,5}"));
-//        System.out.println(rand.generate("\\w"));
+//        System.out.println(rand.generate(0, 6, RandStringGenerationMethod.Capitalization.LOWER));
+//        System.out.println(rand.generate(0, 6, RandStringGenerationMethod.Capitalization.UPPER));
+//        System.out.println(rand.generate(0, 6, RandStringGenerationMethod.Capitalization.MIXED));
+//        System.out.println(rand.generate(0, 6, RandStringGenerationMethod.Capitalization.FIRST_UPPER));
+//        System.out.println(rand.generate(6, 5, RandStringGenerationMethod.Capitalization.LOWER));
 
 
         System.out.println("DONE!");
