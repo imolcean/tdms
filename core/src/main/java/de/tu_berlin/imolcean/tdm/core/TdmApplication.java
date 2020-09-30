@@ -17,6 +17,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import java.math.BigDecimal;
 
 @SpringBootApplication
 public class TdmApplication implements CommandLineRunner
@@ -68,13 +69,13 @@ public class TdmApplication implements CommandLineRunner
 //        js.eval("print(Rand.generate(1, 43, undefined));");
 
 
-//        RandStringGenerationMethod rand = new RandStringGenerationMethod();
-//
-//        System.out.println(rand.generate(0, 6, RandStringGenerationMethod.Capitalization.LOWER));
-//        System.out.println(rand.generate(0, 6, RandStringGenerationMethod.Capitalization.UPPER));
-//        System.out.println(rand.generate(0, 6, RandStringGenerationMethod.Capitalization.MIXED));
-//        System.out.println(rand.generate(0, 6, RandStringGenerationMethod.Capitalization.FIRST_UPPER));
-//        System.out.println(rand.generate(6, 5, RandStringGenerationMethod.Capitalization.LOWER));
+        RandBigDecimalGenerationMethod rand = new RandBigDecimalGenerationMethod();
+
+        System.out.println(rand.generate(null, null));
+        System.out.println(rand.generate(null, 1023));
+        System.out.println(rand.generate(33.7, null));
+        System.out.println(rand.generate(new BigDecimal("134.073e4"), null));
+        System.out.println(rand.generate(4, 3));
 
 
         System.out.println("DONE!");
