@@ -21,6 +21,8 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 @SpringBootApplication
 public class TdmApplication implements CommandLineRunner
@@ -72,12 +74,12 @@ public class TdmApplication implements CommandLineRunner
 //        js.eval("print(Rand.generate(java.sql.Date.valueOf('1834-09-01'), java.sql.Date.valueOf('3457-09-01')));");
 
 
-        RandTimeGenerationMethod rand = new RandTimeGenerationMethod();
+        ValueListGenerationMethod rand = new ValueListGenerationMethod();
 
-        System.out.println(rand.generate(null, null));
-        System.out.println(rand.generate(null, Time.valueOf("01:23:45")));
-        System.out.println(rand.generate(Time.valueOf("04:22:09"), null));
-        System.out.println(rand.generate(Time.valueOf("00:00:00"), Time.valueOf("00:00:01")));
+        System.out.println(rand.pick(Arrays.asList("1", "2", "3")));
+        System.out.println(rand.pick(null));
+        System.out.println(rand.pick(new ArrayList<>()));
+        System.out.println(rand.pick(new ArrayList<>(3)));
 
 
         System.out.println("DONE!");
