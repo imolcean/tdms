@@ -17,7 +17,7 @@ public class RandLongGenerationMethod implements RandNumberGenerationMethod<Long
 
     private long generate(long min, long max)
     {
-        log.fine(String.format("Generating an Long between %s and %s", min, max));
+        log.fine(String.format("Generating a Long between %s and %s", min, max));
 
         return ThreadLocalRandom.current().nextLong(min, max);
     }

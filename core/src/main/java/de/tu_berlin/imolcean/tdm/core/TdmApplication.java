@@ -18,6 +18,7 @@ import org.springframework.core.io.ClassPathResource;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import java.math.BigDecimal;
+import java.sql.Date;
 
 @SpringBootApplication
 public class TdmApplication implements CommandLineRunner
@@ -52,30 +53,30 @@ public class TdmApplication implements CommandLineRunner
         StageContextHolder.setStageName("exp");
 
 
-//        ScriptEngine js = new ScriptEngineManager().getEngineByName("JavaScript");
+        System.setProperty("polyglot.js.nashorn-compat", "true");
+        ScriptEngine js = new ScriptEngineManager().getEngineByName("graal.js");
+
+        if(js == null)
+        {
+            System.err.println("JS failed :(");
+            System.exit(10);
+        }
+
+        js.put("Rand", new RandDateGenerationMethod());
+        js.eval("print(Rand.generate(null, null));");
+        js.eval("print(Rand.generate(null, java.sql.Date.valueOf('2021-09-01')));");
+        js.eval("print(Rand.generate(java.sql.Date.valueOf('2013-09-01'), null));");
+        js.eval("print(Rand.generate(java.sql.Date.valueOf('2013-09-01'), java.sql.Date.valueOf('2021-09-01')));");
+        js.eval("print(Rand.generate(java.sql.Date.valueOf('1834-09-01'), java.sql.Date.valueOf('3457-09-01')));");
+
+
+//        RandDateGenerationMethod rand = new RandDateGenerationMethod();
 //
-//        if(js == null)
-//        {
-//            System.err.println("JS failed :(");
-//            System.exit(10);
-//        }
-//
-//        js.put("Rand", new RandStringGenerationMethod());
-//        js.eval("print(Rand.generate(1, 43, 'lower'));");
-//        js.eval("print(Rand.generate(1, 43, 'UpPer'));");
-//        js.eval("print(Rand.generate(1, 43, 'FIRST_UPPER'));");
-//        js.eval("print(Rand.generate(1, 43, 'mixed'));");
-//        js.eval("print(Rand.generate(1, 43, 'foobar'));");
-//        js.eval("print(Rand.generate(1, 43, undefined));");
-
-
-        RandBigDecimalGenerationMethod rand = new RandBigDecimalGenerationMethod();
-
-        System.out.println(rand.generate(null, null));
-        System.out.println(rand.generate(null, 1023));
-        System.out.println(rand.generate(33.7, null));
-        System.out.println(rand.generate(new BigDecimal("134.073e4"), null));
-        System.out.println(rand.generate(4, 3));
+//        System.out.println(rand.generate(null, null));
+//        System.out.println(rand.generate(null, Date.valueOf("2021-09-01")));
+//        System.out.println(rand.generate(Date.valueOf("2013-09-01"), null));
+//        System.out.println(rand.generate(Date.valueOf("2013-09-01"), Date.valueOf("2021-09-01")));
+//        System.out.println(rand.generate(Date.valueOf("1834-09-01"), Date.valueOf("3457-09-01")));
 
 
         System.out.println("DONE!");
