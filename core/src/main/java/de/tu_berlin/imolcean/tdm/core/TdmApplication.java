@@ -19,6 +19,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.sql.Timestamp;
 
 @SpringBootApplication
 public class TdmApplication implements CommandLineRunner
@@ -53,30 +54,29 @@ public class TdmApplication implements CommandLineRunner
         StageContextHolder.setStageName("exp");
 
 
-        System.setProperty("polyglot.js.nashorn-compat", "true");
-        ScriptEngine js = new ScriptEngineManager().getEngineByName("graal.js");
-
-        if(js == null)
-        {
-            System.err.println("JS failed :(");
-            System.exit(10);
-        }
-
-        js.put("Rand", new RandDateGenerationMethod());
-        js.eval("print(Rand.generate(null, null));");
-        js.eval("print(Rand.generate(null, java.sql.Date.valueOf('2021-09-01')));");
-        js.eval("print(Rand.generate(java.sql.Date.valueOf('2013-09-01'), null));");
-        js.eval("print(Rand.generate(java.sql.Date.valueOf('2013-09-01'), java.sql.Date.valueOf('2021-09-01')));");
-        js.eval("print(Rand.generate(java.sql.Date.valueOf('1834-09-01'), java.sql.Date.valueOf('3457-09-01')));");
-
-
-//        RandDateGenerationMethod rand = new RandDateGenerationMethod();
+//        System.setProperty("polyglot.js.nashorn-compat", "true");
+//        ScriptEngine js = new ScriptEngineManager().getEngineByName("graal.js");
 //
-//        System.out.println(rand.generate(null, null));
-//        System.out.println(rand.generate(null, Date.valueOf("2021-09-01")));
-//        System.out.println(rand.generate(Date.valueOf("2013-09-01"), null));
-//        System.out.println(rand.generate(Date.valueOf("2013-09-01"), Date.valueOf("2021-09-01")));
-//        System.out.println(rand.generate(Date.valueOf("1834-09-01"), Date.valueOf("3457-09-01")));
+//        if(js == null)
+//        {
+//            System.err.println("JS failed :(");
+//            System.exit(10);
+//        }
+//
+//        js.put("Rand", new RandDateGenerationMethod());
+//        js.eval("print(Rand.generate(null, null));");
+//        js.eval("print(Rand.generate(null, java.sql.Date.valueOf('2021-09-01')));");
+//        js.eval("print(Rand.generate(java.sql.Date.valueOf('2013-09-01'), null));");
+//        js.eval("print(Rand.generate(java.sql.Date.valueOf('2013-09-01'), java.sql.Date.valueOf('2021-09-01')));");
+//        js.eval("print(Rand.generate(java.sql.Date.valueOf('1834-09-01'), java.sql.Date.valueOf('3457-09-01')));");
+
+
+        RandTimestampGenerationMethod rand = new RandTimestampGenerationMethod();
+
+        System.out.println(rand.generate(null, null));
+        System.out.println(rand.generate(null, Timestamp.valueOf("2021-09-01 01:23:45.78")));
+        System.out.println(rand.generate(Timestamp.valueOf("2013-09-01 04:22:09"), null));
+        System.out.println(rand.generate(Timestamp.valueOf("2013-09-01 00:00:00"), Timestamp.valueOf("2021-09-01 00:00:00")));
 
 
         System.out.println("DONE!");
