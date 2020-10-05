@@ -19,6 +19,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.sql.Time;
 import java.sql.Timestamp;
 
 @SpringBootApplication
@@ -71,12 +72,12 @@ public class TdmApplication implements CommandLineRunner
 //        js.eval("print(Rand.generate(java.sql.Date.valueOf('1834-09-01'), java.sql.Date.valueOf('3457-09-01')));");
 
 
-        RandTimestampGenerationMethod rand = new RandTimestampGenerationMethod();
+        RandTimeGenerationMethod rand = new RandTimeGenerationMethod();
 
         System.out.println(rand.generate(null, null));
-        System.out.println(rand.generate(null, Timestamp.valueOf("2021-09-01 01:23:45.78")));
-        System.out.println(rand.generate(Timestamp.valueOf("2013-09-01 04:22:09"), null));
-        System.out.println(rand.generate(Timestamp.valueOf("2013-09-01 00:00:00"), Timestamp.valueOf("2021-09-01 00:00:00")));
+        System.out.println(rand.generate(null, Time.valueOf("01:23:45")));
+        System.out.println(rand.generate(Time.valueOf("04:22:09"), null));
+        System.out.println(rand.generate(Time.valueOf("00:00:00"), Time.valueOf("00:00:01")));
 
 
         System.out.println("DONE!");

@@ -9,7 +9,7 @@ public class RandTimestampGenerationMethod
 {
     public Timestamp generate(Timestamp min, Timestamp max)
     {
-        log.fine(String.format("Generating Timestamp between %s and %s", min, max));
+        log.fine(String.format("Generating a Timestamp between %s and %s", min, max));
 
         Long _min = min == null ? Timestamp.valueOf("0001-01-01 00:00:00").getTime() : min.getTime();
         Long _max = max == null ? Timestamp.valueOf("3000-01-01 00:00:00").getTime() : max.getTime();

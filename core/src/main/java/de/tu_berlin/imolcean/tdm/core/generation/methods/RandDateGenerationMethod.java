@@ -9,7 +9,7 @@ public class RandDateGenerationMethod
 {
     public Date generate(Date min, Date max)
     {
-        log.fine(String.format("Generating Date between %s and %s", min, max));
+        log.fine(String.format("Generating a Date between %s and %s", min, max));
 
         Long _min = min == null ? Date.valueOf("0001-01-01").getTime() : min.getTime();
         Long _max = max == null ? Date.valueOf("3000-01-01").getTime() : max.getTime();
