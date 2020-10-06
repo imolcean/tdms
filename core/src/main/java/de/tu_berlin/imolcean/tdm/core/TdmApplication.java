@@ -23,6 +23,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @SpringBootApplication
 public class TdmApplication implements CommandLineRunner
@@ -38,6 +39,9 @@ public class TdmApplication implements CommandLineRunner
 
     @Autowired
     private DependencyGraphCreator dependencyGraphCreator;
+
+    @Autowired
+    private ValueLibraryService valueLibraryService;
 
     private final ObjectMapper mapper = new ObjectMapper()
             .setDefaultPrettyPrinter(
@@ -74,12 +78,12 @@ public class TdmApplication implements CommandLineRunner
 //        js.eval("print(Rand.generate(java.sql.Date.valueOf('1834-09-01'), java.sql.Date.valueOf('3457-09-01')));");
 
 
-        ValueListGenerationMethod rand = new ValueListGenerationMethod();
-
-        System.out.println(rand.pick(Arrays.asList("1", "2", "3")));
-        System.out.println(rand.pick(null));
-        System.out.println(rand.pick(new ArrayList<>()));
-        System.out.println(rand.pick(new ArrayList<>(3)));
+//        ValueListGenerationMethod rand = new ValueListGenerationMethod();
+//
+//        System.out.println(rand.pick(Arrays.asList("1", "2", "3")));
+//        System.out.println(rand.pick(null));
+//        System.out.println(rand.pick(new ArrayList<>()));
+//        System.out.println(rand.pick(new ArrayList<>(3)));
 
 
         System.out.println("DONE!");
