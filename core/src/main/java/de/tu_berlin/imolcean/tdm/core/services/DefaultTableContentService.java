@@ -14,6 +14,7 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.*;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -58,36 +59,60 @@ public class DefaultTableContentService implements TableContentService
         }
     }
 
-    // TODO Return row
-    @Override
-    public void insertRow(DataSource ds, Table table, Object[] row) throws SQLException
+    public List<Object[]> getTableContentForColumns(DataSource ds, Table table, Collection<Column> columns) throws SQLException
     {
-        log.info("Inserting a new row into table " + table.getName());
-
-        try(Connection connection = ds.getConnection();
-            Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE))
+        if(columns.isEmpty())
         {
-            ResultSet rs = statement.executeQuery("SELECT * FROM " + table.getName());
-
-            assert table.getColumns().size() == rs.getMetaData().getColumnCount();
-
-            if(row.length != table.getColumns().size())
-            {
-                throw new IllegalSizeOfTableContentRowException(table.getName(), table.getColumns().size(), row.length);
-            }
-
-            rs.moveToInsertRow();
-
-            for(int i = 0; i < table.getColumns().size(); i++)
-            {
-                rs.updateObject(i + 1, row[i]);
-            }
-
-            rs.insertRow();
+            log.warning("No columns specified");
+            return Collections.emptyList();
         }
 
-        log.info("Row inserted");
+        String columnsStr = columns.stream()
+                .map(NamedObject::getName)
+                .collect(Collectors.joining(", "));
+
+        log.info(String.format("Retrieving content of the table %s, columns %s", table.getName(), columnsStr));
+
+        try(Connection connection = ds.getConnection(); Statement statement = connection.createStatement())
+        {
+            ResultSet rs = statement.executeQuery("SELECT " + columnsStr + " FROM " + table.getName());
+
+            log.info("Content retrieved");
+
+            return new TableContentResultSetHandler().handle(rs);
+        }
     }
+
+//    // TODO Return row
+//    @Override
+//    public void insertRow(DataSource ds, Table table, Object[] row) throws SQLException
+//    {
+//        log.info("Inserting a new row into table " + table.getName());
+//
+//        try(Connection connection = ds.getConnection();
+//            Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE))
+//        {
+//            ResultSet rs = statement.executeQuery("SELECT * FROM " + table.getName());
+//
+//            assert table.getColumns().size() == rs.getMetaData().getColumnCount();
+//
+//            if(row.length != table.getColumns().size())
+//            {
+//                throw new IllegalSizeOfTableContentRowException(table.getName(), table.getColumns().size(), row.length);
+//            }
+//
+//            rs.moveToInsertRow();
+//
+//            for(int i = 0; i < table.getColumns().size(); i++)
+//            {
+//                rs.updateObject(i + 1, row[i]);
+//            }
+//
+//            rs.insertRow();
+//        }
+//
+//        log.info("Row inserted");
+//    }
 
     @Override
     public void insertRows(DataSource ds, Table table, List<Object[]> rows) throws SQLException

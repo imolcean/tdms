@@ -1,5 +1,6 @@
 package de.tu_berlin.imolcean.tdm.api.services;
 
+import schemacrawler.schema.Column;
 import schemacrawler.schema.Table;
 
 import javax.sql.DataSource;
@@ -15,8 +16,10 @@ public interface TableContentService
 
     List<Object[]> getTableContent(DataSource ds, Table table) throws SQLException;
 
-    @Deprecated
-    void insertRow(DataSource ds, Table table, Object[] row) throws SQLException;
+    List<Object[]> getTableContentForColumns(DataSource ds, Table table, Collection<Column> columns) throws SQLException;
+
+//    @Deprecated
+//    void insertRow(DataSource ds, Table table, Object[] row) throws SQLException;
 
     void insertRows(DataSource ds, Table table, List<Object[]> rows) throws SQLException;
 

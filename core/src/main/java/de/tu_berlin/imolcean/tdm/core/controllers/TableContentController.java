@@ -11,6 +11,7 @@ import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.TableContentMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import schemacrawler.schema.Column;
 import schemacrawler.schema.Table;
 import schemacrawler.schemacrawler.SchemaCrawlerException;
 
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/data")
@@ -58,8 +60,28 @@ public class TableContentController
 
         return ResponseEntity.ok(
                 TableContentMapper.toDto(
-                        table,
+                        table.getName(),
+                        table.getColumns(),
                         tableContentService.getTableContent(ds, table)));
+    }
+
+    @GetMapping("/{alias}/{table}/{columns}")
+    public ResponseEntity<TableContentDto> getTableContentForColumns(@PathVariable("alias") String alias,
+                                                                     @PathVariable("table") String tableName,
+                                                                     @PathVariable("columns") List<String> columnNames) throws SQLException, SchemaCrawlerException
+    {
+        DataSource ds = dsService.getDataSourceByAlias(alias);
+        Table table = schemaService.getTable(ds, tableName);
+
+        List<Column> columns = table.getColumns().stream()
+                .filter(column -> columnNames.contains(column.getName()))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(
+                TableContentMapper.toDto(
+                        table.getName(),
+                        columns,
+                        tableContentService.getTableContentForColumns(ds, table, columns)));
     }
 
     // TODO Remove and use only insertRows()?
