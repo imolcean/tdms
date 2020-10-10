@@ -38,10 +38,10 @@ public class TdmApplication implements CommandLineRunner
     private DataSourceService dataSourceService;
 
     @Autowired
-    private DependencyGraphCreator dependencyGraphCreator;
+    private ValueLibraryService valueLibraryService;
 
     @Autowired
-    private ValueLibraryService valueLibraryService;
+    private DefaultDataGenerator defaultDataGenerator;
 
     private final ObjectMapper mapper = new ObjectMapper()
             .setDefaultPrettyPrinter(
@@ -84,6 +84,10 @@ public class TdmApplication implements CommandLineRunner
 //        System.out.println(rand.pick(null));
 //        System.out.println(rand.pick(new ArrayList<>()));
 //        System.out.println(rand.pick(new ArrayList<>(3)));
+
+
+//        defaultDataGenerator.generate();
+//        defaultDataGenerator.testSuccessors();
 
 
         System.out.println("DONE!");

@@ -12,23 +12,22 @@ import schemacrawler.schema.Table;
 import java.util.Collection;
 import java.util.List;
 
-@Service
 @Log
 public class DependencyGraphCreator
 {
-    public Graph<String, DefaultEdge> create(Collection<Table> schema)
+    public DefaultDirectedGraph<Table, DefaultEdge> create(Collection<Table> schema)
     {
-        Graph<String, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
+        DefaultDirectedGraph<Table, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
         // Create a Node for each Table
         for(Table table : schema)
         {
-            graph.addVertex(table.getName());
+            graph.addVertex(table);
 
             log.fine(String.format("Node '%s' added to the dependency graph", table.getName()));
         }
 
-        // Create an Edge [FK Table -> PK Table] for every FK
+        // Create an Edge [PK Table -> FK Table] for every FK
         for(Table table : schema)
         {
             for(ForeignKey fk : table.getImportedForeignKeys())
@@ -38,7 +37,7 @@ public class DependencyGraphCreator
                 {
                     Table referencedTable = refs.get(0).getPrimaryKeyColumn().getParent();
 
-                    graph.addEdge(table.getName(), referencedTable.getName());
+                    graph.addEdge(referencedTable, table);
 
                     log.fine(String.format("Edge '%s -> %s' added to the dependency graph", table.getName(), referencedTable.getName()));
                 }
