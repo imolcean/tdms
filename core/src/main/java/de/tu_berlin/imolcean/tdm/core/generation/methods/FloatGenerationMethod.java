@@ -5,7 +5,7 @@ import lombok.extern.java.Log;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Log
-public class RandFloatGenerationMethod implements RandNumberGenerationMethod<Float>
+public class FloatGenerationMethod implements NumberGenerationMethod<Float>
 {
     public Float generate(Number min, Number max)
     {

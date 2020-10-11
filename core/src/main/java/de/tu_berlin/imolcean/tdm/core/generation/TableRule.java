@@ -1,6 +1,6 @@
 package de.tu_berlin.imolcean.tdm.core.generation;
 
-import de.tu_berlin.imolcean.tdm.core.generation.methods.RandIntegerGenerationMethod;
+import de.tu_berlin.imolcean.tdm.core.generation.methods.IntegerGenerationMethod;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
@@ -35,7 +35,7 @@ public class TableRule
 
     public TableRule(Table table, FillMode fillMode, int minRowCount, int maxRowCount)
     {
-        this(table, fillMode, new RandIntegerGenerationMethod().generate(minRowCount, maxRowCount));
+        this(table, fillMode, new IntegerGenerationMethod().generate(minRowCount, maxRowCount));
     }
 
     public boolean isValid()

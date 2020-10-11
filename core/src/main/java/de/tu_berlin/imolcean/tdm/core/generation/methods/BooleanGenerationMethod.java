@@ -5,8 +5,9 @@ import lombok.extern.java.Log;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Log
-public class RandBooleanGenerationMethod
+public class BooleanGenerationMethod implements PrimitiveGenerationMethod<Boolean>
 {
+    @Override
     public Boolean generate()
     {
         log.fine("Generating a Boolean");

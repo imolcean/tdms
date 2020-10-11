@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 @Log
-public class RandBigDecimalGenerationMethod implements RandNumberGenerationMethod<BigDecimal>
+public class BigDecimalGenerationMethod implements NumberGenerationMethod<BigDecimal>
 {
     @Override
     public BigDecimal generate(Number min, Number max)

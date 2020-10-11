@@ -1,10 +1,12 @@
 package de.tu_berlin.imolcean.tdm.core.generation.methods;
 
 import com.github.curiousoddman.rgxgen.RgxGen;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.java.Log;
 
 @Log
-public class RegexGenerationMethod
+public class RegexGenerationMethod implements GenerationMethod
 {
     public String generate(String pattern)
     {

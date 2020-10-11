@@ -3,7 +3,7 @@ package de.tu_berlin.imolcean.tdm.core.generation.methods;
 import lombok.extern.java.Log;
 
 @Log
-public class RandStringGenerationMethod
+public class StringGenerationMethod implements GenerationMethod
 {
     public enum Capitalization
     {

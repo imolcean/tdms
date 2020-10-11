@@ -7,7 +7,6 @@ import lombok.extern.java.Log;
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.traverse.BreadthFirstIterator;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.springframework.stereotype.Service;
 import schemacrawler.schema.NamedObject;
@@ -26,7 +25,9 @@ public class DefaultDataGenerator
     private final SchemaService schemaService;
     private final TableContentService tableContentService;
 
-    public DefaultDataGenerator(DataSourceService dataSourceService, SchemaService schemaService, TableContentService tableContentService)
+    public DefaultDataGenerator(DataSourceService dataSourceService,
+                                SchemaService schemaService,
+                                TableContentService tableContentService)
     {
         this.dataSourceService = dataSourceService;
         this.schemaService = schemaService;

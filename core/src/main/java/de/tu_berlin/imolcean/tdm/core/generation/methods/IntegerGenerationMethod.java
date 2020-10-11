@@ -5,7 +5,7 @@ import lombok.extern.java.Log;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Log
-public class RandIntegerGenerationMethod implements RandNumberGenerationMethod<Integer>
+public class IntegerGenerationMethod implements NumberGenerationMethod<Integer>
 {
     public Integer generate(Number min, Number max)
     {

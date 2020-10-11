@@ -5,7 +5,7 @@ import lombok.extern.java.Log;
 import java.util.List;
 
 @Log
-public class ValueListGenerationMethod
+public class ValueListGenerationMethod implements GenerationMethod
 {
     public Object pick(List<Object> list)
     {
@@ -16,7 +16,7 @@ public class ValueListGenerationMethod
             return null;
         }
 
-        int randomIndex = new RandIntegerGenerationMethod().generate(0, list.size());
+        int randomIndex = new IntegerGenerationMethod().generate(0, list.size());
 
         return list.get(randomIndex);
     }
