@@ -18,8 +18,7 @@ import schemacrawler.schemacrawler.SchemaCrawlerException;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -84,29 +83,19 @@ public class TableContentController
                         tableContentService.getTableContentForColumns(ds, table, columns)));
     }
 
-    // TODO Remove and use only insertRows()?
-//    @PostMapping("/{alias}/{table}")
-//    public ResponseEntity<Void> insertRow(@PathVariable("alias") String alias,
-//                                          @PathVariable("table") String tableName,
-//                                          @RequestBody Object[] row) throws SQLException, SchemaCrawlerException
-//    {
-//        DataSource ds = dsService.getDataSourceByAlias(alias);
-//        Table table = schemaService.getTable(ds, tableName);
-//
-//        tableContentService.insertRow(ds, table, row);
-//
-//        return ResponseEntity.noContent().build();
-//    }
-
     @PostMapping("/{alias}/{table}")
     public ResponseEntity<Void> insertRows(@PathVariable("alias") String alias,
                                            @PathVariable("table") String tableName,
-                                           @RequestBody List<Object[]> rows) throws SQLException, SchemaCrawlerException
+                                           @RequestBody List<Map<String, Object>> rows) throws SQLException, SchemaCrawlerException
     {
         DataSource ds = dsService.getDataSourceByAlias(alias);
         Table table = schemaService.getTable(ds, tableName);
 
-        tableContentService.insertRows(ds, table, rows);
+        List<Map<Column, Object>> _rows = rows.stream()
+                .map(row -> columnNamesMap2ColumnMap(table, row))
+                .collect(Collectors.toList());
+
+        tableContentService.insertRows(ds, table, _rows);
 
         return ResponseEntity.noContent().build();
     }
@@ -115,12 +104,12 @@ public class TableContentController
     public ResponseEntity<Void> updateRow(@PathVariable("alias") String alias,
                                           @PathVariable("table") String tableName,
                                           @PathVariable("row") Integer rowIndex,
-                                          @RequestBody Object[] row) throws SQLException, SchemaCrawlerException
+                                          @RequestBody Map<String, Object> row) throws SQLException, SchemaCrawlerException
     {
         DataSource ds = dsService.getDataSourceByAlias(alias);
         Table table = schemaService.getTable(ds, tableName);
 
-        tableContentService.updateRow(ds, table, rowIndex, row);
+        tableContentService.updateRow(ds, table, rowIndex, columnNamesMap2ColumnMap(table, row));
 
         return ResponseEntity.noContent().build();
     }
@@ -196,4 +185,23 @@ public class TableContentController
 //    public ResponseEntity<Void> updateDataFromGit()
 //    {
 //    }
+
+    private Map<Column, Object> columnNamesMap2ColumnMap(Table table, Map<String, Object> row)
+    {
+        Map<Column, Object> _row = new HashMap<>();
+        for(String columnName : row.keySet())
+        {
+            findColumnByName(table, columnName)
+                    .ifPresent(column -> _row.put(column, row.get(column.getName())));
+        }
+
+        return _row;
+    }
+
+    private Optional<Column> findColumnByName(Table table, String columnName)
+    {
+        return table.getColumns().stream()
+                .filter(column -> column.getName().equals(columnName))
+                .findFirst();
+    }
 }

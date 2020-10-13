@@ -18,14 +18,11 @@ public interface TableContentService
 
     List<Object[]> getTableContentForColumns(DataSource ds, Table table, Collection<Column> columns) throws SQLException;
 
-//    @Deprecated
-//    void insertRow(DataSource ds, Table table, Object[] row) throws SQLException;
-
-    void insertRows(DataSource ds, Table table, List<Object[]> rows) throws SQLException;
+    void insertRows(DataSource ds, Table table, List<Map<Column, Object>> rows) throws SQLException;
 
     void importData(DataSource ds, Map<Table, List<Object[]>> data) throws SQLException, IOException;
 
-    void updateRow(DataSource ds, Table table, int rowIndex, Object[] row) throws SQLException;
+    void updateRow(DataSource ds, Table table, int rowIndex, Map<Column, Object> row) throws SQLException;
 
     void deleteRow(DataSource ds, Table table, int rowIndex) throws SQLException;
 

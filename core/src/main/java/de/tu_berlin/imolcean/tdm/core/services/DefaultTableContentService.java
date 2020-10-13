@@ -13,10 +13,7 @@ import schemacrawler.schema.*;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.*;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -114,16 +111,21 @@ public class DefaultTableContentService implements TableContentService
 //        log.info("Row inserted");
 //    }
 
+    // TODO Bug: Insert multiple rows where one violates PK constraint, transaction rolled back, other rows are still written
     @Override
-    public void insertRows(DataSource ds, Table table, List<Object[]> rows) throws SQLException
+    public void insertRows(DataSource ds, Table table, List<Map<Column, Object>> rows) throws SQLException
     {
+        List<Object[]> _rows = rows.stream()
+                .map(row -> columnMap2Array(table, row))
+                .collect(Collectors.toList());
+
         try(Connection connection = ds.getConnection())
         {
             connection.setAutoCommit(false);
 
             try
             {
-                insertRows(ds.getConnection(), table, rows);
+                insertRows(ds.getConnection(), table, _rows);
             }
             catch(SQLException e)
             {
@@ -168,15 +170,24 @@ public class DefaultTableContentService implements TableContentService
 
     // TODO Return row
     @Override
-    public void updateRow(DataSource ds, Table table, int rowIndex, Object[] row) throws SQLException
+    public void updateRow(DataSource ds, Table table, int rowIndex, Map<Column, Object> row) throws SQLException
     {
         log.info(String.format("Updating the row nr. %s in table %s", rowIndex, table.getName()));
 
         int rowCount = getTableRowCount(ds, table);
-
         if(rowCount <= rowIndex || rowIndex < 0)
         {
             throw new TableContentRowIndexOutOfBoundsException(table.getName(), rowCount, rowIndex);
+        }
+
+        Object[] presentRow = getTableContent(ds, table).get(rowIndex);
+        Object[] _row = new Object[table.getColumns().size()];
+
+        int i = 0;
+        for(Column column : table.getColumns())
+        {
+            _row[i] = row.containsKey(column) ? row.get(column) : presentRow[i];
+            i++;
         }
 
         try(Connection connection = ds.getConnection();
@@ -186,9 +197,9 @@ public class DefaultTableContentService implements TableContentService
 
             assert table.getColumns().size() == rs.getMetaData().getColumnCount();
 
-            if(row.length != table.getColumns().size())
+            if(_row.length != table.getColumns().size())
             {
-                throw new IllegalSizeOfTableContentRowException(table.getName(), table.getColumns().size(), row.length);
+                throw new IllegalSizeOfTableContentRowException(table.getName(), table.getColumns().size(), _row.length);
             }
 
             int currentRowIndex = 0;
@@ -196,9 +207,9 @@ public class DefaultTableContentService implements TableContentService
             {
                 if(currentRowIndex == rowIndex)
                 {
-                    for(int i = 0; i < table.getColumns().size(); i++)
+                    for(int j = 0; j < table.getColumns().size(); j++)
                     {
-                        rs.updateObject(i + 1, row[i]);
+                        rs.updateObject(j + 1, _row[j]);
                     }
 
                     rs.updateRow();
@@ -439,6 +450,20 @@ public class DefaultTableContentService implements TableContentService
         }
 
         log.fine("Database constraints enabled");
+    }
+
+    private Object[] columnMap2Array(Table table, Map<Column, Object> row)
+    {
+        Object[] _row = new Object[table.getColumns().size()];
+
+        int i = 0;
+        for(Column column : table.getColumns())
+        {
+            _row[i] = row.get(column);
+            i++;
+        }
+
+        return _row;
     }
 
 //    @Override
