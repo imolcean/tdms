@@ -2,6 +2,7 @@ package de.tu_berlin.imolcean.tdm.core.generation;
 
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
+import de.tu_berlin.imolcean.tdm.core.generation.methods.GenerationMethod;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
 import lombok.extern.java.Log;
 import org.jgrapht.Graphs;
@@ -9,6 +10,7 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.springframework.stereotype.Service;
+import schemacrawler.schema.Column;
 import schemacrawler.schema.NamedObject;
 import schemacrawler.schema.Table;
 import schemacrawler.schemacrawler.SchemaCrawlerException;
@@ -35,6 +37,7 @@ public class DefaultDataGenerator
     }
 
     // TODO
+    // TODO Allow for FillMode::UPDATE
     public void generate(Map<Table, TableRule> rules) throws SQLException, SchemaCrawlerException
     {
         //    Disable constraint checks, begin transaction
@@ -48,6 +51,8 @@ public class DefaultDataGenerator
 
         for(Table table : graph.vertexSet())
         {
+            // TODO Leave table in graph, if it's not empty
+
             if(rules.get(table) == null || !rules.get(table).isValid())
             {
                 Set<Table> successors = getAllSuccessors(graph, table);
@@ -67,7 +72,7 @@ public class DefaultDataGenerator
         graph.removeAllVertices(nodesToRemove);
 
         // Detect cycles
-        // For cycles, cut at one point and generate 'postponed' FKs using FkGenerationMethod of the ColumnRule, save the rule on stack
+        // For cycles, cut at one point and generate 'postponed' FKs using FkGenerationMethod of the ColumnRule, note it using stack/queue
         // TODO
 
         // Get generation order
@@ -75,7 +80,26 @@ public class DefaultDataGenerator
         new TopologicalOrderIterator<>(graph).forEachRemaining(generationOrder::add);
 
         // Generate data in order
-        // TODO
+        for(Table table : generationOrder)
+        {
+            TableRule tableRule = rules.get(table);
+            List<ColumnRule> columnRules = tableRule.getOrderedColumnRules();
+            List<Map<Column, Object>> rows = new ArrayList<>();
+
+            for(int i = 0; i < tableRule.getRowCount(); i++)
+            {
+                Map<Column, Object> row = new HashMap<>();
+
+                for(ColumnRule columnRule : columnRules)
+                {
+                    row.put(columnRule.getColumn(), columnRule.getGenerationMethod().generate(columnRule.getColumn(), columnRule.getParams()));
+                }
+
+                rows.add(row);
+            }
+
+            tableContentService.insertRows(dataSourceService.getInternalDataSource(), table, rows);
+        }
 
         // Redo generation with FillMode::UPDATE on those Tables with 'postponed' FKs, on FK itself and all dependent Columns
         // TODO

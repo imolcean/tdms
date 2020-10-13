@@ -1,10 +1,13 @@
 package de.tu_berlin.imolcean.tdm.core.generation.methods;
 
+import de.tu_berlin.imolcean.tdm.core.generation.GenerationMethodParamDescription;
 import schemacrawler.schema.Column;
 
 import java.sql.JDBCType;
 import java.sql.SQLType;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DefaultGenerationMethod implements GenerationMethod
@@ -78,5 +81,17 @@ public class DefaultGenerationMethod implements GenerationMethod
         {
             return ((PrimitiveGenerationMethod<?>) gm).generate();
         }
+    }
+
+    @Override
+    public Object generate(Column column, Map<String, Object> params)
+    {
+        return generate(column);
+    }
+
+    @Override
+    public List<GenerationMethodParamDescription> getParamDescription()
+    {
+        return Collections.emptyList();
     }
 }

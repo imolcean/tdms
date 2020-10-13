@@ -65,6 +65,13 @@ public class TableRule
         return CollectionUtils.disjunction(getMandatoryColumns(), columnRules.keySet());
     }
 
+    public List<ColumnRule> getOrderedColumnRules()
+    {
+        // TODO Order according to intratabular dependencies
+
+        return null;
+    }
+
     public Optional<ColumnRule> findColumnRule(Column column)
     {
         return Optional.ofNullable(columnRules.get(column));
