@@ -4,11 +4,12 @@ import de.tu_berlin.imolcean.tdm.core.generation.GenerationMethodParamDescriptio
 import lombok.extern.java.Log;
 import schemacrawler.schema.Column;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 @Log
-public class StringGenerationMethod implements GenerationMethod
+public class StringGenerationMethod implements PrimitiveGenerationMethod<String>, ColumnDependantGenerationMethod
 {
     public enum Capitalization
     {
@@ -16,6 +17,13 @@ public class StringGenerationMethod implements GenerationMethod
         UPPER,
         FIRST_UPPER,
         MIXED,
+    }
+
+    private Column column;
+
+    public StringGenerationMethod(Column column)
+    {
+        this.column = column;
     }
 
     public String generate(int minLength, int maxLength, Capitalization capitalization)
@@ -57,10 +65,18 @@ public class StringGenerationMethod implements GenerationMethod
     }
 
     @Override
-    public Object generate(Column column, Map<String, Object> params)
+    public String generate()
+    {
+        return generate(Collections.emptyMap());
+    }
+
+    @Override
+    public String generate(Map<String, Object> params)
     {
         List<Object> args = parseParams(params);
-        int maxLength = args.get(0) != null ? ((Number) args.get(0)).intValue() : column.getType().getMaximumScale(); // TODO Check that this method return string length
+        int maxLength = args.get(1) != null
+                ? ((Number) args.get(1)).intValue()
+                : column.getSize();
 
         return generate(
                 args.get(0) != null ? ((Number) args.get(0)).intValue() : 0,

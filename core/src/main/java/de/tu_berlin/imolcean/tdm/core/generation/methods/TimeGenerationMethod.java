@@ -1,15 +1,13 @@
 package de.tu_berlin.imolcean.tdm.core.generation.methods;
 
-import de.tu_berlin.imolcean.tdm.core.generation.GenerationMethodParamDescription;
 import lombok.extern.java.Log;
-import schemacrawler.schema.Column;
 
 import java.sql.Time;
 import java.util.List;
 import java.util.Map;
 
 @Log
-public class TimeGenerationMethod implements PrimitiveGenerationMethod<Time>
+public class TimeGenerationMethod implements TimelineGenerationMethod<Time>
 {
     public Time generate(Time min, Time max)
     {
@@ -32,18 +30,12 @@ public class TimeGenerationMethod implements PrimitiveGenerationMethod<Time>
     }
 
     @Override
-    public Time generate(Column column, Map<String, Object> params)
+    public Time generate(Map<String, Object> params)
     {
         List<Object> args = parseParams(params);
 
-        return generate(Time.valueOf((String) args.get(0)), Time.valueOf((String) args.get(1)));
-    }
-
-    @Override
-    public List<GenerationMethodParamDescription> getParamDescription()
-    {
-        return List.of(
-                new GenerationMethodParamDescription("min", String.class, false),
-                new GenerationMethodParamDescription("max", String.class, false));
+        return generate(
+                args.get(0) != null ? Time.valueOf((String) args.get(0)) : null,
+                args.get(1) != null ? Time.valueOf((String) args.get(1)) : null);
     }
 }

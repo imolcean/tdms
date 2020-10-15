@@ -92,7 +92,7 @@ public class DefaultDataGenerator
 
                 for(ColumnRule columnRule : columnRules)
                 {
-                    row.put(columnRule.getColumn(), columnRule.getGenerationMethod().generate(columnRule.getColumn(), columnRule.getParams()));
+                    row.put(columnRule.getColumn(), columnRule.getGenerationMethod().generate(columnRule.getParams()));
                 }
 
                 rows.add(row);

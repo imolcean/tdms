@@ -2,10 +2,7 @@ package de.tu_berlin.imolcean.tdm.core.generation.methods;
 
 import com.github.curiousoddman.rgxgen.RgxGen;
 import de.tu_berlin.imolcean.tdm.core.generation.GenerationMethodParamDescription;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.extern.java.Log;
-import schemacrawler.schema.Column;
 
 import java.util.List;
 import java.util.Map;
@@ -26,7 +23,7 @@ public class RegexGenerationMethod implements GenerationMethod
     }
 
     @Override
-    public Object generate(Column column, Map<String, Object> params)
+    public Object generate(Map<String, Object> params)
     {
         List<Object> args = parseParams(params);
 

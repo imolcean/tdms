@@ -2,7 +2,6 @@ package de.tu_berlin.imolcean.tdm.core.generation.methods;
 
 import de.tu_berlin.imolcean.tdm.core.generation.GenerationMethodParamDescription;
 import lombok.extern.java.Log;
-import schemacrawler.schema.Column;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,7 +20,7 @@ public class BooleanGenerationMethod implements PrimitiveGenerationMethod<Boolea
     }
 
     @Override
-    public Boolean generate(Column column, Map<String, Object> params)
+    public Boolean generate(Map<String, Object> params)
     {
         return generate();
     }

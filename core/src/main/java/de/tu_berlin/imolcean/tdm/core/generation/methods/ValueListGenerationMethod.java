@@ -2,7 +2,6 @@ package de.tu_berlin.imolcean.tdm.core.generation.methods;
 
 import de.tu_berlin.imolcean.tdm.core.generation.GenerationMethodParamDescription;
 import lombok.extern.java.Log;
-import schemacrawler.schema.Column;
 
 import java.util.List;
 import java.util.Map;
@@ -25,7 +24,7 @@ public class ValueListGenerationMethod implements GenerationMethod
     }
 
     @Override
-    public Object generate(Column column, Map<String, Object> params)
+    public Object generate(Map<String, Object> params)
     {
         List<Object> args = parseParams(params);
 
@@ -36,6 +35,6 @@ public class ValueListGenerationMethod implements GenerationMethod
     public List<GenerationMethodParamDescription> getParamDescription()
     {
         return List.of(
-                new GenerationMethodParamDescription("min", Object[].class, false));
+                new GenerationMethodParamDescription("options", Object[].class, true));
     }
 }

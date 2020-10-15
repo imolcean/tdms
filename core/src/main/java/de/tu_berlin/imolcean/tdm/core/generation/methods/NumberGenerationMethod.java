@@ -1,7 +1,6 @@
 package de.tu_berlin.imolcean.tdm.core.generation.methods;
 
 import de.tu_berlin.imolcean.tdm.core.generation.GenerationMethodParamDescription;
-import schemacrawler.schema.Column;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +16,7 @@ public interface NumberGenerationMethod<T extends Number> extends PrimitiveGener
     }
 
     @Override
-    default T generate(Column column, Map<String, Object> params)
+    default T generate(Map<String, Object> params)
     {
         List<Object> args = parseParams(params);
 
