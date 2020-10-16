@@ -9,6 +9,7 @@ import schemacrawler.schema.Column;
 import schemacrawler.schema.Table;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
 public class TableRule
@@ -48,6 +49,7 @@ public class TableRule
         return getMandatoryColumnsWithoutRules().size() == 0;
     }
 
+    // Columns that are non-null and have no default
     public Collection<Column> getMandatoryColumns()
     {
         if(fillMode == FillMode.UPDATE)
@@ -55,9 +57,9 @@ public class TableRule
             return Collections.emptyList();
         }
 
-        // TODO List columns that are non-null and have no default
-
-        return null;
+        return table.getColumns().stream()
+                .filter(column -> !column.isNullable() && !column.hasDefaultValue())
+                .collect(Collectors.toSet());
     }
 
     public Collection<Column> getMandatoryColumnsWithoutRules()
@@ -69,7 +71,7 @@ public class TableRule
     {
         // TODO Order according to intratabular dependencies
 
-        return null;
+        return new ArrayList<>(columnRules.values());
     }
 
     public Optional<ColumnRule> findColumnRule(Column column)

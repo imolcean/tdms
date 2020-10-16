@@ -9,12 +9,15 @@ import de.tu_berlin.imolcean.tdm.core.generation.*;
 import de.tu_berlin.imolcean.tdm.core.generation.methods.*;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
 import de.tu_berlin.imolcean.tdm.core.services.ProjectService;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.io.ClassPathResource;
 import schemacrawler.schema.Column;
+import schemacrawler.schema.Table;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -54,7 +57,7 @@ public class TdmApplication implements CommandLineRunner
     @Override
     public void run(String... args) throws Exception
     {
-        ProjectDto project = mapper.readValue(new ClassPathResource("EXP.tdm.json").getInputStream(), ProjectDto.class);
+        ProjectDto project = mapper.readValue(new ClassPathResource("RU2.tdm.json").getInputStream(), ProjectDto.class);
         projectService.open(project);
 
         StageContextHolder.setStageName("exp");
@@ -76,41 +79,45 @@ public class TdmApplication implements CommandLineRunner
 //        js.eval("print(Rand.generate(java.sql.Date.valueOf('2013-09-01'), java.sql.Date.valueOf('2021-09-01')));");
 //        js.eval("print(Rand.generate(java.sql.Date.valueOf('1834-09-01'), java.sql.Date.valueOf('3457-09-01')));");
 
-        Column column = schemaService.getTable(dataSourceService.getInternalDataSource(), "person").getColumns().get(1);
-        System.out.println(column.getFullName());
-
-        GenerationMethod rand = GenerationMethods.createByColumn(column);
-        System.out.println(rand.getClass());
-
-        Map<String, Object> params = new HashMap<>();
-
-        params.put("minLength", 3);
-        params.put("maxLength", 6);
-        params.put("capitalization", "mixed");
-        System.out.println(rand.generate(params));
-
-        params.clear();
-        params.put("minLength", 3);
-        params.put("maxLength", 6);
-        System.out.println(rand.generate(params));
-
-        params.clear();
-        params.put("minLength", 3);
-        params.put("capitalization", "lower");
-        System.out.println(rand.generate(params));
-
-        params.clear();
-        params.put("maxLength", 6);
-        params.put("capitalization", "upper");
-        System.out.println(rand.generate(params));
-
-        params.clear();
-        params.put("capitalization", "first_upper");
-        System.out.println(rand.generate(params));
+//        Column column = schemaService.getTable(dataSourceService.getInternalDataSource(), "person").getColumns().get(1);
+//        System.out.println(column.getFullName());
+//
+//        GenerationMethod rand = GenerationMethods.createByColumn(column);
+//        System.out.println(rand.getClass());
+//
+//        Map<String, Object> params = new HashMap<>();
+//
+//        params.put("minLength", 3);
+//        params.put("maxLength", 6);
+//        params.put("capitalization", "mixed");
+//        System.out.println(rand.generate(params));
+//
+//        params.clear();
+//        params.put("minLength", 3);
+//        params.put("maxLength", 6);
+//        System.out.println(rand.generate(params));
+//
+//        params.clear();
+//        params.put("minLength", 3);
+//        params.put("capitalization", "lower");
+//        System.out.println(rand.generate(params));
+//
+//        params.clear();
+//        params.put("maxLength", 6);
+//        params.put("capitalization", "upper");
+//        System.out.println(rand.generate(params));
+//
+//        params.clear();
+//        params.put("capitalization", "first_upper");
+//        System.out.println(rand.generate(params));
 
 
 //        defaultDataGenerator.generate();
 //        defaultDataGenerator.testSuccessors();
+
+        DefaultDirectedGraph<Table, DefaultEdge> graph = new DependencyGraphCreator().create(schemaService.getSchema(dataSourceService.getInternalDataSource()).getTables());
+//        defaultDataGenerator.visualize(graph, "test");
+        defaultDataGenerator.findCycles(graph);
 
 
         System.out.println("DONE!");

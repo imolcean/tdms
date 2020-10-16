@@ -52,6 +52,8 @@ public class DefaultSchemaService implements SchemaService
     @Override
     public Catalog getSchema(DataSource ds) throws SQLException, SchemaCrawlerException
     {
+        log.fine("Retrieving schema");
+
         try(Connection connection = ds.getConnection())
         {
             LoadOptions load = LoadOptionsBuilder.builder()

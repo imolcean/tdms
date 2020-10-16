@@ -5,6 +5,8 @@ import de.tu_berlin.imolcean.tdm.api.exceptions.DataGenerationException;
 import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
 import de.tu_berlin.imolcean.tdm.core.generation.GenerationMethodParamDescription;
 import de.tu_berlin.imolcean.tdm.core.generation.GenerationMethods;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.java.Log;
 import schemacrawler.schema.Column;
 
@@ -22,6 +24,8 @@ public class FkGenerationMethod implements GenerationMethod
     private final TableContentService tableContentService;
     private final Column column;
 
+    @Getter
+    @Setter
     private boolean postponed;
 
     public FkGenerationMethod(DataSourceWrapper ds,
@@ -40,6 +44,7 @@ public class FkGenerationMethod implements GenerationMethod
         if(postponed)
         {
             // Generate random value based on Column type
+            // TODO Generate NULL?
             return GenerationMethods.createByColumn(pkColumn).generate();
         }
         else

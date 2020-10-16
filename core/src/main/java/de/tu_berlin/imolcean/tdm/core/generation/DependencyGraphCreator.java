@@ -17,6 +17,8 @@ public class DependencyGraphCreator
 {
     public DefaultDirectedGraph<Table, DefaultEdge> create(Collection<Table> schema)
     {
+        log.info("Creating dependency graph");
+
         DefaultDirectedGraph<Table, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
         // Create a Node for each Table
