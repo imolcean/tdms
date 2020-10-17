@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.tu_berlin.imolcean.tdm.api.dto.ProjectDto;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.core.generation.*;
-import de.tu_berlin.imolcean.tdm.core.generation.methods.*;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
 import de.tu_berlin.imolcean.tdm.core.services.ProjectService;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -16,16 +15,11 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.io.ClassPathResource;
-import schemacrawler.schema.Column;
+import schemacrawler.schema.NamedObject;
 import schemacrawler.schema.Table;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @SpringBootApplication
 public class TdmApplication implements CommandLineRunner
@@ -57,7 +51,7 @@ public class TdmApplication implements CommandLineRunner
     @Override
     public void run(String... args) throws Exception
     {
-        ProjectDto project = mapper.readValue(new ClassPathResource("RU2.tdm.json").getInputStream(), ProjectDto.class);
+        ProjectDto project = mapper.readValue(new ClassPathResource("EXP.tdm.json").getInputStream(), ProjectDto.class);
         projectService.open(project);
 
         StageContextHolder.setStageName("exp");
@@ -116,9 +110,10 @@ public class TdmApplication implements CommandLineRunner
 //        defaultDataGenerator.testSuccessors();
 
         DefaultDirectedGraph<Table, DefaultEdge> graph = new DependencyGraphCreator().create(schemaService.getSchema(dataSourceService.getInternalDataSource()).getTables());
-//        defaultDataGenerator.visualize(graph, "test");
-        defaultDataGenerator.findCycles(graph);
-
+//        DependencyGraphUtils.visualize(graph, "before");
+        List<List<Table>> cycles = DependencyGraphUtils.findCycles(graph);
+        defaultDataGenerator.cutCycles(graph, cycles).forEach((table, columns) -> System.out.println(table.getName() + ": " + columns.stream().map(NamedObject::getName).collect(Collectors.joining(", "))));
+//        DependencyGraphUtils.visualize(graph, "after");
 
         System.out.println("DONE!");
     }

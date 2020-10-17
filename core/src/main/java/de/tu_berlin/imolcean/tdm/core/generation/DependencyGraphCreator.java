@@ -41,7 +41,7 @@ public class DependencyGraphCreator
 
                     graph.addEdge(referencedTable, table);
 
-                    log.fine(String.format("Edge '%s -> %s' added to the dependency graph", table.getName(), referencedTable.getName()));
+                    log.fine(String.format("Edge '%s -> %s' added to the dependency graph", referencedTable.getName(), table.getName()));
                 }
             }
         }

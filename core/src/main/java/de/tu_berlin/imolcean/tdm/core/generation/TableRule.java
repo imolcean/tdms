@@ -23,8 +23,6 @@ public class TableRule
     private Table table;
     private FillMode fillMode;
     private int rowCount;
-
-    @Getter(AccessLevel.NONE)
     private Map<Column, ColumnRule> columnRules;
 
     public TableRule(Table table, FillMode fillMode, int rowCount)

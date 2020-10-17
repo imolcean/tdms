@@ -4,9 +4,6 @@ import de.tu_berlin.imolcean.tdm.api.DataSourceWrapper;
 import de.tu_berlin.imolcean.tdm.api.exceptions.DataGenerationException;
 import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
 import de.tu_berlin.imolcean.tdm.core.generation.GenerationMethodParamDescription;
-import de.tu_berlin.imolcean.tdm.core.generation.GenerationMethods;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.java.Log;
 import schemacrawler.schema.Column;
 
@@ -15,18 +12,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-// TODO Make generic?
-
 @Log
 public class FkGenerationMethod implements GenerationMethod
 {
     private final DataSourceWrapper ds;
     private final TableContentService tableContentService;
     private final Column column;
-
-    @Getter
-    @Setter
-    private boolean postponed;
 
     public FkGenerationMethod(DataSourceWrapper ds,
                               TableContentService tableContentService,
@@ -35,38 +26,27 @@ public class FkGenerationMethod implements GenerationMethod
         this.ds = ds;
         this.tableContentService = tableContentService;
         this.column = column;
-
-        this.postponed = false;
     }
 
     public Object pick(Column pkColumn)
     {
-        if(postponed)
+        // Get all values of pkColumn and pick one
+        try
         {
-            // Generate random value based on Column type
-            // TODO Generate NULL?
-            return GenerationMethods.createByColumn(pkColumn).generate();
+            Object[] pks = tableContentService
+                    .getTableContentForColumns(
+                            ds,
+                            pkColumn.getParent(),
+                            Collections.singletonList(pkColumn))
+                    .get(0);
+
+            int index = new IntegerGenerationMethod().generate(0, pks.length);
+
+            return pks[index];
         }
-        else
+        catch(SQLException e)
         {
-            // Get all values of pkColumn and pick one
-            try
-            {
-                Object[] pks = tableContentService
-                        .getTableContentForColumns(
-                                ds,
-                                pkColumn.getParent(),
-                                Collections.singletonList(pkColumn))
-                        .get(0);
-
-                int index = new IntegerGenerationMethod().generate(0, pks.length);
-
-                return pks[index];
-            }
-            catch(SQLException e)
-            {
-                throw new DataGenerationException(e);
-            }
+            throw new DataGenerationException(e);
         }
     }
 

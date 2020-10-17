@@ -1,11 +1,10 @@
 package de.tu_berlin.imolcean.tdm.core.generation;
 
+import de.tu_berlin.imolcean.tdm.api.TableContent;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
-import de.tu_berlin.imolcean.tdm.core.generation.methods.GenerationMethod;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
 import lombok.extern.java.Log;
-import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
@@ -15,8 +14,10 @@ import schemacrawler.schema.NamedObject;
 import schemacrawler.schema.Table;
 import schemacrawler.schemacrawler.SchemaCrawlerException;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,17 +38,81 @@ public class DefaultDataGenerator
     }
 
     // TODO
-    // TODO Allow for FillMode::UPDATE
-    public void generate(Map<Table, TableRule> rules) throws SQLException, SchemaCrawlerException
+    // TODO FillMode::Update
+    public void generate(Map<Table, TableRule> rules) throws SQLException, SchemaCrawlerException, IOException
     {
-        //    Disable constraint checks, begin transaction
-        // TODO
+        // Create temporary storage for generated data
+        Map<Table, TableContent> generated = new HashMap<>();
 
-        //    Build dependency graph
+        // Build dependency graph
         DefaultDirectedGraph<Table, DefaultEdge> graph = new DependencyGraphCreator().create(schemaService.getSchema(dataSourceService.getInternalDataSource()).getTables());
 
         // Check TableRules
-        Set<Table> nodesToRemove = new HashSet<>();
+        checkTableRules(graph, rules);
+
+        // Detect cycles
+        List<List<Table>> cycles = DependencyGraphUtils.findCycles(graph);
+
+        // For every cycle, cut at one point and note all 'postponed' FK Columns
+        Map<Table, List<Column>> postponed = cutCycles(graph, cycles);
+
+        // Get generation order
+        List<Table> generationOrder = new ArrayList<>();
+        new TopologicalOrderIterator<>(graph).forEachRemaining(generationOrder::add);
+
+        // Generate data in order
+        for(Table table : generationOrder)
+        {
+            TableRule tableRule = rules.get(table);
+            TableContent rows = new TableContent(table);
+
+            for(int i = 0; i < tableRule.getRowCount(); i++)
+            {
+                TableContent.Row row = new TableContent.Row(table);
+
+                for(ColumnRule columnRule : tableRule.getOrderedColumnRules())
+                {
+                    if(!postponed.get(table).contains(columnRule.getColumn()))
+                    {
+                        row.setValue(columnRule.getColumn(), columnRule.getGenerationMethod().generate(columnRule.getParams()));
+                    }
+                }
+
+                rows.addRow(row);
+            }
+
+            generated.put(table, rows);
+        }
+
+        // Generate 'postponed' FKs and put them in previously generated rows
+        // TODO Generate Columns that are dependant from 'postponed' FKs
+        for(Table table : postponed.keySet())
+        {
+            TableRule tr = rules.get(table);
+
+            for(int i = 0; i < tr.getRowCount(); i++)
+            {
+                TableContent.Row row = generated.get(table).getRow(i);
+
+                for(Column column : postponed.get(table))
+                {
+                    ColumnRule cr = tr.getColumnRules().get(column);
+
+                    row.setValue(column, cr.getGenerationMethod().generate(cr.getParams()));
+                }
+            }
+        }
+
+        // Import data
+        Map<Table, List<Object[]>> _generated = new HashMap<>();
+        generated.forEach((table, content) -> _generated.put(table, content.getRowsAsArrays()));
+
+        tableContentService.importData(dataSourceService.getInternalDataSource(), _generated);
+    }
+
+    public void checkTableRules(DefaultDirectedGraph<Table, DefaultEdge> graph, Map<Table, TableRule> rules)
+    {
+        Set<Table> tablesToRemove = new HashSet<>();
 
         for(Table table : graph.vertexSet())
         {
@@ -55,10 +120,10 @@ public class DefaultDataGenerator
 
             if(rules.get(table) == null || !rules.get(table).isValid())
             {
-                Set<Table> successors = getAllSuccessors(graph, table);
+                Set<Table> successors = DependencyGraphUtils.getAllSuccessors(graph, table);
 
-                nodesToRemove.add(table);
-                nodesToRemove.addAll(successors);
+                tablesToRemove.add(table);
+                tablesToRemove.addAll(successors);
 
                 log.warning(String.format("No valid rules are specified for table %s", table.getName()));
                 log.warning(String.format(
@@ -69,115 +134,90 @@ public class DefaultDataGenerator
             }
         }
 
-        graph.removeAllVertices(nodesToRemove);
-
-        // Detect cycles
-        // For cycles, cut at one point and generate 'postponed' FKs using FkGenerationMethod of the ColumnRule, note it using stack/queue
-        // TODO
-
-        // Get generation order
-        List<Table> generationOrder = new ArrayList<>();
-        new TopologicalOrderIterator<>(graph).forEachRemaining(generationOrder::add);
-
-        // Generate data in order
-        for(Table table : generationOrder)
-        {
-            TableRule tableRule = rules.get(table);
-            List<ColumnRule> columnRules = tableRule.getOrderedColumnRules();
-            List<Map<Column, Object>> rows = new ArrayList<>();
-
-            for(int i = 0; i < tableRule.getRowCount(); i++)
-            {
-                Map<Column, Object> row = new HashMap<>();
-
-                for(ColumnRule columnRule : columnRules)
-                {
-                    row.put(columnRule.getColumn(), columnRule.getGenerationMethod().generate(columnRule.getParams()));
-                }
-
-                rows.add(row);
-            }
-
-            tableContentService.insertRows(dataSourceService.getInternalDataSource(), table, rows);
-        }
-
-        // Redo generation with FillMode::UPDATE on those Tables with 'postponed' FKs, on FK itself and all dependent Columns
-        // TODO
-
-        // Enable constraint checks, commit
-        // TODO
+        graph.removeAllVertices(tablesToRemove);
     }
 
-//    // TODO Delete
-//    public void testSuccessors()
-//    {
-//        DefaultDirectedGraph<Integer, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
-//
-//        for(int i = 0; i <= 10; i++)
-//        {
-//            graph.addVertex(i);
-//        }
-//
-//        graph.addEdge(0, 1);
-//        graph.addEdge(1, 3);
-//        graph.addEdge(3, 0);
-//        graph.addEdge(3, 4);
-//        graph.addEdge(3, 5);
-//        graph.addEdge(2, 1);
-//        graph.addEdge(1, 6);
-//        graph.addEdge(2, 6);
-//        graph.addEdge(2, 7);
-//        graph.addEdge(6, 7);
-//        graph.addEdge(6, 8);
-//        graph.addEdge(8, 9);
-//        graph.addEdge(8, 10);
-//
-//        print(graph);
-//
-//        Set<Integer> successors = getAllSuccessors(graph, 3);
-//
-//        System.out.println("Successors of 3:");
-//        successors.forEach(System.out::println);
-//
-//        graph.removeAllVertices(successors);
-//
-//        print(graph);
-//    }
-//
-//    // TODO Delete
-//    private void print(DefaultDirectedGraph<Integer, DefaultEdge> graph)
-//    {
-//        System.out.println();
-//
-//        for(Integer i : graph.vertexSet())
-//        {
-//            System.out.println("Node: " + i);
-//        }
-//
-//        for(DefaultEdge e : graph.edgeSet())
-//        {
-//            System.out.println("Edge: " + e.toString());
-//        }
-//    }
-
-    private <V> Set<V> getAllSuccessors(DefaultDirectedGraph<V, DefaultEdge> graph, V vertex)
+    public Map<Table, List<Column>> cutCycles(DefaultDirectedGraph<Table, DefaultEdge> graph, List<List<Table>> cycles)
     {
-        Set<V> successors = new HashSet<>();
-        _getAllSuccessors(graph, vertex, successors);
-
-        return successors;
-    }
-
-    private <V> void _getAllSuccessors(DefaultDirectedGraph<V, DefaultEdge> graph, V vertex, Set<V> visited)
-    {
-        visited.add(vertex);
-
-        for(V successor : Graphs.successorListOf(graph, vertex))
+        if(cycles.isEmpty())
         {
-            if(!visited.contains(successor))
-            {
-                _getAllSuccessors(graph, successor, visited);
-            }
+            return Collections.emptyMap();
         }
+
+        Map<Table, Long> cyclesPerTable = cycles.stream()
+                .flatMap(List::stream)
+                .collect(Collectors.groupingBy(table -> table, Collectors.counting()));
+
+        List<Map.Entry<Table, Long>> tablesByParticipationInCycles = new ArrayList<>(cyclesPerTable.entrySet());
+        tablesByParticipationInCycles.sort(Map.Entry.<Table, Long>comparingByValue().reversed());
+
+        // TODO Remove
+        System.out.println("Cycles per table (sorted):");
+        tablesByParticipationInCycles.forEach(entry -> System.out.printf("%s: %d%n", entry.getKey().getName(), entry.getValue()));
+
+        List<Table> tablesByCutPriority = tablesByParticipationInCycles.stream()
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        Map<Table, List<Column>> postponed = new HashMap<>();
+
+        for(Table table : tablesByCutPriority)
+        {
+            if(cycles.isEmpty())
+            {
+                log.fine("No cycles left");
+                break;
+            }
+
+            log.fine("Cutting cycles at " + table.getName());
+
+            List<List<Table>> cyclesOfTable = cycles.stream()
+                    .filter(cycle -> cycle.contains(table))
+                    .collect(Collectors.toList());
+
+            log.fine(String.format("%s participates in %d cycles", table.getName(), cyclesOfTable.size()));
+            for(List<Table> cycle : cyclesOfTable)
+            {
+                String str = cycle.stream()
+                        .map(NamedObject::getName)
+                        .collect(Collectors.joining(", "));
+
+                log.fine(str);
+            }
+
+            if(cyclesOfTable.isEmpty())
+            {
+                continue;
+            }
+
+            // Determine FK Columns participating in cycles
+            Set<Table> participantsOfCyclesOfTable = cyclesOfTable.stream()
+                    .flatMap(List::stream)
+                    .collect(Collectors.toSet());
+
+            List<Column> postponedFks = table.getColumns().stream()
+                    .filter(Column::isPartOfForeignKey)
+                    .filter(column -> participantsOfCyclesOfTable.contains(column.getReferencedColumn().getParent()))
+                    .collect(Collectors.toList());
+
+            log.fine(String.format("Postponed FKs in %s: %s", table.getName(), postponedFks.stream().map(NamedObject::getName).collect(Collectors.joining(", "))));
+
+            postponed.put(table, postponedFks);
+
+            // Remove all edges [PkTable -> table] from graph
+            Set<Table> pkTables = postponedFks.stream()
+                    .map(column -> column.getReferencedColumn().getParent())
+                    .collect(Collectors.toSet());
+
+            for(Table pkTable : pkTables)
+            {
+                graph.removeAllEdges(pkTable, table);
+            }
+
+            // Remove cyclesOfTable from cycles
+            cycles.removeAll(cyclesOfTable);
+        }
+
+        return postponed;
     }
 }
