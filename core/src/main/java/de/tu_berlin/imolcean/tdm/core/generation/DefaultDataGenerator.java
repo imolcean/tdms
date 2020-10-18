@@ -39,10 +39,10 @@ public class DefaultDataGenerator
 
     // TODO
     // TODO FillMode::Update
-    public void generate(Map<Table, TableRule> rules) throws SQLException, SchemaCrawlerException, IOException
+    public void generate(Map<Table, TableRule> rules, Map<Table, TableContent> generated) throws SQLException, SchemaCrawlerException, IOException
     {
-        // Create temporary storage for generated data
-        Map<Table, TableContent> generated = new HashMap<>();
+//        // Create temporary storage for generated data
+//        Map<Table, TableContent> generated = new HashMap<>();
 
         // Build dependency graph
         DefaultDirectedGraph<Table, DefaultEdge> graph = new DependencyGraphCreator().create(schemaService.getSchema(dataSourceService.getInternalDataSource()).getTables());
@@ -60,21 +60,34 @@ public class DefaultDataGenerator
         List<Table> generationOrder = new ArrayList<>();
         new TopologicalOrderIterator<>(graph).forEachRemaining(generationOrder::add);
 
+        log.fine("Generation order: " + generationOrder.stream().map(NamedObject::getName).collect(Collectors.joining(", ")));
+
         // Generate data in order
+        log.info("Generating data (first phase)");
         for(Table table : generationOrder)
         {
-            TableRule tableRule = rules.get(table);
+            log.info("Generating data for table " + table.getName());
+
+            TableRule tr = rules.get(table);
             TableContent rows = new TableContent(table);
 
-            for(int i = 0; i < tableRule.getRowCount(); i++)
+            for(int i = 0; i < tr.getRowCount(); i++)
             {
+                log.fine(String.format("Generating row %s/%s", i, tr.getRowCount()));
+
                 TableContent.Row row = new TableContent.Row(table);
 
-                for(ColumnRule columnRule : tableRule.getOrderedColumnRules())
+                for(ColumnRule cr : tr.getOrderedColumnRules())
                 {
-                    if(!postponed.get(table).contains(columnRule.getColumn()))
+                    if(!postponed.containsKey(table) || !postponed.get(table).contains(cr.getColumn()))
                     {
-                        row.setValue(columnRule.getColumn(), columnRule.getGenerationMethod().generate(columnRule.getParams()));
+                        log.fine("Generating value for column " + cr.getColumn().getName());
+
+                        Object value = cr.getGenerationMethod().generate(cr.getParams());
+
+                        log.fine("Value: " + value);
+
+                        row.setValue(cr.getColumn(), value);
                     }
                 }
 
@@ -86,28 +99,51 @@ public class DefaultDataGenerator
 
         // Generate 'postponed' FKs and put them in previously generated rows
         // TODO Generate Columns that are dependant from 'postponed' FKs
+        log.info("Generating data (second phase)");
         for(Table table : postponed.keySet())
         {
+            log.info("Generating data for postponed columns in table " + table.getName());
+
             TableRule tr = rules.get(table);
 
             for(int i = 0; i < tr.getRowCount(); i++)
             {
+                log.fine(String.format("Updating row %s/%s", i, tr.getRowCount()));
+
                 TableContent.Row row = generated.get(table).getRow(i);
 
                 for(Column column : postponed.get(table))
                 {
+                    log.fine("Generating value for column " + column.getName());
+
                     ColumnRule cr = tr.getColumnRules().get(column);
 
-                    row.setValue(column, cr.getGenerationMethod().generate(cr.getParams()));
+                    Object value = cr.getGenerationMethod().generate(cr.getParams());
+
+                    log.fine("Value: " + value);
+
+                    row.setValue(column, value);
                 }
             }
         }
 
-        // Import data
-        Map<Table, List<Object[]>> _generated = new HashMap<>();
-        generated.forEach((table, content) -> _generated.put(table, content.getRowsAsArrays()));
+        System.out.println("Generated:");
+        for(Table table : generated.keySet())
+        {
+            System.out.println("\t" + table.getName());
+            System.out.println("\t" + generated.get(table));
+        }
 
-        tableContentService.importData(dataSourceService.getInternalDataSource(), _generated);
+        // Import data
+        if(!generated.isEmpty())
+        {
+            log.fine("Writing generated data into internal DB");
+
+            Map<Table, List<Object[]>> _generated = new HashMap<>();
+            generated.forEach((table, content) -> _generated.put(table, content.getRowsAsArrays()));
+
+            tableContentService.importData(dataSourceService.getInternalDataSource(), _generated);
+        }
     }
 
     public void checkTableRules(DefaultDirectedGraph<Table, DefaultEdge> graph, Map<Table, TableRule> rules)

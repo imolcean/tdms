@@ -45,7 +45,7 @@ public class GenerationMethods
         defaultGenerationMethods.put(JDBCType.NCHAR.getName(), _string);
         defaultGenerationMethods.put(JDBCType.VARCHAR.getName(), _string);
         defaultGenerationMethods.put(JDBCType.NVARCHAR.getName(), _string);
-        defaultGenerationMethods.put(JDBCType.LONGVARCHAR.getName(), _string);
+//        defaultGenerationMethods.put(JDBCType.LONGVARCHAR.getName(), _string); // LONGVARCHAR Seems to be deprecated
 
         defaultGenerationMethods.put(JDBCType.DATE.getName(), _date);
         defaultGenerationMethods.put(JDBCType.TIME.getName(), _time);

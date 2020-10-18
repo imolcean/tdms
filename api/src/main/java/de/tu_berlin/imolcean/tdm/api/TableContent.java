@@ -2,12 +2,10 @@ package de.tu_berlin.imolcean.tdm.api;
 
 import lombok.Getter;
 import schemacrawler.schema.Column;
+import schemacrawler.schema.NamedObject;
 import schemacrawler.schema.Table;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Getter
@@ -69,6 +67,14 @@ public class TableContent
         {
             setValue(column, null);
         }
+
+        @Override
+        public String toString()
+        {
+            return Arrays.stream(values)
+                    .map(value -> value != null ? value.toString() : "null")
+                    .collect(Collectors.joining(",\t"));
+        }
     }
 
     private final Table table;
@@ -127,5 +133,19 @@ public class TableContent
     public void deleteRow(int row)
     {
         rows.remove(row);
+    }
+
+    @Override
+    public String toString()
+    {
+        String header = table.getColumns().stream()
+                .map(NamedObject::getName)
+                .collect(Collectors.joining(",\t"));
+
+        String rows = getRows().stream()
+                .map(Row::toString)
+                .collect(Collectors.joining("\n"));
+
+        return String.format("%s\n%s", header, rows);
     }
 }

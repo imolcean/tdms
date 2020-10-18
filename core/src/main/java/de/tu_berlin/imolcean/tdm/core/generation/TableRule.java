@@ -30,6 +30,7 @@ public class TableRule
         this.table = table;
         this.fillMode = fillMode;
         this.rowCount = rowCount;
+        this.columnRules = new TreeMap<>();
     }
 
     public TableRule(Table table, FillMode fillMode, int minRowCount, int maxRowCount)
@@ -62,7 +63,7 @@ public class TableRule
 
     public Collection<Column> getMandatoryColumnsWithoutRules()
     {
-        return CollectionUtils.disjunction(getMandatoryColumns(), columnRules.keySet());
+        return CollectionUtils.disjunction(getMandatoryColumns(), CollectionUtils.intersection(getMandatoryColumns(), columnRules.keySet()));
     }
 
     public List<ColumnRule> getOrderedColumnRules()
