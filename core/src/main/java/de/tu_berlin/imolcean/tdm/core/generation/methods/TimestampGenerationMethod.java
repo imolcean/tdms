@@ -13,7 +13,7 @@ public class TimestampGenerationMethod implements TimelineGenerationMethod<Times
     {
         log.fine(String.format("Generating a Timestamp between %s and %s", min, max));
 
-        Long _min = min == null ? Timestamp.valueOf("0001-01-01 00:00:00").getTime() : min.getTime();
+        Long _min = min == null ? Timestamp.valueOf("1753-01-01 00:00:00").getTime() : min.getTime();
         Long _max = max == null ? Timestamp.valueOf("3000-01-01 00:00:00").getTime() : max.getTime();
 
         long val = new LongGenerationMethod().generate(_min, _max);

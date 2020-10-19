@@ -5,7 +5,6 @@ import de.tu_berlin.imolcean.tdm.core.generation.methods.*;
 import schemacrawler.schema.Column;
 
 import java.sql.JDBCType;
-import java.sql.SQLType;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,6 +18,7 @@ public class GenerationMethods
 
         Class<? extends PrimitiveGenerationMethod<?>> _string = StringGenerationMethod.class;
         Class<? extends PrimitiveGenerationMethod<?>> _byte = ByteGenerationMethod.class;
+        Class<? extends PrimitiveGenerationMethod<?>> _tiny = TinyintGenerationMethod.class;
         Class<? extends PrimitiveGenerationMethod<?>> _short = ShortGenerationMethod.class;
         Class<? extends PrimitiveGenerationMethod<?>> _int = IntegerGenerationMethod.class;
         Class<? extends PrimitiveGenerationMethod<?>> _long = LongGenerationMethod.class;
@@ -32,7 +32,7 @@ public class GenerationMethods
 
         defaultGenerationMethods.put(JDBCType.BIT.getName(), _boolean);
         defaultGenerationMethods.put(JDBCType.SMALLINT.getName(), _short);
-        defaultGenerationMethods.put(JDBCType.TINYINT.getName(), _short);
+        defaultGenerationMethods.put(JDBCType.TINYINT.getName(), _tiny);
         defaultGenerationMethods.put(JDBCType.INTEGER.getName(), _int);
         defaultGenerationMethods.put(JDBCType.BIGINT.getName(), _long);
 
@@ -72,7 +72,7 @@ public class GenerationMethods
 
         try
         {
-            if(ColumnDependantGenerationMethod.class.isAssignableFrom(clazz))
+            if(ColumnAwareGenerationMethod.class.isAssignableFrom(clazz))
             {
                 return clazz.getConstructor(Column.class).newInstance(column);
             }

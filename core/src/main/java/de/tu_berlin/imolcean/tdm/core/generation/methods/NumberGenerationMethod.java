@@ -12,7 +12,7 @@ public interface NumberGenerationMethod<T extends Number> extends PrimitiveGener
     @Override
     default T generate()
     {
-        return generate((Number) null, null);
+        return generate(null, null);
     }
 
     @Override

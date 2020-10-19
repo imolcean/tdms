@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @Log
-public class StringGenerationMethod implements PrimitiveGenerationMethod<String>, ColumnDependantGenerationMethod
+public class StringGenerationMethod implements PrimitiveGenerationMethod<String>, ColumnAwareGenerationMethod
 {
     public enum Capitalization
     {
