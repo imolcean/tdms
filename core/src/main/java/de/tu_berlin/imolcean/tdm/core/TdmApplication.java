@@ -144,8 +144,8 @@ public class TdmApplication implements CommandLineRunner
         trB.setColumnRule(new ColumnRule(B.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
         trB.setColumnRule(new ColumnRule(B.getColumns().get(1), new FloatGenerationMethod()));
         trB.setColumnRule(new ColumnRule(B.getColumns().get(2), new DoubleGenerationMethod()));
-//        trB.setColumnRule(new ColumnRule(B.getColumns().get(3), new BigDecimalGenerationMethod(B.getColumns().get(3))));
-//        trB.setColumnRule(new ColumnRule(B.getColumns().get(4), new BigDecimalGenerationMethod(B.getColumns().get(4))));
+        trB.setColumnRule(new ColumnRule(B.getColumns().get(3), new BigDecimalGenerationMethod(B.getColumns().get(3))));
+        trB.setColumnRule(new ColumnRule(B.getColumns().get(4), new BigDecimalGenerationMethod(B.getColumns().get(4))));
         trB.setColumnRule(new ColumnRule(B.getColumns().get(5), new FkGenerationMethod(ds, generated, B.getColumns().get(5))));
 
         Table C = schemaService.getTable(ds, "C");
