@@ -117,24 +117,41 @@ public class TdmApplication implements CommandLineRunner
 //        System.out.println(rand.generate(params));
 
 
-//        Map<Table, TableContent> generated = new HashMap<>();
+        Map<Table, TableContent> generated = new HashMap<>();
 //        defaultDataGenerator.generate(createTableRules(generated), generated);
+        defaultDataGenerator.generate(createTableRulesUpdate(generated), generated);
 
-        Column column = schemaService.getTable(dataSourceService.getInternalDataSource(), "A").getColumns().get(1);
-
-        System.out.println(column.getParent().getTableConstraints().size());
-        System.out.println(column.getParent().getIndexes());
-        System.out.println(column.isPartOfPrimaryKey());
-        System.out.println(column.isPartOfUniqueIndex());
-        column.getParent().getTableConstraints().forEach(constraint -> {
-            System.out.println(constraint);
-            System.out.println(constraint.getConstraintType().getValue());
-            System.out.println(constraint.getDefinition());
-            constraint.getColumns().forEach(System.out::println);
-            constraint.getAttributes().forEach((k, v) -> System.out.println(k + ": " + v));
-        });
+//        Column column = schemaService.getTable(dataSourceService.getInternalDataSource(), "A").getColumns().get(1);
+//
+//        System.out.println(column.getParent().getTableConstraints().size());
+//        System.out.println(column.getParent().getIndexes());
+//        System.out.println(column.isPartOfPrimaryKey());
+//        System.out.println(column.isPartOfUniqueIndex());
+//        column.getParent().getTableConstraints().forEach(constraint -> {
+//            System.out.println(constraint);
+//            System.out.println(constraint.getConstraintType().getValue());
+//            System.out.println(constraint.getDefinition());
+//            constraint.getColumns().forEach(System.out::println);
+//            constraint.getAttributes().forEach((k, v) -> System.out.println(k + ": " + v));
+//        });
 
         System.out.println("DONE!");
+    }
+
+    @SneakyThrows
+    private Map<Table, TableRule> createTableRulesUpdate(Map<Table, TableContent> generated)
+    {
+        DataSourceWrapper ds = dataSourceService.getInternalDataSource();
+        Map<Table, TableRule> map = new HashMap<>();
+
+        Table A = schemaService.getTable(ds, "A");
+        TableRule trA = new TableRule(A, TableRule.FillMode.UPDATE, 100);
+//        trA.setColumnRule(new ColumnRule(A.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
+        trA.setColumnRule(new ColumnRule(A.getColumns().get(1), new ByteGenerationMethod()));
+
+        map.put(A, trA);
+
+        return map;
     }
 
     @SneakyThrows

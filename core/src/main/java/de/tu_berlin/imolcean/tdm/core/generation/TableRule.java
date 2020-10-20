@@ -1,7 +1,10 @@
 package de.tu_berlin.imolcean.tdm.core.generation;
 
+import de.tu_berlin.imolcean.tdm.api.TableContent;
+import de.tu_berlin.imolcean.tdm.api.exceptions.DataGenerationException;
 import de.tu_berlin.imolcean.tdm.core.generation.methods.IntegerGenerationMethod;
 import lombok.Data;
+import lombok.extern.java.Log;
 import org.apache.commons.collections4.CollectionUtils;
 import schemacrawler.schema.Column;
 import schemacrawler.schema.Table;
@@ -10,6 +13,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Data
+@Log
 public class TableRule
 {
     public enum FillMode
@@ -36,8 +40,15 @@ public class TableRule
         this(table, fillMode, new IntegerGenerationMethod().generate(minRowCount, maxRowCount));
     }
 
+    public boolean isPostponed()
+    {
+        return getPostponedColumnRules().size() > 0;
+    }
+
     public boolean isValid()
     {
+        // TODO Check that columnRules only operate on Columns of this Table (no foreign Columns)
+
         if(fillMode == FillMode.UPDATE)
         {
             return true;
@@ -71,6 +82,19 @@ public class TableRule
         return new ArrayList<>(columnRules.values());
     }
 
+    public List<ColumnRule> getPostponedColumnRules()
+    {
+        return columnRules.values().stream()
+                .filter(ColumnRule::isPostponed)
+                .collect(Collectors.toList());
+    }
+
+    public void setColumnRules(Collection<ColumnRule> rules)
+    {
+        columnRules.clear();
+        rules.forEach(rule -> columnRules.put(rule.getColumn(), rule));
+    }
+
     public Optional<ColumnRule> findColumnRule(Column column)
     {
         return Optional.ofNullable(columnRules.get(column));
@@ -89,5 +113,76 @@ public class TableRule
     public void clearColumnRule(Column column)
     {
         columnRules.remove(column);
+    }
+
+    public TableContent generate()
+    {
+        return generate(null);
+    }
+
+    public TableContent generate(TableContent existingData)
+    {
+        if(fillMode.equals(FillMode.APPEND))
+        {
+            return generateAppend();
+        }
+        else
+        {
+            return generateUpdate(existingData);
+        }
+    }
+
+    private TableContent generateUpdate(TableContent content)
+    {
+        if(!isValid())
+        {
+            throw new DataGenerationException(String.format("Cannot generate data for table %s because the table rule is invalid", table.getName()));
+        }
+
+        log.info("Generating data for table " + table.getName() + " in UPDATE fill mode");
+        for(int i = 0; i < content.getRows().size(); i++)
+        {
+            log.fine(String.format("Generating row %s/%s", i, content.getRows().size()));
+            for(ColumnRule cr : getOrderedColumnRules())
+            {
+                log.fine("Generating value for column " + cr.getColumn().getName());
+                Object value = cr.generate();
+                log.fine("Value: " + value);
+
+                content.getRow(i).setValue(cr.getColumn(), value);
+            }
+        }
+
+        return content;
+    }
+
+    private TableContent generateAppend()
+    {
+        if(!isValid())
+        {
+            throw new DataGenerationException(String.format("Cannot generate data for table %s because the table rule is invalid", table.getName()));
+        }
+
+        log.info("Generating data for table " + table.getName() + " in APPEND fill mode");
+        TableContent content = new TableContent(table);
+
+        for(int i = 0; i < rowCount; i++)
+        {
+            log.fine(String.format("Generating row %s/%s", i, rowCount));
+            TableContent.Row row = new TableContent.Row(table);
+
+            for(ColumnRule cr : getOrderedColumnRules())
+            {
+                log.fine("Generating value for column " + cr.getColumn().getName());
+                Object value = cr.generate();
+                log.fine("Value: " + value);
+
+                row.setValue(cr.getColumn(), value);
+            }
+
+            content.addRow(row);
+        }
+
+        return content;
     }
 }
