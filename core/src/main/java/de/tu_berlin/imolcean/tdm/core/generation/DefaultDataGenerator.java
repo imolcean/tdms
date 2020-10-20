@@ -152,6 +152,7 @@ public class DefaultDataGenerator
 
         for(Table table : graph.vertexSet())
         {
+            // TODO Handle non-empty tables
             // TODO Leave table in graph, if it's not empty
 
             if(rules.get(table) == null || !rules.get(table).isValid())

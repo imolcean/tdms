@@ -15,7 +15,7 @@ import java.util.Map;
 public class ColumnRule
 {
     private Column column;
-    private GenerationMethod generationMethod; // TODO Generator interface
+    private GenerationMethod generationMethod;
     private boolean uniqueValues;
     private double nullPart; // TODO JavaDoc: Has to be between 0 and 1
     private Map<String, Object> params;
@@ -39,7 +39,10 @@ public class ColumnRule
             this.nullPart = 0;
         }
 
-        // TODO If UNIQUE constraint is true, set uniqueValues = true
+        if(this.column.isPartOfPrimaryKey() || this.column.isPartOfUniqueIndex())
+        {
+            this.uniqueValues = true;
+        }
     }
 
     public ColumnRule(Column column, GenerationMethod generationMethod, boolean uniqueValues, double nullPart)

@@ -1,9 +1,7 @@
 package de.tu_berlin.imolcean.tdm.core.generation;
 
 import de.tu_berlin.imolcean.tdm.core.generation.methods.IntegerGenerationMethod;
-import lombok.AccessLevel;
 import lombok.Data;
-import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import schemacrawler.schema.Column;
 import schemacrawler.schema.Table;
