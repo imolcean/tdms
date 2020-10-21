@@ -14,7 +14,11 @@ public interface LowLevelDataService
 
     void clearTable(Connection connection, Table table) throws SQLException;
 
+    void disableConstraints(DataSource ds) throws SQLException, IOException;
+
     void disableConstraints(Connection connection) throws SQLException, IOException;
+
+    void enableConstraints(DataSource ds) throws SQLException, IOException;
 
     void enableConstraints(Connection connection) throws SQLException, IOException;
 

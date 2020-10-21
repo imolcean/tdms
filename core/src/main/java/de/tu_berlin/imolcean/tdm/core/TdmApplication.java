@@ -111,8 +111,8 @@ public class TdmApplication implements CommandLineRunner
 
 
         Map<Table, TableContent> generated = new HashMap<>();
-//        defaultDataGenerator.generate(createTableRulesAppendAll(generated), generated);
-        defaultDataGenerator.generate(createTableRulesUpdate(generated), generated);
+        defaultDataGenerator.generate(createTableRulesAppendAll(generated), generated);
+//        defaultDataGenerator.generate(createTableRulesUpdate(generated), generated);
 
 //        Column column = schemaService.getTable(dataSourceService.getInternalDataSource(), "A").getColumns().get(1);
 //
@@ -139,8 +139,9 @@ public class TdmApplication implements CommandLineRunner
 
         Table A = schemaService.getTable(ds, "A");
         TableRule trA = new TableRule(A, TableRule.FillMode.UPDATE, 100);
-//        trA.setColumnRule(new ColumnRule(A.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
-        trA.setColumnRule(new ColumnRule(A.getColumns().get(1), new ByteGenerationMethod()));
+        trA.setColumnRule(new ColumnRule(A.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
+        trA.setColumnRule(new ColumnRule(A.getColumns().get(1), new LongGenerationMethod()));
+        trA.setColumnRule(new ColumnRule(A.getColumns().get(4), new BooleanGenerationMethod()));
 
         map.put(A, trA);
 

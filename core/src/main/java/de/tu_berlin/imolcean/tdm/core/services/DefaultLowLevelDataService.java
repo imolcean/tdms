@@ -84,6 +84,15 @@ public class DefaultLowLevelDataService implements LowLevelDataService
     }
 
     @Override
+    public void disableConstraints(DataSource ds) throws SQLException, IOException
+    {
+        try(Connection connection = ds.getConnection())
+        {
+            disableConstraints(connection);
+        }
+    }
+
+    @Override
     public void disableConstraints(Connection connection) throws SQLException, IOException
     {
         log.fine("Disabling database constraints");
@@ -94,6 +103,15 @@ public class DefaultLowLevelDataService implements LowLevelDataService
         }
 
         log.fine("Database constraints disabled");
+    }
+
+    @Override
+    public void enableConstraints(DataSource ds) throws SQLException, IOException
+    {
+        try(Connection connection = ds.getConnection())
+        {
+            enableConstraints(connection);
+        }
     }
 
     @Override
@@ -115,19 +133,22 @@ public class DefaultLowLevelDataService implements LowLevelDataService
         Connection connection = ds.getConnection();
         connection.setAutoCommit(false);
 
+        log.fine("Created a transaction");
+
         return connection;
     }
 
     @Override
     public void commitTransaction(Connection connection) throws SQLException
     {
+        log.fine("Committing transaction");
         connection.commit();
     }
 
     @Override
     public void rollbackTransaction(Connection connection) throws SQLException
     {
+        log.fine("Rolling the transaction back");
         connection.rollback();
     }
-
 }

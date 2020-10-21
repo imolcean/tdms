@@ -140,6 +140,12 @@ public class TableRule
             log.fine(String.format("Generating row %s/%s", i, content.getRows().size()));
             for(ColumnRule cr : getOrderedColumnRules())
             {
+                if(cr.getColumn().isPartOfPrimaryKey())
+                {
+                    log.warning(String.format("Cannot update values in column '%s' because it is part of the primary key", cr.getColumn().getName()));
+                    continue;
+                }
+
                 List<Object> existingColumnContent = content.getRows().stream()
                         .map(r -> r.getValue(cr.getColumn()))
                         .collect(Collectors.toList());

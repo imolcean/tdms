@@ -134,32 +134,7 @@ public class DefaultDataGenerator
         }
 
         // Import data
-        // TODO Move to a separate method
-        if(!data.isEmpty())
-        {
-            log.fine("Writing generated data into internal DB");
-            try(Connection connection = lowLevelDataService.createTransaction(dataSourceService.getInternalDataSource()))
-            {
-                lowLevelDataService.disableConstraints(connection);
-
-                try
-                {
-                    for(Table table : data.keySet())
-                    {
-                        lowLevelDataService.clearTable(connection, table);
-                        lowLevelDataService.insertRows(connection, table, data.get(table).getRowsAsArrays());
-                    }
-                }
-                catch(SQLException e)
-                {
-                    lowLevelDataService.rollbackTransaction(connection);
-                    throw e;
-                }
-
-                lowLevelDataService.enableConstraints(connection);
-                lowLevelDataService.commitTransaction(connection);
-            }
-        }
+        writeData(data);
     }
 
     public void checkTableRules(DefaultDirectedGraph<Table, DefaultEdge> graph, Map<Table, TableRule> rules) throws SQLException
@@ -273,5 +248,39 @@ public class DefaultDataGenerator
         }
 
         return postponed;
+    }
+
+    private void writeData(Map<Table, TableContent> data) throws IOException, SQLException
+    {
+        if(data.isEmpty())
+        {
+            log.fine("Nothing to write");
+            return;
+        }
+
+        log.fine("Writing generated data into internal DB");
+
+        lowLevelDataService.disableConstraints(dataSourceService.getInternalDataSource());
+
+        try(Connection connection = lowLevelDataService.createTransaction(dataSourceService.getInternalDataSource()))
+        {
+            try
+            {
+                for(Table table : data.keySet())
+                {
+                    lowLevelDataService.clearTable(connection, table);
+                    lowLevelDataService.insertRows(connection, table, data.get(table).getRowsAsArrays());
+                }
+            }
+            catch(SQLException e)
+            {
+                lowLevelDataService.rollbackTransaction(connection);
+                throw e;
+            }
+
+            lowLevelDataService.commitTransaction(connection);
+        }
+
+        lowLevelDataService.enableConstraints(dataSourceService.getInternalDataSource());
     }
 }
