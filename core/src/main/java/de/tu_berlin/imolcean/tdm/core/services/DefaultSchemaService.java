@@ -2,7 +2,7 @@ package de.tu_berlin.imolcean.tdm.core.services;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.TableNotFoundException;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
-import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
+import de.tu_berlin.imolcean.tdm.api.services.DataService;
 import de.tu_berlin.imolcean.tdm.core.StreamResourceAccessor;
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -42,11 +42,11 @@ public class DefaultSchemaService implements SchemaService
     // TODO Cache
     // TODO Remove dependency on TableContentService
 
-    private final TableContentService tableContentService;
+    private final DataService dataService;
 
-    public DefaultSchemaService(TableContentService tableContentService)
+    public DefaultSchemaService(DataService dataService)
     {
-        this.tableContentService = tableContentService;
+        this.dataService = dataService;
     }
 
     @Override
@@ -118,8 +118,8 @@ public class DefaultSchemaService implements SchemaService
 
                 if(tableExists(src, "DATABASECHANGELOG"))
                 {
-                    tableContentService.clearTable(target, getTable(target, "DATABASECHANGELOG"));
-                    tableContentService.clearTable(target, getTable(target, "DATABASECHANGELOGLOCK"));
+                    dataService.clearTable(target, getTable(target, "DATABASECHANGELOG"));
+                    dataService.clearTable(target, getTable(target, "DATABASECHANGELOGLOCK"));
                 }
                 else
                 {

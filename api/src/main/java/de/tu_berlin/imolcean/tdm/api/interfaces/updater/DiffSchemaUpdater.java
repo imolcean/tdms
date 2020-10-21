@@ -126,7 +126,7 @@ public abstract class DiffSchemaUpdater extends AbstractSchemaUpdater
 
         log.info("Rolling back data mapping");
 
-        tableContentService.clearTables(tmpDs, schemaService.getSchema(tmpDs).getTables());
+        dataService.clearTables(tmpDs, schemaService.getSchema(tmpDs).getTables());
 
         dataMapped = false;
 

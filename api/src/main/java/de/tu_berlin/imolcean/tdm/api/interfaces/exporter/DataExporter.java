@@ -1,8 +1,6 @@
 package de.tu_berlin.imolcean.tdm.api.interfaces.exporter;
 
 import de.tu_berlin.imolcean.tdm.api.interfaces.PublicInterface;
-import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
-import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
 import org.pf4j.ExtensionPoint;
 
 import javax.sql.DataSource;

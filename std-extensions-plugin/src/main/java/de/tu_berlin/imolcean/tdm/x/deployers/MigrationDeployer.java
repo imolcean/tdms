@@ -2,7 +2,7 @@ package de.tu_berlin.imolcean.tdm.x.deployers;
 
 import de.tu_berlin.imolcean.tdm.api.interfaces.deployment.Deployer;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
-import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
+import de.tu_berlin.imolcean.tdm.api.services.DataService;
 import lombok.extern.java.Log;
 import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +33,7 @@ public class MigrationDeployer implements Deployer
     private SchemaService schemaService;
 
     @Autowired
-    private TableContentService tableContentService;
+    private DataService dataService;
 
     @Override
     public void deploy(DataSource src, DataSource target) throws Exception
@@ -50,11 +50,11 @@ public class MigrationDeployer implements Deployer
         log.fine("Clearing the target DB");
 
         List<Table> tablesToClear = schemaService.getTables(target, schemaService.getOccupiedTableNames(target));
-        tableContentService.clearTables(target, tablesToClear);
+        dataService.clearTables(target, tablesToClear);
 
         log.fine("Copying data from the source DB into the target DB");
 
-        tableContentService.copyData(src, target, schemaService.getTables(src, schemaService.getOccupiedTableNames(src)));
+        dataService.copyData(src, target, schemaService.getTables(src, schemaService.getOccupiedTableNames(src)));
 
         log.info("Deployment finished");
     }

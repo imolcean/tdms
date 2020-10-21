@@ -23,7 +23,7 @@ public abstract class IterativeSchemaUpdater extends AbstractSchemaUpdater
         log.info("Preparing Temp DB: copying schema and data");
 
         schemaService.copySchema(internalDs, tmpDs);
-        tableContentService.copyData(internalDs, tmpDs, schemaService.getSchema(internalDs).getTables());
+        dataService.copyData(internalDs, tmpDs, schemaService.getSchema(internalDs).getTables());
 
         log.info("Temp DB prepared");
     }

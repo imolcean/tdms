@@ -7,7 +7,7 @@ import de.tu_berlin.imolcean.tdm.core.services.proxies.DataExportProxy;
 import de.tu_berlin.imolcean.tdm.core.services.proxies.DataImportProxy;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
-import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
+import de.tu_berlin.imolcean.tdm.api.services.DataService;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.TableContentMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +28,7 @@ public class TableContentController
     private final ProjectService projectService;
     private final DataSourceService dsService;
     private final SchemaService schemaService;
-    private final TableContentService tableContentService;
+    private final DataService dataService;
     private final GitService gitService;
     private final DataImportProxy dataImportProxy;
     private final DataExportProxy dataExportProxy;
@@ -36,7 +36,7 @@ public class TableContentController
     public TableContentController(ProjectService projectService,
                                   DataSourceService dsService,
                                   SchemaService SchemaService,
-                                  TableContentService tableContentService,
+                                  DataService dataService,
                                   GitService gitService,
                                   DataImportProxy dataImportProxy,
                                   DataExportProxy dataExportProxy)
@@ -44,7 +44,7 @@ public class TableContentController
         this.projectService = projectService;
         this.dsService = dsService;
         this.schemaService = SchemaService;
-        this.tableContentService = tableContentService;
+        this.dataService = dataService;
         this.gitService = gitService;
         this.dataImportProxy = dataImportProxy;
         this.dataExportProxy = dataExportProxy;
@@ -61,7 +61,7 @@ public class TableContentController
                 TableContentMapper.toDto(
                         table.getName(),
                         table.getColumns(),
-                        tableContentService.getTableContent(ds, table)));
+                        dataService.getTableContent(ds, table)));
     }
 
     @GetMapping("/{alias}/{table}/{columns}")
@@ -80,7 +80,7 @@ public class TableContentController
                 TableContentMapper.toDto(
                         table.getName(),
                         columns,
-                        tableContentService.getTableContentForColumns(ds, table, columns)));
+                        dataService.getTableContentForColumns(ds, table, columns)));
     }
 
     @PostMapping("/{alias}/{table}")
@@ -95,7 +95,7 @@ public class TableContentController
                 .map(row -> columnNamesMap2ColumnMap(table, row))
                 .collect(Collectors.toList());
 
-        tableContentService.insertRows(ds, table, _rows);
+        dataService.insertRows(ds, table, _rows);
 
         return ResponseEntity.noContent().build();
     }
@@ -109,7 +109,7 @@ public class TableContentController
         DataSource ds = dsService.getDataSourceByAlias(alias);
         Table table = schemaService.getTable(ds, tableName);
 
-        tableContentService.updateRow(ds, table, rowIndex, columnNamesMap2ColumnMap(table, row));
+        dataService.updateRow(ds, table, rowIndex, columnNamesMap2ColumnMap(table, row));
 
         return ResponseEntity.noContent().build();
     }
@@ -122,7 +122,7 @@ public class TableContentController
         DataSource ds = dsService.getDataSourceByAlias(alias);
         Table table = schemaService.getTable(ds, tableName);
 
-        tableContentService.deleteRow(ds, table, rowIndex);
+        dataService.deleteRow(ds, table, rowIndex);
 
         return ResponseEntity.noContent().build();
     }
@@ -137,7 +137,7 @@ public class TableContentController
 
         Collection<Table> tables = schemaService.getSchema(src).getTables();
 
-        tableContentService.copyData(src, target, tables);
+        dataService.copyData(src, target, tables);
 
         return ResponseEntity.noContent().build();
     }
@@ -149,7 +149,7 @@ public class TableContentController
         DataSource ds = dsService.getDataSourceByAlias(alias);
         Table table = schemaService.getTable(ds, tableName);
 
-        tableContentService.clearTable(ds, table);
+        dataService.clearTable(ds, table);
 
         return ResponseEntity.noContent().build();
     }
@@ -160,7 +160,7 @@ public class TableContentController
     {
         DataSource ds = dsService.getDataSourceByAlias(alias);
 
-        tableContentService.clearTables(ds, schemaService.getSchema(ds).getTables());
+        dataService.clearTables(ds, schemaService.getSchema(ds).getTables());
 
         return ResponseEntity.noContent().build();
     }

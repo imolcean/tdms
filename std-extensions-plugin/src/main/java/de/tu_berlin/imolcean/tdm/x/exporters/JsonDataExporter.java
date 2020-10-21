@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.tu_berlin.imolcean.tdm.api.dto.TableContentDto;
 import de.tu_berlin.imolcean.tdm.api.interfaces.exporter.DataExporter;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
-import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
+import de.tu_berlin.imolcean.tdm.api.services.DataService;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
 import org.pf4j.Extension;
@@ -31,7 +31,7 @@ public class JsonDataExporter implements DataExporter
     private SchemaService schemaService;
 
     @Autowired
-    private TableContentService tableContentService;
+    private DataService dataService;
 
     @Override
     public void exportData(DataSource ds, Path exportDir) throws Exception
@@ -59,7 +59,7 @@ public class JsonDataExporter implements DataExporter
             List<String> columnNames = table.getColumns().stream()
                     .map(NamedObject::getName)
                     .collect(Collectors.toList());
-            List<Object[]> rows = tableContentService.getTableContent(ds, table);
+            List<Object[]> rows = dataService.getTableContent(ds, table);
 
             TableContentDto dto = new TableContentDto(tableName, columnNames, rows);
 

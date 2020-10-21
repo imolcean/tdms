@@ -1,11 +1,10 @@
 package de.tu_berlin.imolcean.tdm.core.services;
 
-import de.danielbechler.util.Strings;
 import de.tu_berlin.imolcean.tdm.api.exceptions.IllegalSizeOfTableContentRowException;
 import de.tu_berlin.imolcean.tdm.api.exceptions.TableContentRowIndexOutOfBoundsException;
-import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
+import de.tu_berlin.imolcean.tdm.api.services.DataService;
+import de.tu_berlin.imolcean.tdm.api.services.LowLevelDataService;
 import de.tu_berlin.imolcean.tdm.core.TableContentResultSetHandler;
-import de.tu_berlin.imolcean.tdm.core.utils.QueryLoader;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 import schemacrawler.schema.*;
@@ -18,11 +17,17 @@ import java.util.stream.Collectors;
 
 @Service
 @Log
-public class DefaultTableContentService implements TableContentService
+public class DefaultDataService implements DataService
 {
-    // TODO Receive XyzRequest instead of Object[]
     // TODO DRY?
-    // TODO Model TableContentRow
+    // TODO Use TableContent instead of Maps and Arrays
+
+    private final LowLevelDataService lowLevelDataService;
+
+    public DefaultDataService(LowLevelDataService lowLevelDataService)
+    {
+        this.lowLevelDataService = lowLevelDataService;
+    }
 
     @Override
     public int getTableRowCount(DataSource ds, Table table) throws SQLException
@@ -80,38 +85,7 @@ public class DefaultTableContentService implements TableContentService
         }
     }
 
-//    // TODO Return row
-//    @Override
-//    public void insertRow(DataSource ds, Table table, Object[] row) throws SQLException
-//    {
-//        log.info("Inserting a new row into table " + table.getName());
-//
-//        try(Connection connection = ds.getConnection();
-//            Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE))
-//        {
-//            ResultSet rs = statement.executeQuery("SELECT * FROM " + table.getName());
-//
-//            assert table.getColumns().size() == rs.getMetaData().getColumnCount();
-//
-//            if(row.length != table.getColumns().size())
-//            {
-//                throw new IllegalSizeOfTableContentRowException(table.getName(), table.getColumns().size(), row.length);
-//            }
-//
-//            rs.moveToInsertRow();
-//
-//            for(int i = 0; i < table.getColumns().size(); i++)
-//            {
-//                rs.updateObject(i + 1, row[i]);
-//            }
-//
-//            rs.insertRow();
-//        }
-//
-//        log.info("Row inserted");
-//    }
-
-    // TODO Bug: Insert multiple rows where one violates PK constraint, transaction rolled back, other rows are still written
+    // FIXME: Insert multiple rows where one violates PK constraint, transaction rolled back, other rows are still written
     @Override
     public void insertRows(DataSource ds, Table table, List<Map<Column, Object>> rows) throws SQLException
     {
@@ -119,52 +93,46 @@ public class DefaultTableContentService implements TableContentService
                 .map(row -> columnMap2Array(table, row))
                 .collect(Collectors.toList());
 
-        try(Connection connection = ds.getConnection())
+        try(Connection connection = lowLevelDataService.createTransaction(ds))
         {
-            connection.setAutoCommit(false);
-
             try
             {
-                insertRows(ds.getConnection(), table, _rows);
+                lowLevelDataService.insertRows(ds.getConnection(), table, _rows);
             }
             catch(SQLException e)
             {
                 log.warning("Insertion failed");
-
-                connection.rollback();
+                lowLevelDataService.rollbackTransaction(connection);
                 throw e;
             }
 
-            connection.commit();
+            lowLevelDataService.commitTransaction(connection);
         }
     }
 
     @Override
     public void importData(DataSource ds, Map<Table, List<Object[]>> data) throws SQLException, IOException
     {
-        try(Connection connection = ds.getConnection())
+        try(Connection connection = lowLevelDataService.createTransaction(ds))
         {
-            disableConstraints(connection);
-            connection.setAutoCommit(false);
+            lowLevelDataService.disableConstraints(connection);
 
             try
             {
                 for(Map.Entry<Table, List<Object[]>> entry : data.entrySet())
                 {
-                    insertRows(connection, entry.getKey(), entry.getValue());
+                    lowLevelDataService.insertRows(connection, entry.getKey(), entry.getValue());
                 }
             }
             catch(SQLException e)
             {
                 log.warning("Import failed");
-
                 connection.rollback();
                 throw e;
             }
 
-            connection.commit();
-            connection.setAutoCommit(true);
-            enableConstraints(connection);
+            lowLevelDataService.enableConstraints(connection);
+            lowLevelDataService.commitTransaction(connection);
         }
     }
 
@@ -261,10 +229,9 @@ public class DefaultTableContentService implements TableContentService
     {
         log.info("Copying all data");
 
-        try(Connection targetConnection = target.getConnection())
+        try(Connection targetConnection = lowLevelDataService.createTransaction(target))
         {
-            disableConstraints(targetConnection);
-            targetConnection.setAutoCommit(false);
+            lowLevelDataService.disableConstraints(targetConnection);
 
             for(Table table : tables)
             {
@@ -272,20 +239,18 @@ public class DefaultTableContentService implements TableContentService
 
                 try
                 {
-                    insertRows(targetConnection, table, data);
+                    lowLevelDataService.insertRows(targetConnection, table, data);
                 }
                 catch(SQLException e)
                 {
                     log.warning("Copying of data failed");
-
-                    targetConnection.rollback();
+                    lowLevelDataService.rollbackTransaction(targetConnection);
                     throw e;
                 }
             }
 
-            targetConnection.commit();
-            targetConnection.setAutoCommit(true);
-            enableConstraints(targetConnection);
+            lowLevelDataService.enableConstraints(targetConnection);
+            lowLevelDataService.commitTransaction(targetConnection);
         }
 
         log.info("All data copied");
@@ -316,21 +281,19 @@ public class DefaultTableContentService implements TableContentService
     {
         log.info("Clearing table " + table.getName());
 
-        try(Connection connection = ds.getConnection())
+        try(Connection connection = lowLevelDataService.createTransaction(ds))
         {
-            connection.setAutoCommit(false);
-
             try
             {
-                clearTable(connection, table);
+                lowLevelDataService.clearTable(connection, table);
             }
             catch(SQLException e)
             {
-                connection.rollback();
+                lowLevelDataService.rollbackTransaction(connection);
                 throw e;
             }
 
-            connection.commit();
+            lowLevelDataService.commitTransaction(connection);
         }
 
         log.info("Table cleared");
@@ -341,10 +304,9 @@ public class DefaultTableContentService implements TableContentService
     {
         log.info("Clearing all tables");
 
-        try(Connection connection = ds.getConnection())
+        try(Connection connection = lowLevelDataService.createTransaction(ds))
         {
-            disableConstraints(connection);
-            connection.setAutoCommit(false);
+            lowLevelDataService.disableConstraints(connection);
 
             try
             {
@@ -352,131 +314,21 @@ public class DefaultTableContentService implements TableContentService
                 {
                     log.fine("Clearing table " + table.getName());
 
-                    clearTable(connection, table);
+                    lowLevelDataService.clearTable(connection, table);
                 }
             }
             catch(SQLException e)
             {
                 log.warning("Clearing all tables failed");
-
-                connection.rollback();
+                lowLevelDataService.rollbackTransaction(connection);
                 throw e;
             }
 
-            connection.commit();
-            connection.setAutoCommit(true);
-            enableConstraints(connection);
+            lowLevelDataService.enableConstraints(connection);
+            lowLevelDataService.commitTransaction(connection);
         }
 
         log.info("All tables cleared");
-    }
-
-    @Override
-    public void insertRows(Connection connection, Table table, List<Object[]> rows) throws SQLException
-    {
-        log.info("Inserting multiple new rows into table " + table.getName());
-
-        List<String> columnNames = table.getColumns().stream()
-                .map(NamedObject::getName)
-                .collect(Collectors.toList());
-
-        List<JavaSqlType> columnTypes = table.getColumns().stream()
-                .map(col -> col.getColumnDataType().getJavaSqlType())
-                .collect(Collectors.toList());
-
-        String placeholders = new StringBuilder()
-                .append("?,".repeat(columnNames.size()))
-                .reverse()
-                .deleteCharAt(0)
-                .toString();
-
-        String insertSql = String
-                .format("INSERT INTO %s (%s) VALUES (%s)",
-                        table.getName(),
-                        Strings.join(", ", columnNames),
-                        placeholders);
-
-        log.fine("Request template: " + insertSql);
-
-        try(PreparedStatement statement = connection.prepareStatement(insertSql))
-        {
-            for(Object[] row : rows)
-            {
-                statement.clearParameters();
-
-                int i = 0;
-                for(JavaSqlType type : columnTypes)
-                {
-                    statement.setObject(i + 1, row[i], type);
-                    i++;
-                }
-
-                statement.addBatch();
-            }
-
-            statement.executeBatch();
-        }
-
-        log.info("Rows inserted");
-    }
-
-    @Override
-    public void clearTable(Connection connection, Table table) throws SQLException
-    {
-        log.fine("Clearing table " + table.getName());
-
-        try(Statement statement = connection.createStatement())
-        {
-            //noinspection SqlWithoutWhere
-            statement.executeUpdate("DELETE FROM " + table.getName());
-        }
-    }
-
-    @Override
-    public void disableConstraints(Connection connection) throws SQLException, IOException
-    {
-        log.fine("Disabling database constraints");
-
-        try(Statement statement = connection.createStatement())
-        {
-            statement.execute(QueryLoader.loadQuery("disable_constraints"));
-        }
-
-        log.fine("Database constraints disabled");
-    }
-
-    @Override
-    public void enableConstraints(Connection connection) throws SQLException, IOException
-    {
-        log.fine("Enabling database constraints");
-
-        try(Statement statement = connection.createStatement())
-        {
-            statement.execute(QueryLoader.loadQuery("enable_constraints"));
-        }
-
-        log.fine("Database constraints enabled");
-    }
-
-    @Override
-    public Connection createTransaction(DataSource ds) throws SQLException
-    {
-        Connection connection = ds.getConnection();
-        connection.setAutoCommit(false);
-
-        return connection;
-    }
-
-    @Override
-    public void commitTransaction(Connection connection) throws SQLException
-    {
-        connection.commit();
-    }
-
-    @Override
-    public void rollbackTransaction(Connection connection) throws SQLException
-    {
-        connection.rollback();
     }
 
     private Object[] columnMap2Array(Table table, Map<Column, Object> row)

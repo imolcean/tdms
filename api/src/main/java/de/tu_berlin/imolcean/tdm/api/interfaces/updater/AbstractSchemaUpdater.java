@@ -2,7 +2,7 @@ package de.tu_berlin.imolcean.tdm.api.interfaces.updater;
 
 import de.tu_berlin.imolcean.tdm.api.DataSourceWrapper;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
-import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
+import de.tu_berlin.imolcean.tdm.api.services.DataService;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,7 @@ public abstract class AbstractSchemaUpdater implements SchemaUpdater
     protected SchemaService schemaService;
 
     @Autowired
-    protected TableContentService tableContentService;
+    protected DataService dataService;
 
     protected DataSourceWrapper internalDs;
     protected DataSourceWrapper tmpDs;
@@ -42,7 +42,7 @@ public abstract class AbstractSchemaUpdater implements SchemaUpdater
         log.fine("Copying schema and data from Temp DB into Internal DB");
 
         schemaService.copySchema(tmpDs, internalDs);
-        tableContentService.copyData(tmpDs, internalDs, schemaService.getSchema(tmpDs).getTables());
+        dataService.copyData(tmpDs, internalDs, schemaService.getSchema(tmpDs).getTables());
 
         log.fine("Purging Temp DB");
 

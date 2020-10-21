@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public interface TableContentService
+public interface DataService
 {
     int getTableRowCount(DataSource ds, Table table) throws SQLException;
 
@@ -36,18 +36,4 @@ public interface TableContentService
     void clearTable(DataSource ds, Table table) throws SQLException;
 
     void clearTables(DataSource ds, Collection<Table> tables) throws SQLException, IOException;
-
-    void insertRows(Connection connection, Table table, List<Object[]> rows) throws SQLException;
-
-    void clearTable(Connection connection, Table table) throws SQLException;
-
-    void disableConstraints(Connection connection) throws SQLException, IOException;
-
-    void enableConstraints(Connection connection) throws SQLException, IOException;
-
-    Connection createTransaction(DataSource ds) throws SQLException;
-
-    void commitTransaction(Connection connection) throws SQLException;
-
-    void rollbackTransaction(Connection connection) throws SQLException;
 }

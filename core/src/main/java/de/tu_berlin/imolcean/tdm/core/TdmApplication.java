@@ -7,7 +7,7 @@ import de.tu_berlin.imolcean.tdm.api.DataSourceWrapper;
 import de.tu_berlin.imolcean.tdm.api.TableContent;
 import de.tu_berlin.imolcean.tdm.api.dto.ProjectDto;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
-import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
+import de.tu_berlin.imolcean.tdm.api.services.DataService;
 import de.tu_berlin.imolcean.tdm.core.generation.*;
 import de.tu_berlin.imolcean.tdm.core.generation.methods.*;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
@@ -32,7 +32,7 @@ public class TdmApplication implements CommandLineRunner
     private SchemaService schemaService;
 
     @Autowired
-    private TableContentService tableContentService;
+    private DataService dataService;
 
     @Autowired
     private DataSourceService dataSourceService;

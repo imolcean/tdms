@@ -1,8 +1,9 @@
 package de.tu_berlin.imolcean.tdm.core.generation;
 
 import de.tu_berlin.imolcean.tdm.api.TableContent;
+import de.tu_berlin.imolcean.tdm.api.services.LowLevelDataService;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
-import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
+import de.tu_berlin.imolcean.tdm.api.services.DataService;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
 import lombok.extern.java.Log;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -27,15 +28,18 @@ public class DefaultDataGenerator
 {
     private final DataSourceService dataSourceService;
     private final SchemaService schemaService;
-    private final TableContentService tableContentService;
+    private final DataService dataService;
+    private final LowLevelDataService lowLevelDataService;
 
     public DefaultDataGenerator(DataSourceService dataSourceService,
                                 SchemaService schemaService,
-                                TableContentService tableContentService)
+                                DataService dataService,
+                                LowLevelDataService lowLevelDataService)
     {
         this.dataSourceService = dataSourceService;
         this.schemaService = schemaService;
-        this.tableContentService = tableContentService;
+        this.dataService = dataService;
+        this.lowLevelDataService = lowLevelDataService;
     }
 
     public void generate(Map<Table, TableRule> rules, Map<Table, TableContent> data) throws SchemaCrawlerException, IOException, SQLException
@@ -95,7 +99,7 @@ public class DefaultDataGenerator
         log.info("Generating data (first phase)");
         for(TableRule tr : generationOrder)
         {
-            List<TableContent.Row> rows = tableContentService.getTableContent(dataSourceService.getInternalDataSource(), tr.getTable()).stream()
+            List<TableContent.Row> rows = dataService.getTableContent(dataSourceService.getInternalDataSource(), tr.getTable()).stream()
                     .map(rawObjects -> new TableContent.Row(tr.getTable(), rawObjects))
                     .collect(Collectors.toList());
             TableContent content = new TableContent(tr.getTable(), rows);
@@ -134,26 +138,26 @@ public class DefaultDataGenerator
         if(!data.isEmpty())
         {
             log.fine("Writing generated data into internal DB");
-            try(Connection connection = tableContentService.createTransaction(dataSourceService.getInternalDataSource()))
+            try(Connection connection = lowLevelDataService.createTransaction(dataSourceService.getInternalDataSource()))
             {
-                tableContentService.disableConstraints(connection);
+                lowLevelDataService.disableConstraints(connection);
 
                 try
                 {
                     for(Table table : data.keySet())
                     {
-                        tableContentService.clearTable(connection, table);
-                        tableContentService.insertRows(connection, table, data.get(table).getRowsAsArrays());
+                        lowLevelDataService.clearTable(connection, table);
+                        lowLevelDataService.insertRows(connection, table, data.get(table).getRowsAsArrays());
                     }
                 }
                 catch(SQLException e)
                 {
-                    tableContentService.rollbackTransaction(connection);
+                    lowLevelDataService.rollbackTransaction(connection);
                     throw e;
                 }
 
-                tableContentService.enableConstraints(connection);
-                tableContentService.commitTransaction(connection);
+                lowLevelDataService.enableConstraints(connection);
+                lowLevelDataService.commitTransaction(connection);
             }
         }
     }
@@ -164,7 +168,7 @@ public class DefaultDataGenerator
 
         for(Table table : graph.vertexSet())
         {
-            if(!tableContentService.isTableEmpty(dataSourceService.getInternalDataSource(), table))
+            if(!dataService.isTableEmpty(dataSourceService.getInternalDataSource(), table))
             {
                 continue;
             }

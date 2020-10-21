@@ -3,7 +3,7 @@ package de.tu_berlin.imolcean.tdm.x.importers;
 import de.tu_berlin.imolcean.tdm.api.exceptions.TableNotFoundException;
 import de.tu_berlin.imolcean.tdm.api.interfaces.importer.DataImporter;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
-import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
+import de.tu_berlin.imolcean.tdm.api.services.DataService;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -30,7 +30,7 @@ public class ExcelDataImporter implements DataImporter
     private SchemaService schemaService;
 
     @Autowired
-    private TableContentService tableContentService;
+    private DataService dataService;
 
     @Override
     public void importData(DataSource ds, Path importDir) throws Exception
@@ -39,7 +39,7 @@ public class ExcelDataImporter implements DataImporter
 
         log.fine("Checking that the database is empty");
 
-        if(!tableContentService.areTablesEmpty(ds, tables))
+        if(!dataService.areTablesEmpty(ds, tables))
         {
             throw new Exception("Cannot import into non-empty database");
         }
@@ -57,7 +57,7 @@ public class ExcelDataImporter implements DataImporter
         // TODO Remove
 //        displayData(map);
 
-        tableContentService.importData(ds, map);
+        dataService.importData(ds, map);
 
         log.info(String.format("Import finished. %s tables affected.", map.keySet().size()));
     }

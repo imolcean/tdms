@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.tu_berlin.imolcean.tdm.api.dto.TableContentDto;
 import de.tu_berlin.imolcean.tdm.api.interfaces.importer.DataImporter;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
-import de.tu_berlin.imolcean.tdm.api.services.TableContentService;
+import de.tu_berlin.imolcean.tdm.api.services.DataService;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
 import org.pf4j.Extension;
@@ -26,7 +26,7 @@ public class JsonDataImporter implements DataImporter
     private SchemaService schemaService;
 
     @Autowired
-    private TableContentService tableContentService;
+    private DataService dataService;
 
     @Override
     public void importData(DataSource ds, Path importDir) throws Exception
@@ -42,7 +42,7 @@ public class JsonDataImporter implements DataImporter
             TableContentDto dto = mapper.readValue(it.next(), TableContentDto.class);
             Table table = schemaService.getTable(ds, dto.getTableName());
 
-            if(!tableContentService.isTableEmpty(ds, table))
+            if(!dataService.isTableEmpty(ds, table))
             {
                 throw new IllegalStateException("Cannot import into non-empty table " + table.getName());
             }
@@ -50,7 +50,7 @@ public class JsonDataImporter implements DataImporter
             map.put(table, dto.getData());
         }
 
-        tableContentService.importData(ds, map);
+        dataService.importData(ds, map);
 
         log.info(String.format("Import finished. %s tables affected.", map.keySet().size()));
     }
