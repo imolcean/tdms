@@ -142,6 +142,7 @@ public class TableRule
             {
                 if(cr.getColumn().isPartOfPrimaryKey())
                 {
+                    // TODO Optional: Require UPDATE of the referencing Columns in other tables
                     log.warning(String.format("Cannot update values in column '%s' because it is part of the primary key", cr.getColumn().getName()));
                     continue;
                 }

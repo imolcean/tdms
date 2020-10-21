@@ -111,22 +111,9 @@ public class TdmApplication implements CommandLineRunner
 
 
         Map<Table, TableContent> generated = new HashMap<>();
-        defaultDataGenerator.generate(createTableRulesAppendAll(generated), generated);
-//        defaultDataGenerator.generate(createTableRulesUpdate(generated), generated);
+//        defaultDataGenerator.generate(createTableRulesAppendAll(generated), generated);
+        defaultDataGenerator.generate(createTableRulesUpdate(generated), generated);
 
-//        Column column = schemaService.getTable(dataSourceService.getInternalDataSource(), "A").getColumns().get(1);
-//
-//        System.out.println(column.getParent().getTableConstraints().size());
-//        System.out.println(column.getParent().getIndexes());
-//        System.out.println(column.isPartOfPrimaryKey());
-//        System.out.println(column.isPartOfUniqueIndex());
-//        column.getParent().getTableConstraints().forEach(constraint -> {
-//            System.out.println(constraint);
-//            System.out.println(constraint.getConstraintType().getValue());
-//            System.out.println(constraint.getDefinition());
-//            constraint.getColumns().forEach(System.out::println);
-//            constraint.getAttributes().forEach((k, v) -> System.out.println(k + ": " + v));
-//        });
 
         System.out.println("DONE!");
     }
@@ -143,7 +130,12 @@ public class TdmApplication implements CommandLineRunner
         trA.setColumnRule(new ColumnRule(A.getColumns().get(1), new LongGenerationMethod()));
         trA.setColumnRule(new ColumnRule(A.getColumns().get(4), new BooleanGenerationMethod()));
 
+        Table E = schemaService.getTable(ds, "E");
+        TableRule trE = new TableRule(E, TableRule.FillMode.UPDATE, 100);
+        trE.setColumnRule(new ColumnRule(E.getColumns().get(1), new FkGenerationMethod(ds, generated, E.getColumns().get(1))));
+
         map.put(A, trA);
+        map.put(E, trE);
 
         return map;
     }
