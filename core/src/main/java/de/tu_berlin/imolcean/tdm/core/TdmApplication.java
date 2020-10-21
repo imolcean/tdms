@@ -124,10 +124,13 @@ public class TdmApplication implements CommandLineRunner
         DataSourceWrapper ds = dataSourceService.getInternalDataSource();
         Map<Table, TableRule> map = new HashMap<>();
 
+        Map<String, Object> params = new HashMap<>();
+        params.put("options", new Integer[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+
         Table A = schemaService.getTable(ds, "A");
         TableRule trA = new TableRule(A, TableRule.FillMode.UPDATE, 100);
-        trA.setColumnRule(new ColumnRule(A.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
-        trA.setColumnRule(new ColumnRule(A.getColumns().get(1), new LongGenerationMethod()));
+        trA.setColumnRule(new ColumnRule(A.getColumns().get(0), new IntegerGenerationMethod()));
+        trA.setColumnRule(new ColumnRule(A.getColumns().get(1), new ValueListGenerationMethod(), params));
         trA.setColumnRule(new ColumnRule(A.getColumns().get(4), new BooleanGenerationMethod()));
 
         Table E = schemaService.getTable(ds, "E");
@@ -135,7 +138,7 @@ public class TdmApplication implements CommandLineRunner
         trE.setColumnRule(new ColumnRule(E.getColumns().get(1), new FkGenerationMethod(ds, generated, E.getColumns().get(1))));
 
         map.put(A, trA);
-        map.put(E, trE);
+//        map.put(E, trE);
 
         return map;
     }

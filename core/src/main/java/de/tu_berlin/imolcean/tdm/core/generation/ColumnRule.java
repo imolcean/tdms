@@ -1,5 +1,6 @@
 package de.tu_berlin.imolcean.tdm.core.generation;
 
+import de.tu_berlin.imolcean.tdm.api.exceptions.DataGenerationException;
 import de.tu_berlin.imolcean.tdm.core.generation.methods.GenerationMethod;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -73,8 +74,26 @@ public class ColumnRule
             return null;
         }
 
-        // TODO Handle NullPart and UniqueValues
+        // TODO Handle NullPart
 
-        return generationMethod.generate(params);
+        Object value = generationMethod.generate(params);
+
+        if(uniqueValues)
+        {
+            // TODO Optional: Determine the exact amount of possible unique values
+            int attempt = 0;
+            while(content.contains(value))
+            {
+                if(attempt > 10)
+                {
+                    throw new DataGenerationException(String.format("Cannot generate another unique value for column '%s'", column.getName()));
+                }
+
+                value = generationMethod.generate(params);
+                attempt++;
+            }
+        }
+
+        return value;
     }
 }
