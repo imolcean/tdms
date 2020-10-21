@@ -13,21 +13,14 @@ import de.tu_berlin.imolcean.tdm.core.generation.methods.*;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
 import de.tu_berlin.imolcean.tdm.core.services.ProjectService;
 import lombok.SneakyThrows;
-import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.io.ClassPathResource;
-import schemacrawler.schema.Column;
-import schemacrawler.schema.NamedObject;
 import schemacrawler.schema.Table;
-import schemacrawler.schemacrawler.SchemaCrawlerException;
 
-import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @SpringBootApplication
 public class TdmApplication implements CommandLineRunner
@@ -118,7 +111,7 @@ public class TdmApplication implements CommandLineRunner
 
 
         Map<Table, TableContent> generated = new HashMap<>();
-//        defaultDataGenerator.generate(createTableRules(generated), generated);
+//        defaultDataGenerator.generate(createTableRulesAppendAll(generated), generated);
         defaultDataGenerator.generate(createTableRulesUpdate(generated), generated);
 
 //        Column column = schemaService.getTable(dataSourceService.getInternalDataSource(), "A").getColumns().get(1);
@@ -155,7 +148,7 @@ public class TdmApplication implements CommandLineRunner
     }
 
     @SneakyThrows
-    private Map<Table, TableRule> createTableRules(Map<Table, TableContent> generated)
+    private Map<Table, TableRule> createTableRulesAppendAll(Map<Table, TableContent> generated)
     {
         DataSourceWrapper ds = dataSourceService.getInternalDataSource();
         Map<Table, TableRule> map = new HashMap<>();

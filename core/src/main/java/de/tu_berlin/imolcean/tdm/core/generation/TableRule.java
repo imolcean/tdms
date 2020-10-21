@@ -115,24 +115,19 @@ public class TableRule
         columnRules.remove(column);
     }
 
-    public TableContent generate()
-    {
-        return generate(null);
-    }
-
-    public TableContent generate(TableContent existingData)
+    public void generate(TableContent existingContent)
     {
         if(fillMode.equals(FillMode.APPEND))
         {
-            return generateAppend();
+            generateAppend(existingContent);
         }
         else
         {
-            return generateUpdate(existingData);
+            generateUpdate(existingContent);
         }
     }
 
-    private TableContent generateUpdate(TableContent content)
+    private void generateUpdate(TableContent content)
     {
         if(!isValid())
         {
@@ -145,18 +140,20 @@ public class TableRule
             log.fine(String.format("Generating row %s/%s", i, content.getRows().size()));
             for(ColumnRule cr : getOrderedColumnRules())
             {
+                List<Object> existingColumnContent = content.getRows().stream()
+                        .map(r -> r.getValue(cr.getColumn()))
+                        .collect(Collectors.toList());
+
                 log.fine("Generating value for column " + cr.getColumn().getName());
-                Object value = cr.generate();
+                Object value = cr.generate(existingColumnContent);
                 log.fine("Value: " + value);
 
                 content.getRow(i).setValue(cr.getColumn(), value);
             }
         }
-
-        return content;
     }
 
-    private TableContent generateAppend()
+    private void generateAppend(TableContent content)
     {
         if(!isValid())
         {
@@ -164,7 +161,6 @@ public class TableRule
         }
 
         log.info("Generating data for table " + table.getName() + " in APPEND fill mode");
-        TableContent content = new TableContent(table);
 
         for(int i = 0; i < rowCount; i++)
         {
@@ -173,8 +169,12 @@ public class TableRule
 
             for(ColumnRule cr : getOrderedColumnRules())
             {
+                List<Object> existingColumnContent = content.getRows().stream()
+                        .map(r -> r.getValue(cr.getColumn()))
+                        .collect(Collectors.toList());
+
                 log.fine("Generating value for column " + cr.getColumn().getName());
-                Object value = cr.generate();
+                Object value = cr.generate(existingColumnContent);
                 log.fine("Value: " + value);
 
                 row.setValue(cr.getColumn(), value);
@@ -182,7 +182,5 @@ public class TableRule
 
             content.addRow(row);
         }
-
-        return content;
     }
 }

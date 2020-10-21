@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 import schemacrawler.schema.Column;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,7 +66,7 @@ public class ColumnRule
         this(column, generationMethod, false, 0);
     }
 
-    public Object generate()
+    public Object generate(Collection<Object> content)
     {
         if(postponed)
         {

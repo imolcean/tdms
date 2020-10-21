@@ -39,10 +39,10 @@ public class DefaultDataGenerator
 
     // TODO
     // TODO FillMode::Update
-    public void generate(Map<Table, TableRule> rules, Map<Table, TableContent> generated) throws SQLException, SchemaCrawlerException, IOException
+    public void generate(Map<Table, TableRule> rules, Map<Table, TableContent> data) throws SQLException, SchemaCrawlerException, IOException
     {
 //        // Create temporary storage for generated data
-//        Map<Table, TableContent> generated = new HashMap<>();
+//        Map<Table, TableContent> data = new HashMap<>();
 
         // Build dependency graph
         DefaultDirectedGraph<Table, DefaultEdge> graph = new DependencyGraphCreator().create(schemaService.getSchema(dataSourceService.getInternalDataSource()).getTables());
@@ -53,107 +53,111 @@ public class DefaultDataGenerator
         // Detect cycles
         List<List<Table>> cycles = DependencyGraphUtils.findCycles(graph);
 
-        // For every cycle, cut at one point and note all 'postponed' FK Columns
-        Map<Table, List<Column>> postponed = cutCycles(graph, cycles);
+        // For every cycle, cut at one point and mark all 'postponed' FK Columns
+        Map<Table, List<Column>> table2postponedColumns = cutCycles(graph, cycles);
+        for(Table table : table2postponedColumns.keySet())
+        {
+            log.fine(String.format("Marking table %s as postponed", table.getName()));
+
+            TableRule tr = rules.get(table);
+            if(tr == null)
+            {
+                log.fine("No TableRule found, skipping the table");
+                continue;
+            }
+
+            for(Column column : table2postponedColumns.get(table))
+            {
+                log.fine(String.format("Marking column %s as postponed", column.getName()));
+
+                ColumnRule cr = rules.get(table).getColumnRules().get(column);
+                if(cr == null)
+                {
+                    log.fine("No ColumnRule found, skipping the column");
+                    continue;
+                }
+
+                cr.setPostponed(true);
+            }
+        }
 
         // Get generation order
-        List<Table> generationOrder = new ArrayList<>();
-        new TopologicalOrderIterator<>(graph).forEachRemaining(generationOrder::add);
+        List<TableRule> generationOrder = new ArrayList<>();
+        new TopologicalOrderIterator<>(graph).forEachRemaining(table -> {
+            if(rules.get(table) != null)
+            {
+                generationOrder.add(rules.get(table));
+            }
+        });
 
-        log.fine("Generation order: " + generationOrder.stream().map(NamedObject::getName).collect(Collectors.joining(", ")));
+        log.fine("Generation order: " + generationOrder.stream().map(tr -> tr.getTable().getName()).collect(Collectors.joining(", ")));
 
         // Generate data in order
         log.info("Generating data (first phase)");
-        for(Table table : generationOrder)
+        for(TableRule tr : generationOrder)
         {
-            log.info("Generating data for table " + table.getName());
+            List<TableContent.Row> rows = tableContentService.getTableContent(dataSourceService.getInternalDataSource(), tr.getTable()).stream()
+                    .map(rawObjects -> new TableContent.Row(tr.getTable(), rawObjects))
+                    .collect(Collectors.toList());
+            TableContent content = new TableContent(tr.getTable(), rows);
 
-            TableRule tr = rules.get(table);
-            TableContent rows = new TableContent(table);
-
-            for(int i = 0; i < tr.getRowCount(); i++)
-            {
-                log.fine(String.format("Generating row %s/%s", i, tr.getRowCount()));
-
-                TableContent.Row row = new TableContent.Row(table);
-
-                for(ColumnRule cr : tr.getOrderedColumnRules())
-                {
-                    if(!postponed.containsKey(table) || !postponed.get(table).contains(cr.getColumn()))
-                    {
-                        log.fine("Generating value for column " + cr.getColumn().getName());
-
-                        Object value = cr.getGenerationMethod().generate(cr.getParams());
-
-                        log.fine("Value: " + value);
-
-                        row.setValue(cr.getColumn(), value);
-                    }
-                }
-
-                rows.addRow(row);
-            }
-
-            generated.put(table, rows);
+            tr.generate(content);
+            data.put(tr.getTable(), content);
         }
 
         // Generate 'postponed' FKs and put them in previously generated rows
-        // TODO Generate Columns that are dependant from 'postponed' FKs
         log.info("Generating data (second phase)");
-        for(Table table : postponed.keySet())
+        // TODO Generate Columns that are dependant from 'postponed' FKs
+        List<TableRule> postponed = rules.values().stream()
+                .filter(TableRule::isPostponed)
+                .collect(Collectors.toList());
+
+        for(TableRule tr : postponed)
         {
-            log.info("Generating data for postponed columns in table " + table.getName());
+            List<ColumnRule> postponedColumnRules = tr.getPostponedColumnRules();
+            postponedColumnRules.forEach(cr -> cr.setPostponed(false));
 
-            TableRule tr = rules.get(table);
+            tr.setFillMode(TableRule.FillMode.UPDATE);
+            tr.setColumnRules(postponedColumnRules);
 
-            for(int i = 0; i < tr.getRowCount(); i++)
-            {
-                log.fine(String.format("Updating row %s/%s", i, tr.getRowCount()));
-
-                TableContent.Row row = generated.get(table).getRow(i);
-
-                for(Column column : postponed.get(table))
-                {
-                    log.fine("Generating value for column " + column.getName());
-
-                    ColumnRule cr = tr.getColumnRules().get(column);
-
-                    Object value = cr.getGenerationMethod().generate(cr.getParams());
-
-                    log.fine("Value: " + value);
-
-                    row.setValue(column, value);
-                }
-            }
+            tr.generate(data.get(tr.getTable()));
         }
 
         System.out.println("Generated:");
-        for(Table table : generated.keySet())
+        for(Table table : data.keySet())
         {
             System.out.println("\t" + table.getName());
-            System.out.println("\t" + generated.get(table));
+            System.out.println("\t" + data.get(table));
         }
 
         // Import data
-        if(!generated.isEmpty())
+        // TODO Use low level calls: disable/enable constraints, control over transaction
+        if(!data.isEmpty())
         {
             log.fine("Writing generated data into internal DB");
 
-            Map<Table, List<Object[]>> _generated = new HashMap<>();
-            generated.forEach((table, content) -> _generated.put(table, content.getRowsAsArrays()));
+            Map<Table, List<Object[]>> _data = new HashMap<>();
+            data.forEach((table, content) -> _data.put(table, content.getRowsAsArrays()));
 
-            tableContentService.importData(dataSourceService.getInternalDataSource(), _generated);
+            for(Table table : data.keySet())
+            {
+                tableContentService.clearTable(dataSourceService.getInternalDataSource(), table);
+            }
+
+            tableContentService.importData(dataSourceService.getInternalDataSource(), _data);
         }
     }
 
-    public void checkTableRules(DefaultDirectedGraph<Table, DefaultEdge> graph, Map<Table, TableRule> rules)
+    public void checkTableRules(DefaultDirectedGraph<Table, DefaultEdge> graph, Map<Table, TableRule> rules) throws SQLException
     {
         Set<Table> tablesToRemove = new HashSet<>();
 
         for(Table table : graph.vertexSet())
         {
-            // TODO Handle non-empty tables
-            // TODO Leave table in graph, if it's not empty
+            if(!tableContentService.isTableEmpty(dataSourceService.getInternalDataSource(), table))
+            {
+                continue;
+            }
 
             if(rules.get(table) == null || !rules.get(table).isValid())
             {

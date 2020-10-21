@@ -130,6 +130,11 @@ public class TableContent
         rows.add(new Row(table, row));
     }
 
+    public void addRow(Object[] row)
+    {
+        rows.add(new Row(table, row));
+    }
+
     public void deleteRow(int row)
     {
         rows.remove(row);
