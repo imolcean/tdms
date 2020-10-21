@@ -15,6 +15,7 @@ import schemacrawler.schema.Table;
 import schemacrawler.schemacrawler.SchemaCrawlerException;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
@@ -37,9 +38,7 @@ public class DefaultDataGenerator
         this.tableContentService = tableContentService;
     }
 
-    // TODO
-    // TODO FillMode::Update
-    public void generate(Map<Table, TableRule> rules, Map<Table, TableContent> data) throws SQLException, SchemaCrawlerException, IOException
+    public void generate(Map<Table, TableRule> rules, Map<Table, TableContent> data) throws SchemaCrawlerException, IOException, SQLException
     {
 //        // Create temporary storage for generated data
 //        Map<Table, TableContent> data = new HashMap<>();
@@ -131,20 +130,31 @@ public class DefaultDataGenerator
         }
 
         // Import data
-        // TODO Use low level calls: disable/enable constraints, control over transaction
+        // TODO Move to a separate method
         if(!data.isEmpty())
         {
             log.fine("Writing generated data into internal DB");
-
-            Map<Table, List<Object[]>> _data = new HashMap<>();
-            data.forEach((table, content) -> _data.put(table, content.getRowsAsArrays()));
-
-            for(Table table : data.keySet())
+            try(Connection connection = tableContentService.createTransaction(dataSourceService.getInternalDataSource()))
             {
-                tableContentService.clearTable(dataSourceService.getInternalDataSource(), table);
-            }
+                tableContentService.disableConstraints(connection);
 
-            tableContentService.importData(dataSourceService.getInternalDataSource(), _data);
+                try
+                {
+                    for(Table table : data.keySet())
+                    {
+                        tableContentService.clearTable(connection, table);
+                        tableContentService.insertRows(connection, table, data.get(table).getRowsAsArrays());
+                    }
+                }
+                catch(SQLException e)
+                {
+                    tableContentService.rollbackTransaction(connection);
+                    throw e;
+                }
+
+                tableContentService.enableConstraints(connection);
+                tableContentService.commitTransaction(connection);
+            }
         }
     }
 
@@ -192,7 +202,6 @@ public class DefaultDataGenerator
         List<Map.Entry<Table, Long>> tablesByParticipationInCycles = new ArrayList<>(cyclesPerTable.entrySet());
         tablesByParticipationInCycles.sort(Map.Entry.<Table, Long>comparingByValue().reversed());
 
-        // TODO Remove
         System.out.println("Cycles per table (sorted):");
         tablesByParticipationInCycles.forEach(entry -> System.out.printf("%s: %d%n", entry.getKey().getName(), entry.getValue()));
 

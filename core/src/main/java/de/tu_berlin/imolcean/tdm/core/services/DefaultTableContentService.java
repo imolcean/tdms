@@ -371,7 +371,8 @@ public class DefaultTableContentService implements TableContentService
         log.info("All tables cleared");
     }
 
-    private void insertRows(Connection connection, Table table, List<Object[]> rows) throws SQLException
+    @Override
+    public void insertRows(Connection connection, Table table, List<Object[]> rows) throws SQLException
     {
         log.info("Inserting multiple new rows into table " + table.getName());
 
@@ -419,8 +420,11 @@ public class DefaultTableContentService implements TableContentService
         log.info("Rows inserted");
     }
 
-    private void clearTable(Connection connection, Table table) throws SQLException
+    @Override
+    public void clearTable(Connection connection, Table table) throws SQLException
     {
+        log.fine("Clearing table " + table.getName());
+
         try(Statement statement = connection.createStatement())
         {
             //noinspection SqlWithoutWhere
@@ -428,7 +432,8 @@ public class DefaultTableContentService implements TableContentService
         }
     }
 
-    private void disableConstraints(Connection connection) throws SQLException, IOException
+    @Override
+    public void disableConstraints(Connection connection) throws SQLException, IOException
     {
         log.fine("Disabling database constraints");
 
@@ -440,7 +445,8 @@ public class DefaultTableContentService implements TableContentService
         log.fine("Database constraints disabled");
     }
 
-    private void enableConstraints(Connection connection) throws SQLException, IOException
+    @Override
+    public void enableConstraints(Connection connection) throws SQLException, IOException
     {
         log.fine("Enabling database constraints");
 
@@ -450,6 +456,27 @@ public class DefaultTableContentService implements TableContentService
         }
 
         log.fine("Database constraints enabled");
+    }
+
+    @Override
+    public Connection createTransaction(DataSource ds) throws SQLException
+    {
+        Connection connection = ds.getConnection();
+        connection.setAutoCommit(false);
+
+        return connection;
+    }
+
+    @Override
+    public void commitTransaction(Connection connection) throws SQLException
+    {
+        connection.commit();
+    }
+
+    @Override
+    public void rollbackTransaction(Connection connection) throws SQLException
+    {
+        connection.rollback();
     }
 
     private Object[] columnMap2Array(Table table, Map<Column, Object> row)
@@ -465,52 +492,4 @@ public class DefaultTableContentService implements TableContentService
 
         return _row;
     }
-
-//    @Override
-//    public int countTableContentRowReferences(DataSource ds, Table table, Object[] row)
-//    {
-//        log.info("Looking for rows in other tables that reference this row through FKs");
-//
-//        int cnt = 0;
-//
-//        for(ForeignKey fk : table.getExportedForeignKeys())
-//        {
-//            String fkTable = null;
-//            List<String> whereClauseParts = new ArrayList<>();
-//
-//            for(ForeignKeyColumnReference ref : fk.getColumnReferences())
-//            {
-//                Column pkCol = ref.getPrimaryKeyColumn();
-//                Column fkCol = ref.getForeignKeyColumn();
-//
-//                if(Strings.isEmpty(fkTable))
-//                {
-//                    fkTable = fkCol.getParent().getName();
-//                }
-//
-//                assert fkTable.equalsIgnoreCase(fkCol.getParent().getName());
-//
-//                int pkColumnIndex = TableContentUtils.getColumnIndex(table, pkCol.getName());
-//                String pkValue = row[pkColumnIndex].toString();
-//
-//                whereClauseParts.add(String.format("%s = %s", fkCol.getName(), pkValue));
-//            }
-//
-//            String req = String.format("SELECT COUNT(*) FROM %s WHERE %s",
-//                    fkTable,
-//                    String.join(", ", whereClauseParts));
-//
-//            log.fine(req);
-//
-//            int cntFk = new JdbcTemplate(ds).queryForObject(req, Integer.class);
-//
-//            log.fine(String.format("For FK %s, found %s rows that reference this row", fk.getName(), cntFk));
-//
-//            cnt += cntFk;
-//        }
-//
-//        log.info(String.format("In total, %s rows found referencing this row", cnt));
-//
-//        return cnt;
-//    }
 }
