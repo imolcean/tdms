@@ -75,6 +75,9 @@ public class ColumnRule
         }
 
         // TODO Handle NullPart
+        if(nullPart > 0)
+        {
+        }
 
         Object value = generationMethod.generate(params);
 

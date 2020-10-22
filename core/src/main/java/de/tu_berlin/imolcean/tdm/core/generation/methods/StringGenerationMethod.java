@@ -19,7 +19,7 @@ public class StringGenerationMethod implements PrimitiveGenerationMethod<String>
         MIXED,
     }
 
-    private Column column;
+    private final Column column;
 
     public StringGenerationMethod(Column column)
     {

@@ -18,8 +18,11 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.io.ClassPathResource;
+import schemacrawler.schema.Column;
 import schemacrawler.schema.Table;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import java.util.*;
 
 @SpringBootApplication
@@ -43,6 +46,9 @@ public class TdmApplication implements CommandLineRunner
     @Autowired
     private DefaultDataGenerator defaultDataGenerator;
 
+    @Autowired
+    private FormulaService formulaService;
+
     private final ObjectMapper mapper = new ObjectMapper()
             .setDefaultPrettyPrinter(
                     new DefaultPrettyPrinter().withArrayIndenter(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE));
@@ -61,6 +67,17 @@ public class TdmApplication implements CommandLineRunner
         StageContextHolder.setStageName("exp");
 
 
+//        for(String tableName : schemaService.getTableNames(dataSourceService.getInternalDataSource()))
+//        {
+//            System.out.println(tableName + ":");
+//
+//            for(Column c : schemaService.getTable(dataSourceService.getInternalDataSource(), tableName).getColumns())
+//            {
+//                System.out.printf("%s: %s: %s%n", c.getName(), c.getColumnDataType().getJavaSqlType().getName(), c.getColumnDataType().getTypeMappedClass());
+//            }
+//        }
+
+
 //        System.setProperty("polyglot.js.nashorn-compat", "true");
 //        ScriptEngine js = new ScriptEngineManager().getEngineByName("graal.js");
 //
@@ -70,12 +87,13 @@ public class TdmApplication implements CommandLineRunner
 //            System.exit(10);
 //        }
 //
-//        js.put("Rand", new RandDateGenerationMethod());
+//        js.put("Rand", new DateGenerationMethod());
 //        js.eval("print(Rand.generate(null, null));");
 //        js.eval("print(Rand.generate(null, java.sql.Date.valueOf('2021-09-01')));");
 //        js.eval("print(Rand.generate(java.sql.Date.valueOf('2013-09-01'), null));");
 //        js.eval("print(Rand.generate(java.sql.Date.valueOf('2013-09-01'), java.sql.Date.valueOf('2021-09-01')));");
 //        js.eval("print(Rand.generate(java.sql.Date.valueOf('1834-09-01'), java.sql.Date.valueOf('3457-09-01')));");
+
 
 //        Column column = schemaService.getTable(dataSourceService.getInternalDataSource(), "person").getColumns().get(1);
 //        System.out.println(column.getFullName());
@@ -124,14 +142,17 @@ public class TdmApplication implements CommandLineRunner
         DataSourceWrapper ds = dataSourceService.getInternalDataSource();
         Map<Table, TableRule> map = new HashMap<>();
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("options", new Integer[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+        Map<String, Object> params0 = new HashMap<>();
+        params0.put("options", new Integer[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+
+        Map<String, Object> params1 = new HashMap<>();
+        params1.put("formula", "RandBoolean.generate();");
 
         Table A = schemaService.getTable(ds, "A");
         TableRule trA = new TableRule(A, TableRule.FillMode.UPDATE, 100);
         trA.setColumnRule(new ColumnRule(A.getColumns().get(0), new IntegerGenerationMethod()));
-        trA.setColumnRule(new ColumnRule(A.getColumns().get(1), new ValueListGenerationMethod(), params));
-        trA.setColumnRule(new ColumnRule(A.getColumns().get(4), new BooleanGenerationMethod()));
+        trA.setColumnRule(new ColumnRule(A.getColumns().get(1), new ValueListGenerationMethod(), params0));
+        trA.setColumnRule(new ColumnRule(A.getColumns().get(4), new FormulaGenerationMethod(formulaService, A.getColumns().get(4)), params1));
 
         Table E = schemaService.getTable(ds, "E");
         TableRule trE = new TableRule(E, TableRule.FillMode.UPDATE, 100);
@@ -154,7 +175,7 @@ public class TdmApplication implements CommandLineRunner
         trA.setColumnRule(new ColumnRule(A.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
         trA.setColumnRule(new ColumnRule(A.getColumns().get(1), new LongGenerationMethod()));
         trA.setColumnRule(new ColumnRule(A.getColumns().get(2), new ShortGenerationMethod()));
-        trA.setColumnRule(new ColumnRule(A.getColumns().get(3), new TinyintGenerationMethod())); // Tinyint: [0, 255]
+        trA.setColumnRule(new ColumnRule(A.getColumns().get(3), new TinyIntGenerationMethod())); // Tinyint: [0, 255]
         trA.setColumnRule(new ColumnRule(A.getColumns().get(4), new BooleanGenerationMethod()));
         trA.setColumnRule(new ColumnRule(A.getColumns().get(5), new FkGenerationMethod(ds, generated, A.getColumns().get(5))));
         trA.setColumnRule(new ColumnRule(A.getColumns().get(6), new FkGenerationMethod(ds, generated, A.getColumns().get(6))));

@@ -9,7 +9,7 @@ import java.math.RoundingMode;
 @Log
 public class BigDecimalGenerationMethod implements NumberGenerationMethod<BigDecimal>, ColumnAwareGenerationMethod
 {
-    private Column column;
+    private final Column column;
 
     public BigDecimalGenerationMethod(Column column)
     {

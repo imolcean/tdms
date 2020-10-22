@@ -8,6 +8,7 @@ import java.sql.JDBCType;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public class GenerationMethods
 {
     private static final Map<String, Class<? extends PrimitiveGenerationMethod<?>>> defaultGenerationMethods;
@@ -18,7 +19,7 @@ public class GenerationMethods
 
         Class<? extends PrimitiveGenerationMethod<?>> _string = StringGenerationMethod.class;
         Class<? extends PrimitiveGenerationMethod<?>> _byte = ByteGenerationMethod.class;
-        Class<? extends PrimitiveGenerationMethod<?>> _tiny = TinyintGenerationMethod.class;
+        Class<? extends PrimitiveGenerationMethod<?>> _tiny = TinyIntGenerationMethod.class;
         Class<? extends PrimitiveGenerationMethod<?>> _short = ShortGenerationMethod.class;
         Class<? extends PrimitiveGenerationMethod<?>> _int = IntegerGenerationMethod.class;
         Class<? extends PrimitiveGenerationMethod<?>> _long = LongGenerationMethod.class;

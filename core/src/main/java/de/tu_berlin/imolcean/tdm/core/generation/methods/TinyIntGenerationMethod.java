@@ -1,6 +1,6 @@
 package de.tu_berlin.imolcean.tdm.core.generation.methods;
 
-public class TinyintGenerationMethod implements NumberGenerationMethod<Short>
+public class TinyIntGenerationMethod implements NumberGenerationMethod<Short>
 {
     @Override
     public Short generate(Number min, Number max)

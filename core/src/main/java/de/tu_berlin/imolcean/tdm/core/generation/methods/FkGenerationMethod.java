@@ -11,9 +11,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-// TODO Implement ColumnDependantGenerationMethod
 @Log
-public class FkGenerationMethod implements GenerationMethod
+public class FkGenerationMethod implements GenerationMethod, ColumnAwareGenerationMethod
 {
     private final DataSourceWrapper ds;
 //    private final TableContentService tableContentService;
