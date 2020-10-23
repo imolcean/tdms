@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.tu_berlin.imolcean.tdm.api.DataSourceWrapper;
 import de.tu_berlin.imolcean.tdm.api.TableContent;
+import de.tu_berlin.imolcean.tdm.api.ValueLibrary;
 import de.tu_berlin.imolcean.tdm.api.dto.ProjectDto;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.api.services.DataService;
@@ -133,6 +134,11 @@ public class TdmApplication implements CommandLineRunner
         defaultDataGenerator.generate(createTableRulesUpdate(generated), generated);
 
 
+//        ValueLibrary lib = valueLibraryService.getLists().get("$LibLastNamesDE");
+//        System.out.println(lib.get("_list").getClass());
+//        System.out.println(lib.getList().getClass());
+
+
         System.out.println("DONE!");
     }
 
@@ -148,17 +154,25 @@ public class TdmApplication implements CommandLineRunner
         Map<String, Object> params1 = new HashMap<>();
         params1.put("formula", "RandBoolean.generate();");
 
+        Map<String, Object> params2 = new HashMap<>();
+        params2.put("formula", "RandFrom.pick($LibLastNamesDE);");
+
         Table A = schemaService.getTable(ds, "A");
         TableRule trA = new TableRule(A, TableRule.FillMode.UPDATE, 100);
         trA.setColumnRule(new ColumnRule(A.getColumns().get(0), new IntegerGenerationMethod()));
         trA.setColumnRule(new ColumnRule(A.getColumns().get(1), new ValueListGenerationMethod(), params0));
         trA.setColumnRule(new ColumnRule(A.getColumns().get(4), new FormulaGenerationMethod(formulaService, A.getColumns().get(4)), params1));
 
+        Table C = schemaService.getTable(ds, "C");
+        TableRule trC = new TableRule(C, TableRule.FillMode.UPDATE, 100);
+        trC.setColumnRule(new ColumnRule(C.getColumns().get(1), new FormulaGenerationMethod(formulaService, C.getColumns().get(1)), params2));
+
         Table E = schemaService.getTable(ds, "E");
         TableRule trE = new TableRule(E, TableRule.FillMode.UPDATE, 100);
         trE.setColumnRule(new ColumnRule(E.getColumns().get(1), new FkGenerationMethod(ds, generated, E.getColumns().get(1))));
 
-        map.put(A, trA);
+//        map.put(A, trA);
+        map.put(C, trC);
 //        map.put(E, trE);
 
         return map;

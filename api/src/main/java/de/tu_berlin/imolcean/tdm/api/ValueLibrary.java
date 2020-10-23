@@ -1,6 +1,7 @@
 package de.tu_berlin.imolcean.tdm.api;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class ValueLibrary extends HashMap<String, Object>
 {
@@ -14,8 +15,8 @@ public class ValueLibrary extends HashMap<String, Object>
         return this.get("_list") != null;
     }
 
-    public Object[] getList()
+    public List<?> getList()
     {
-        return (Object[]) this.get("_list");
+        return (List<?>) this.get("_list");
     }
 }
