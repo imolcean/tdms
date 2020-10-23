@@ -2,6 +2,7 @@ package de.tu_berlin.imolcean.tdm.core.generation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.tu_berlin.imolcean.tdm.api.ValueLibrary;
 import lombok.Getter;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
@@ -20,16 +21,16 @@ public class ValueLibraryService
     private final String libDir;
 
     @Getter
-    private List<String> allLibNames;
+    private final Map<String, ValueLibrary> lists;
 
     @Getter
-    private Map<String, List<Object>> lists;
+    private final Map<String, ValueLibrary> libraries;
 
     public ValueLibraryService(@Value("${app.generation.lib}") String libDir) throws IOException
     {
         this.libDir = libDir;
-        this.allLibNames = new ArrayList<>();
         this.lists = new HashMap<>();
+        this.libraries = new HashMap<>();
 
         load();
     }
@@ -50,16 +51,16 @@ public class ValueLibraryService
             }
 
             String id = root.get("_id").textValue();
-            allLibNames.add(id);
 
-            log.fine(String.format("Value Library %s found", id));
+            ValueLibrary library = mapper.treeToValue(root, ValueLibrary.class);
 
-            if(root.hasNonNull("_list"))
+            log.fine(String.format("Value Library %s loaded", id));
+            libraries.put(id, library);
+
+            if(library.isList())
             {
                 log.fine(String.format("%s is a Value List", id));
-
-                Object[] valueListElements = mapper.treeToValue(root.get("_list"), Object[].class);
-                lists.put(id, Arrays.asList(valueListElements));
+                lists.put(id, library);
             }
         }
     }

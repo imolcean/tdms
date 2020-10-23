@@ -45,11 +45,11 @@ public class FormulaService
 //            manager.put(functionName, functions.getFunctions.get(functionName));
 //        }
 
-        // TODO Load value libraries
-//        for(String libName : libs.getLibs().keySet())
-//        {
-//            manager.put(libName, libs.getLibs().get(libName));
-//        }
+        // Load value libraries
+        for(String libName : libs.getLibraries().keySet())
+        {
+            manager.put(libName, libs.getLibraries().get(libName));
+        }
     }
 
     private void loadEngineEnvironment(ScriptEngine engine, Column column)
