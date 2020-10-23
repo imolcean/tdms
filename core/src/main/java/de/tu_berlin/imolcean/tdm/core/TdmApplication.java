@@ -45,6 +45,9 @@ public class TdmApplication implements CommandLineRunner
     private ValueLibraryService valueLibraryService;
 
     @Autowired
+    private FormulaFunctionService formulaFunctionService;
+
+    @Autowired
     private DefaultDataGenerator defaultDataGenerator;
 
     @Autowired
@@ -131,7 +134,7 @@ public class TdmApplication implements CommandLineRunner
 
         Map<Table, TableContent> generated = new HashMap<>();
 //        defaultDataGenerator.generate(createTableRulesAppendAll(generated), generated);
-        defaultDataGenerator.generate(createTableRulesUpdate(generated), generated);
+//        defaultDataGenerator.generate(createTableRulesUpdate(generated), generated);
 
 
 //        ValueLibrary lib = valueLibraryService.getLists().get("$LibLastNamesDE");

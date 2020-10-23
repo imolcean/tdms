@@ -10,14 +10,16 @@ import javax.script.ScriptEngineManager;
 @Service
 public class FormulaService
 {
-    private final ValueLibraryService libs;
+    private final ValueLibraryService libraries;
+    private final FormulaFunctionService functions;
     private final ScriptEngineManager manager;
 
-    public FormulaService(ValueLibraryService libs)
+    public FormulaService(ValueLibraryService libraries, FormulaFunctionService functions)
     {
         System.setProperty("polyglot.js.nashorn-compat", "true");
 
-        this.libs = libs;
+        this.libraries = libraries;
+        this.functions = functions;
         this.manager = new ScriptEngineManager();
 
         loadGlobalEnvironment(manager);
@@ -39,16 +41,16 @@ public class FormulaService
 
     private void loadGlobalEnvironment(ScriptEngineManager manager)
     {
-        // TODO Load functions
-//        for(String functionName : functions.getFunctions().keySet())
-//        {
-//            manager.put(functionName, functions.getFunctions.get(functionName));
-//        }
+        // Load functions
+        for(String functionName : functions.getFunctions().keySet())
+        {
+            manager.put(functionName, functions.getFunctions().get(functionName));
+        }
 
         // Load value libraries
-        for(String libName : libs.getLibraries().keySet())
+        for(String libName : libraries.getLibraries().keySet())
         {
-            manager.put(libName, libs.getLibraries().get(libName));
+            manager.put(libName, libraries.getLibraries().get(libName));
         }
     }
 
@@ -75,5 +77,6 @@ public class FormulaService
         engine.put("RandFrom", new ValueListGenerationMethod());
 
         // TODO Load custom generation methods
+        // TODO Load other Columns of this table
     }
 }
