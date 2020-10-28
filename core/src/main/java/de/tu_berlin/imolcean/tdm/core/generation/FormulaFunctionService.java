@@ -40,9 +40,9 @@ public class FormulaFunctionService
 
         for(File file : files)
         {
-            functions.put(file.getName(), Files.readString(file.toPath()));
+            functions.put(file.getName().split(".js")[0], Files.readString(file.toPath()));
 
-            log.fine(String.format("Function %s is loaded", file.getName()));
+            log.fine(String.format("Function %s is found", file.getName()));
         }
     }
 }

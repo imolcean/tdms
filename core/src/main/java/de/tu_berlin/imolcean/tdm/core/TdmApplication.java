@@ -155,7 +155,7 @@ public class TdmApplication implements CommandLineRunner
         params0.put("options", new Integer[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
 
         Map<String, Object> paramsAd = new HashMap<>();
-        paramsAd.put("formula", "RandBoolean.generate();");
+        paramsAd.put("formula", "var val = RandBoolean.generate(); test(); test_param(val); val;");
 
         Map<String, Object> paramsCa = new HashMap<>();
         paramsCa.put("formula", "RandFrom.pick($LibLastNamesDE);");
@@ -164,7 +164,7 @@ public class TdmApplication implements CommandLineRunner
         paramsCb.put("formula", "$a.split(\"\").reverse().join(\"\")");
 
         Map<String, Object> paramsCc = new HashMap<>();
-        paramsCc.put("formula", "$a + \" \" + $b");
+        paramsCc.put("formula", "$a + \" \" + str_reverse($b)");
 
         Table A = schemaService.getTable(ds, "A");
         TableRule trA = new TableRule(A, TableRule.FillMode.UPDATE, 100);
@@ -182,7 +182,7 @@ public class TdmApplication implements CommandLineRunner
         TableRule trE = new TableRule(E, TableRule.FillMode.UPDATE, 100);
         trE.setColumnRule(new ColumnRule(trE, E.getColumns().get(1), new FkGenerationMethod(ds, generated, E.getColumns().get(1))));
 
-//        map.put(A, trA);
+        map.put(A, trA);
         map.put(C, trC);
 //        map.put(E, trE);
 
@@ -196,7 +196,7 @@ public class TdmApplication implements CommandLineRunner
         Map<Table, TableRule> map = new HashMap<>();
 
         Table A = schemaService.getTable(ds, "A");
-        TableRule trA = new TableRule(A, TableRule.FillMode.APPEND, 100);
+        TableRule trA = new TableRule(A, TableRule.FillMode.APPEND, 10);
         trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
         trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(1), new LongGenerationMethod(), true, 0.5));
         trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(2), new ShortGenerationMethod(), false, 1));

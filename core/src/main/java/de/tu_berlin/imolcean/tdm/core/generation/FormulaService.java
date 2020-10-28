@@ -1,13 +1,16 @@
 package de.tu_berlin.imolcean.tdm.core.generation;
 
 import de.tu_berlin.imolcean.tdm.core.generation.methods.*;
+import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 import schemacrawler.schema.Column;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 @Service
+@Log
 public class FormulaService
 {
     private final ValueLibraryService libraries;
@@ -41,16 +44,10 @@ public class FormulaService
 
     private void loadGlobalEnvironment(ScriptEngineManager manager)
     {
-        // Load functions
-        for(String functionName : functions.getFunctions().keySet())
-        {
-            manager.put(functionName, functions.getFunctions().get(functionName));
-        }
-
-        // Load value libraries
         for(String libName : libraries.getLibraries().keySet())
         {
             manager.put(libName, libraries.getLibraries().get(libName));
+            log.info(String.format("Value library %s is loaded", libName));
         }
     }
 
@@ -77,6 +74,20 @@ public class FormulaService
         engine.put("RandFrom", new ValueListGenerationMethod());
 
         // TODO Load custom generation methods
-        // TODO Load other Columns of this table
+
+        for(String functionName : functions.getFunctions().keySet())
+        {
+            try
+            {
+                engine.eval(functions.getFunctions().get(functionName));
+            }
+            catch(ScriptException e)
+            {
+                log.warning(String.format("Function %s could not be loaded into the ScriptEngine", functionName));
+                e.printStackTrace();
+            }
+
+            log.info(String.format("Function %s is loaded", functionName));
+        }
     }
 }

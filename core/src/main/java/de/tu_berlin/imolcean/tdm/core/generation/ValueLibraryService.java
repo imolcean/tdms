@@ -54,7 +54,7 @@ public class ValueLibraryService
 
             ValueLibrary library = mapper.treeToValue(root, ValueLibrary.class);
 
-            log.fine(String.format("Value Library %s loaded", id));
+            log.fine(String.format("Value Library %s found", id));
             libraries.put(id, library);
 
             if(library.isList())

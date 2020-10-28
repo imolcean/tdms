@@ -98,7 +98,7 @@ public class ColumnRule
             int attempt = 0;
             while(content.contains(value))
             {
-                if(attempt > 10)
+                if(attempt > 20)
                 {
                     throw new DataGenerationException(String.format("Cannot generate another unique value for column '%s'", column.getName()));
                 }
