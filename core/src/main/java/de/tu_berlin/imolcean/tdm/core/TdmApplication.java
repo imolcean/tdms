@@ -134,7 +134,7 @@ public class TdmApplication implements CommandLineRunner
 
         Map<Table, TableContent> generated = new HashMap<>();
 //        defaultDataGenerator.generate(createTableRulesAppendAll(generated), generated);
-//        defaultDataGenerator.generate(createTableRulesUpdate(generated), generated);
+        defaultDataGenerator.generate(createTableRulesUpdate(generated), generated);
 
 
 //        ValueLibrary lib = valueLibraryService.getLists().get("$LibLastNamesDE");
@@ -154,25 +154,33 @@ public class TdmApplication implements CommandLineRunner
         Map<String, Object> params0 = new HashMap<>();
         params0.put("options", new Integer[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
 
-        Map<String, Object> params1 = new HashMap<>();
-        params1.put("formula", "RandBoolean.generate();");
+        Map<String, Object> paramsAd = new HashMap<>();
+        paramsAd.put("formula", "RandBoolean.generate();");
 
-        Map<String, Object> params2 = new HashMap<>();
-        params2.put("formula", "RandFrom.pick($LibLastNamesDE);");
+        Map<String, Object> paramsCa = new HashMap<>();
+        paramsCa.put("formula", "RandFrom.pick($LibLastNamesDE);");
+
+        Map<String, Object> paramsCb = new HashMap<>();
+        paramsCb.put("formula", "$a.split(\"\").reverse().join(\"\")");
+
+        Map<String, Object> paramsCc = new HashMap<>();
+        paramsCc.put("formula", "$a + \" \" + $b");
 
         Table A = schemaService.getTable(ds, "A");
         TableRule trA = new TableRule(A, TableRule.FillMode.UPDATE, 100);
-        trA.setColumnRule(new ColumnRule(A.getColumns().get(0), new IntegerGenerationMethod()));
-        trA.setColumnRule(new ColumnRule(A.getColumns().get(1), new ValueListGenerationMethod(), params0));
-        trA.setColumnRule(new ColumnRule(A.getColumns().get(4), new FormulaGenerationMethod(formulaService, A.getColumns().get(4)), params1));
+        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(0), new IntegerGenerationMethod()));
+        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(1), new ValueListGenerationMethod(), params0));
+        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(4), new FormulaGenerationMethod(formulaService.createEngine(A.getColumns().get(4)), A.getColumns().get(4)), paramsAd));
 
         Table C = schemaService.getTable(ds, "C");
         TableRule trC = new TableRule(C, TableRule.FillMode.UPDATE, 100);
-        trC.setColumnRule(new ColumnRule(C.getColumns().get(1), new FormulaGenerationMethod(formulaService, C.getColumns().get(1)), params2));
+        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(1), new FormulaGenerationMethod(formulaService.createEngine(C.getColumns().get(1)), C.getColumns().get(1)), paramsCa));
+        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(2), new FormulaGenerationMethod(formulaService.createEngine(C.getColumns().get(2)), C.getColumns().get(2)), paramsCb));
+        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(3), new FormulaGenerationMethod(formulaService.createEngine(C.getColumns().get(3)), C.getColumns().get(3)), paramsCc));
 
         Table E = schemaService.getTable(ds, "E");
         TableRule trE = new TableRule(E, TableRule.FillMode.UPDATE, 100);
-        trE.setColumnRule(new ColumnRule(E.getColumns().get(1), new FkGenerationMethod(ds, generated, E.getColumns().get(1))));
+        trE.setColumnRule(new ColumnRule(trE, E.getColumns().get(1), new FkGenerationMethod(ds, generated, E.getColumns().get(1))));
 
 //        map.put(A, trA);
         map.put(C, trC);
@@ -188,47 +196,47 @@ public class TdmApplication implements CommandLineRunner
         Map<Table, TableRule> map = new HashMap<>();
 
         Table A = schemaService.getTable(ds, "A");
-        TableRule trA = new TableRule(A, TableRule.FillMode.APPEND, 10);
-        trA.setColumnRule(new ColumnRule(A.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
-        trA.setColumnRule(new ColumnRule(A.getColumns().get(1), new LongGenerationMethod()));
-        trA.setColumnRule(new ColumnRule(A.getColumns().get(2), new ShortGenerationMethod()));
-        trA.setColumnRule(new ColumnRule(A.getColumns().get(3), new TinyIntGenerationMethod())); // Tinyint: [0, 255]
-        trA.setColumnRule(new ColumnRule(A.getColumns().get(4), new BooleanGenerationMethod()));
-        trA.setColumnRule(new ColumnRule(A.getColumns().get(5), new FkGenerationMethod(ds, generated, A.getColumns().get(5))));
-        trA.setColumnRule(new ColumnRule(A.getColumns().get(6), new FkGenerationMethod(ds, generated, A.getColumns().get(6))));
+        TableRule trA = new TableRule(A, TableRule.FillMode.APPEND, 100);
+        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
+        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(1), new LongGenerationMethod(), true, 0.5));
+        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(2), new ShortGenerationMethod(), false, 1));
+        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(3), new TinyIntGenerationMethod(), false, 0.5)); // Tinyint: [0, 255]
+        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(4), new BooleanGenerationMethod()));
+        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(5), new FkGenerationMethod(ds, generated, A.getColumns().get(5))));
+        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(6), new FkGenerationMethod(ds, generated, A.getColumns().get(6))));
 
         Table B = schemaService.getTable(ds, "B");
         TableRule trB = new TableRule(B, TableRule.FillMode.APPEND, 10);
-        trB.setColumnRule(new ColumnRule(B.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
-        trB.setColumnRule(new ColumnRule(B.getColumns().get(1), new FloatGenerationMethod()));
-        trB.setColumnRule(new ColumnRule(B.getColumns().get(2), new DoubleGenerationMethod()));
-        trB.setColumnRule(new ColumnRule(B.getColumns().get(3), new BigDecimalGenerationMethod(B.getColumns().get(3))));
-        trB.setColumnRule(new ColumnRule(B.getColumns().get(4), new BigDecimalGenerationMethod(B.getColumns().get(4))));
-        trB.setColumnRule(new ColumnRule(B.getColumns().get(5), new FkGenerationMethod(ds, generated, B.getColumns().get(5))));
+        trB.setColumnRule(new ColumnRule(trB, B.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
+        trB.setColumnRule(new ColumnRule(trB, B.getColumns().get(1), new FloatGenerationMethod()));
+        trB.setColumnRule(new ColumnRule(trB, B.getColumns().get(2), new DoubleGenerationMethod()));
+        trB.setColumnRule(new ColumnRule(trB, B.getColumns().get(3), new BigDecimalGenerationMethod(B.getColumns().get(3))));
+        trB.setColumnRule(new ColumnRule(trB, B.getColumns().get(4), new BigDecimalGenerationMethod(B.getColumns().get(4))));
+        trB.setColumnRule(new ColumnRule(trB, B.getColumns().get(5), new FkGenerationMethod(ds, generated, B.getColumns().get(5))));
 
         Table C = schemaService.getTable(ds, "C");
         TableRule trC = new TableRule(C, TableRule.FillMode.APPEND, 10);
-        trC.setColumnRule(new ColumnRule(C.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
-        trC.setColumnRule(new ColumnRule(C.getColumns().get(1), new StringGenerationMethod(C.getColumns().get(1))));
-        trC.setColumnRule(new ColumnRule(C.getColumns().get(2), new StringGenerationMethod(C.getColumns().get(2))));
-        trC.setColumnRule(new ColumnRule(C.getColumns().get(3), new StringGenerationMethod(C.getColumns().get(3))));
-        trC.setColumnRule(new ColumnRule(C.getColumns().get(4), new StringGenerationMethod(C.getColumns().get(4))));
-        trC.setColumnRule(new ColumnRule(C.getColumns().get(5), new FkGenerationMethod(ds, generated, C.getColumns().get(5))));
-        trC.setColumnRule(new ColumnRule(C.getColumns().get(6), new FkGenerationMethod(ds, generated, C.getColumns().get(6))));
-        trC.setColumnRule(new ColumnRule(C.getColumns().get(7), new FkGenerationMethod(ds, generated, C.getColumns().get(7))));
+        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
+        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(1), new StringGenerationMethod(C.getColumns().get(1))));
+        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(2), new StringGenerationMethod(C.getColumns().get(2))));
+        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(3), new StringGenerationMethod(C.getColumns().get(3))));
+        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(4), new StringGenerationMethod(C.getColumns().get(4))));
+        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(5), new FkGenerationMethod(ds, generated, C.getColumns().get(5))));
+        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(6), new FkGenerationMethod(ds, generated, C.getColumns().get(6))));
+        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(7), new FkGenerationMethod(ds, generated, C.getColumns().get(7))));
 
         Table D = schemaService.getTable(ds, "D");
         TableRule trD = new TableRule(D, TableRule.FillMode.APPEND, 10);
-        trD.setColumnRule(new ColumnRule(D.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
-        trD.setColumnRule(new ColumnRule(D.getColumns().get(1), new DateGenerationMethod()));
-        trD.setColumnRule(new ColumnRule(D.getColumns().get(2), new TimeGenerationMethod()));
-        trD.setColumnRule(new ColumnRule(D.getColumns().get(3), new TimestampGenerationMethod())); // Datetime starts from 1753, Datetime2 - from 0001
-        trD.setColumnRule(new ColumnRule(D.getColumns().get(4), new FkGenerationMethod(ds, generated, D.getColumns().get(4))));
+        trD.setColumnRule(new ColumnRule(trD, D.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
+        trD.setColumnRule(new ColumnRule(trD, D.getColumns().get(1), new DateGenerationMethod()));
+        trD.setColumnRule(new ColumnRule(trD, D.getColumns().get(2), new TimeGenerationMethod()));
+        trD.setColumnRule(new ColumnRule(trD, D.getColumns().get(3), new TimestampGenerationMethod())); // Datetime starts from 1753, Datetime2 - from 0001
+        trD.setColumnRule(new ColumnRule(trD, D.getColumns().get(4), new FkGenerationMethod(ds, generated, D.getColumns().get(4))));
 
         Table E = schemaService.getTable(ds, "E");
         TableRule trE = new TableRule(E, TableRule.FillMode.APPEND, 10);
-        trE.setColumnRule(new ColumnRule(E.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
-        trE.setColumnRule(new ColumnRule(E.getColumns().get(1), new FkGenerationMethod(ds, generated, E.getColumns().get(1))));
+        trE.setColumnRule(new ColumnRule(trE, E.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
+        trE.setColumnRule(new ColumnRule(trE, E.getColumns().get(1), new FkGenerationMethod(ds, generated, E.getColumns().get(1))));
 
         map.put(A, trA);
         map.put(B, trB);

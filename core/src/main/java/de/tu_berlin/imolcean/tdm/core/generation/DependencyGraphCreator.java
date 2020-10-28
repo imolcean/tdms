@@ -1,10 +1,9 @@
 package de.tu_berlin.imolcean.tdm.core.generation;
 
 import lombok.extern.java.Log;
-import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
-import org.springframework.stereotype.Service;
+import schemacrawler.schema.Column;
 import schemacrawler.schema.ForeignKey;
 import schemacrawler.schema.ForeignKeyColumnReference;
 import schemacrawler.schema.Table;
@@ -15,9 +14,9 @@ import java.util.List;
 @Log
 public class DependencyGraphCreator
 {
-    public DefaultDirectedGraph<Table, DefaultEdge> create(Collection<Table> schema)
+    public DefaultDirectedGraph<Table, DefaultEdge> createForTables(Collection<Table> schema)
     {
-        log.info("Creating dependency graph");
+        log.info("Creating dependency graph for Tables");
 
         DefaultDirectedGraph<Table, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
@@ -43,6 +42,34 @@ public class DependencyGraphCreator
 
                     log.fine(String.format("Edge '%s -> %s' added to the dependency graph", referencedTable.getName(), table.getName()));
                 }
+            }
+        }
+
+        return graph;
+    }
+
+    public DefaultDirectedGraph<Column, DefaultEdge> createForColumns(TableRule tableRule)
+    {
+        log.info("Creating dependency graph for Columns");
+
+        DefaultDirectedGraph<Column, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
+
+        // Create a Node for each Column
+        for(Column column : tableRule.getTable().getColumns())
+        {
+            graph.addVertex(column);
+
+            log.fine(String.format("Node '%s' added to the dependency graph", column.getName()));
+        }
+
+        // Create an Edge [Dependency Column -> Dependant Column] for every dependency
+        for(ColumnRule rule : tableRule.getColumnRules().values())
+        {
+            for(Column dependency : rule.getDependencies())
+            {
+                graph.addEdge(dependency, rule.getColumn());
+
+                log.fine(String.format("Edge '%s -> %s' added to he dependency graph", dependency.getName(), rule.getColumn().getName()));
             }
         }
 

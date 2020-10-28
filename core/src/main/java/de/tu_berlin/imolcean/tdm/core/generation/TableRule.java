@@ -3,10 +3,18 @@ package de.tu_berlin.imolcean.tdm.core.generation;
 import de.tu_berlin.imolcean.tdm.api.TableContent;
 import de.tu_berlin.imolcean.tdm.api.exceptions.DataGenerationException;
 import de.tu_berlin.imolcean.tdm.core.generation.methods.IntegerGenerationMethod;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.java.Log;
 import org.apache.commons.collections4.CollectionUtils;
+import org.jgrapht.alg.cycle.CycleDetector;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 import schemacrawler.schema.Column;
+import schemacrawler.schema.NamedObject;
 import schemacrawler.schema.Table;
 
 import java.util.*;
@@ -27,12 +35,17 @@ public class TableRule
     private int rowCount;
     private Map<Column, ColumnRule> columnRules;
 
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    private List<ColumnRule> orderCache;
+
     public TableRule(Table table, FillMode fillMode, int rowCount)
     {
         this.table = table;
         this.fillMode = fillMode;
         this.rowCount = rowCount;
         this.columnRules = new TreeMap<>();
+        this.orderCache = new ArrayList<>();
     }
 
     public TableRule(Table table, FillMode fillMode, int minRowCount, int maxRowCount)
@@ -42,19 +55,51 @@ public class TableRule
 
     public boolean isPostponed()
     {
-        return getPostponedColumnRules().size() > 0;
+        return getOrderedPostponedColumnRules().size() > 0;
     }
 
     public boolean isValid()
     {
-        // TODO Check that columnRules only operate on Columns of this Table (no foreign Columns)
+        // Check that columnRules only contains Columns of this Table (no foreign Columns)
+        Collection<Column> foreignColumns = columnRules.keySet().stream()
+                .filter(column -> !column.getParent().equals(table))
+                .collect(Collectors.toList());
 
+        if(foreignColumns.size() > 0)
+        {
+            log.warning(
+                    String.format(
+                            "The table '%s' has specified rules for the following foreign columns: %s",
+                            table.getName(),
+                            foreignColumns.stream()
+                                    .map(NamedObject::getName)
+                                    .collect(Collectors.joining(", "))));
+
+            return false;
+        }
+
+        // If FillMode is UPDATE, mandatory columns don't matter
         if(fillMode == FillMode.UPDATE)
         {
             return true;
         }
 
-        return getMandatoryColumnsWithoutRules().size() == 0;
+        // If FillMode is APPEND, mandatory columns must have rules specified
+        Collection<Column> mandatoryColumnsWithoutRules = getMandatoryColumnsWithoutRules();
+        if(mandatoryColumnsWithoutRules.size() > 0)
+        {
+            log.warning(
+                    String.format(
+                            "The table '%s' has the following mandatory columns that have no rules specified: %s",
+                            table.getName(),
+                            mandatoryColumnsWithoutRules.stream()
+                                    .map(NamedObject::getName)
+                                    .collect(Collectors.joining(", "))));
+
+            return false;
+        }
+
+        return true;
     }
 
     // Columns that are non-null and have no default
@@ -77,22 +122,35 @@ public class TableRule
 
     public List<ColumnRule> getOrderedColumnRules()
     {
-        // TODO Order according to intratabular dependencies
+        if(!orderCache.isEmpty())
+        {
+            return orderCache;
+        }
 
-        return new ArrayList<>(columnRules.values());
+        DefaultDirectedGraph<Column, DefaultEdge> graph = new DependencyGraphCreator().createForColumns(this);
+
+        if(new CycleDetector<>(graph).detectCycles())
+        {
+            throw new DataGenerationException(String.format("Column rules for table %s contain circular intratable dependencies", table.getName()));
+        }
+
+        new TopologicalOrderIterator<>(graph)
+                .forEachRemaining(column ->
+                {
+                    if(columnRules.get(column) != null)
+                    {
+                        orderCache.add(columnRules.get(column));
+                    }
+                });
+
+        return orderCache;
     }
 
-    public List<ColumnRule> getPostponedColumnRules()
+    public List<ColumnRule> getOrderedPostponedColumnRules()
     {
-        return columnRules.values().stream()
+        return getOrderedColumnRules().stream()
                 .filter(ColumnRule::isPostponed)
                 .collect(Collectors.toList());
-    }
-
-    public void setColumnRules(Collection<ColumnRule> rules)
-    {
-        columnRules.clear();
-        rules.forEach(rule -> columnRules.put(rule.getColumn(), rule));
     }
 
     public Optional<ColumnRule> findColumnRule(Column column)
@@ -105,13 +163,22 @@ public class TableRule
         return columnRules.containsKey(column);
     }
 
+    public void setColumnRules(Collection<ColumnRule> rules)
+    {
+        columnRules.clear();
+        orderCache.clear();
+        rules.forEach(rule -> columnRules.put(rule.getColumn(), rule));
+    }
+
     public void setColumnRule(ColumnRule columnRule)
     {
+        orderCache.clear();
         columnRules.put(columnRule.getColumn(), columnRule);
     }
 
     public void clearColumnRule(Column column)
     {
+        orderCache.clear();
         columnRules.remove(column);
     }
 
@@ -148,11 +215,11 @@ public class TableRule
                 }
 
                 List<Object> existingColumnContent = content.getRows().stream()
-                        .map(r -> r.getValue(cr.getColumn()))
+                        .map(_row -> _row.getValue(cr.getColumn()))
                         .collect(Collectors.toList());
 
                 log.fine("Generating value for column " + cr.getColumn().getName());
-                Object value = cr.generate(existingColumnContent);
+                Object value = cr.generate(existingColumnContent, content.getRow(i));
                 log.fine("Value: " + value);
 
                 content.getRow(i).setValue(cr.getColumn(), value);
@@ -181,7 +248,7 @@ public class TableRule
                         .collect(Collectors.toList());
 
                 log.fine("Generating value for column " + cr.getColumn().getName());
-                Object value = cr.generate(existingColumnContent);
+                Object value = cr.generate(existingColumnContent, row);
                 log.fine("Value: " + value);
 
                 row.setValue(cr.getColumn(), value);

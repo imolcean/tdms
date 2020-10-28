@@ -1,82 +1,93 @@
 package de.tu_berlin.imolcean.tdm.core.generation;
 
+import de.tu_berlin.imolcean.tdm.api.TableContent;
 import de.tu_berlin.imolcean.tdm.api.exceptions.DataGenerationException;
+import de.tu_berlin.imolcean.tdm.core.generation.methods.FormulaGenerationMethod;
 import de.tu_berlin.imolcean.tdm.core.generation.methods.GenerationMethod;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
+import lombok.extern.java.Log;
 import schemacrawler.schema.Column;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-@Getter
-@ToString
-@EqualsAndHashCode
+@Data
+@Log
 public class ColumnRule
 {
-    private Column column;
-    private GenerationMethod generationMethod;
-    private boolean uniqueValues;
-    private double nullPart; // TODO JavaDoc: Has to be between 0 and 1
-    private Map<String, Object> params;
+    private final TableRule parent;
+    private final Column column;
+    private final GenerationMethod generationMethod;
+    private final boolean uniqueValues;
+    private final double nullPart; // TODO JavaDoc: Has to be between 0 and 1
+    private final Map<String, Object> params;
+    private final Set<Column> dependencies;
 
-    @Setter
     private boolean postponed;
 
-    // TODO Keep List of Columns that this Column depends on (intratable dependencies)
-
-    public ColumnRule(Column column,
+    public ColumnRule(TableRule parent,
+                      Column column,
                       GenerationMethod generationMethod,
                       boolean uniqueValues,
                       double nullPart,
                       Map<String, Object> params)
     {
+        this.parent = parent;
         this.column = column;
         this.generationMethod = generationMethod;
-        this.uniqueValues = uniqueValues;
-        this.nullPart = nullPart;
         this.params = params;
         this.postponed = false;
+        this.nullPart = !column.isNullable() ? 0 : nullPart;
+        this.uniqueValues = this.column.isPartOfPrimaryKey() || this.column.isPartOfUniqueIndex() || uniqueValues;
 
-        if(!column.isNullable())
+        if(this.generationMethod instanceof FormulaGenerationMethod)
         {
-            this.nullPart = 0;
+            this.dependencies = ((FormulaGenerationMethod) this.generationMethod).findDependencies(params);
         }
-
-        if(this.column.isPartOfPrimaryKey() || this.column.isPartOfUniqueIndex())
+        else
         {
-            this.uniqueValues = true;
+            this.dependencies = new HashSet<>();
         }
     }
 
-    public ColumnRule(Column column, GenerationMethod generationMethod, boolean uniqueValues, double nullPart)
+    public ColumnRule(TableRule parent, Column column, GenerationMethod generationMethod, boolean uniqueValues, double nullPart)
     {
-        this(column, generationMethod, uniqueValues, nullPart, new HashMap<>());
+        this(parent, column, generationMethod, uniqueValues, nullPart, new HashMap<>());
     }
 
-    public ColumnRule(Column column, GenerationMethod generationMethod, Map<String, Object> params)
+    public ColumnRule(TableRule parent, Column column, GenerationMethod generationMethod, Map<String, Object> params)
     {
-        this(column, generationMethod, false, 0, params);
+        this(parent, column, generationMethod, false, 0, params);
     }
 
-    public ColumnRule(Column column, GenerationMethod generationMethod)
+    public ColumnRule(TableRule parent, Column column, GenerationMethod generationMethod)
     {
-        this(column, generationMethod, false, 0);
+        this(parent, column, generationMethod, false, 0);
     }
 
-    public Object generate(Collection<Object> content)
+    public Object generate(List<Object> content, TableContent.Row currentRow)
     {
         if(postponed)
         {
             return null;
         }
 
-        // TODO Handle NullPart
-        if(nullPart > 0)
+        // If uniqueness flag is set and a NULL is already contained in the column, skip generation of another NULL
+        if(nullPart > 0 && !(uniqueValues && content.contains(null)))
         {
+            if(nullPart >= 1)
+            {
+                return null;
+            }
+
+            if(new Random().nextDouble() < nullPart)
+            {
+                return null;
+            }
+        }
+
+        if(generationMethod instanceof FormulaGenerationMethod && !dependencies.isEmpty())
+        {
+            ((FormulaGenerationMethod) generationMethod).fillPlaceholders(currentRow.getValuesAsMap());
         }
 
         Object value = generationMethod.generate(params);

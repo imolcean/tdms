@@ -1,25 +1,61 @@
 package de.tu_berlin.imolcean.tdm.core.generation.methods;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.DataGenerationException;
-import de.tu_berlin.imolcean.tdm.core.generation.FormulaService;
 import de.tu_berlin.imolcean.tdm.core.generation.GenerationMethodParamDescription;
 import lombok.extern.java.Log;
 import schemacrawler.schema.Column;
 
+import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Log
 public class FormulaGenerationMethod implements GenerationMethod, ColumnAwareGenerationMethod
 {
-    private final FormulaService formulaService;
     private final Column column;
+    private final ScriptEngine engine;
 
-    public FormulaGenerationMethod(FormulaService formulaService, Column column)
+    public FormulaGenerationMethod(ScriptEngine engine, Column column)
     {
-        this.formulaService = formulaService;
         this.column = column;
+        this.engine = engine;
+    }
+
+    public Set<Column> findDependencies(Map<String, Object> params)
+    {
+        log.fine("Looking for dependencies in formula");
+
+        List<Object> args = parseParams(params);
+        String formula = (String) args.get(0);
+
+        Set<Column> dependencies = new HashSet<>();
+
+        for(Column column : column.getParent().getColumns())
+        {
+            if(formula.contains(placeholder(column)))
+            {
+                dependencies.add(column);
+            }
+        }
+
+        log.fine(String.format("Found %s dependencies", dependencies.size()));
+
+        return dependencies;
+    }
+
+    public void fillPlaceholders(Map<Column, Object> values)
+    {
+        log.fine("Filling placeholders in formula");
+
+        for(Column dependency : values.keySet())
+        {
+            engine.put(placeholder(dependency), values.get(dependency));
+
+            log.fine(String.format("Placeholder '%s' is set to '%s'", placeholder(dependency), values.get(dependency)));
+        }
     }
 
     @Override
@@ -32,7 +68,7 @@ public class FormulaGenerationMethod implements GenerationMethod, ColumnAwareGen
 
         try
         {
-            val = formulaService.createEngine(column).eval((String) args.get(0));
+            val = engine.eval((String) args.get(0));
         }
         catch(ScriptException e)
         {
@@ -59,5 +95,10 @@ public class FormulaGenerationMethod implements GenerationMethod, ColumnAwareGen
     {
         return List.of(
                 new GenerationMethodParamDescription("formula", String.class, true));
+    }
+
+    private String placeholder(Column column)
+    {
+        return "$" + column.getName();
     }
 }

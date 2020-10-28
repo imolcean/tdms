@@ -48,7 +48,7 @@ public class DefaultDataGenerator
 //        Map<Table, TableContent> data = new HashMap<>();
 
         // Build dependency graph
-        DefaultDirectedGraph<Table, DefaultEdge> graph = new DependencyGraphCreator().create(schemaService.getSchema(dataSourceService.getInternalDataSource()).getTables());
+        DefaultDirectedGraph<Table, DefaultEdge> graph = new DependencyGraphCreator().createForTables(schemaService.getSchema(dataSourceService.getInternalDataSource()).getTables());
 
         // Check TableRules
         checkTableRules(graph, rules);
@@ -81,6 +81,18 @@ public class DefaultDataGenerator
                 }
 
                 cr.setPostponed(true);
+
+                log.fine(String.format("Looking for dependants of column %s", column.getName()));
+
+                for(ColumnRule _cr : rules.get(table).getColumnRules().values())
+                {
+                    if(_cr.getDependencies().contains(column))
+                    {
+                        log.fine(String.format("Found column %s, marking it as postponed", _cr.getColumn().getName()));
+
+                        _cr.setPostponed(true);
+                    }
+                }
             }
         }
 
@@ -110,14 +122,13 @@ public class DefaultDataGenerator
 
         // Generate 'postponed' FKs and put them in previously generated rows
         log.info("Generating data (second phase)");
-        // TODO Generate Columns that are dependant from 'postponed' FKs
         List<TableRule> postponed = rules.values().stream()
                 .filter(TableRule::isPostponed)
                 .collect(Collectors.toList());
 
         for(TableRule tr : postponed)
         {
-            List<ColumnRule> postponedColumnRules = tr.getPostponedColumnRules();
+            List<ColumnRule> postponedColumnRules = tr.getOrderedPostponedColumnRules();
             postponedColumnRules.forEach(cr -> cr.setPostponed(false));
 
             tr.setFillMode(TableRule.FillMode.UPDATE);
