@@ -14,6 +14,8 @@ public interface LowLevelDataService
 {
     List<Object[]> getTableContent(Connection connection, Table table) throws SQLException;
 
+    List<Object> getTableContentForColumn(Connection connection, Table table, Column column) throws SQLException;
+
     List<Object[]> getTableContentForColumns(Connection connection, Table table, List<Column> columns) throws SQLException;
 
     void insertRows(Connection connection, Table table, List<Object[]> rows) throws SQLException;

@@ -34,10 +34,10 @@ public class ColumnRule
         this.parent = parent;
         this.column = column;
         this.generationMethod = generationMethod;
-        this.params = params;
         this.postponed = false;
         this.nullPart = !column.isNullable() ? 0 : nullPart;
         this.uniqueValues = this.column.isPartOfPrimaryKey() || this.column.isPartOfUniqueIndex() || uniqueValues;
+        this.params = params != null ? params : new HashMap<>();
 
         if(this.generationMethod instanceof FormulaGenerationMethod)
         {

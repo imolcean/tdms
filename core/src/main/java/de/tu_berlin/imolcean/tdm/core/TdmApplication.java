@@ -3,8 +3,10 @@ package de.tu_berlin.imolcean.tdm.core;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.tu_berlin.imolcean.tdm.api.TableContent;
 import de.tu_berlin.imolcean.tdm.api.dto.ProjectDto;
 import de.tu_berlin.imolcean.tdm.api.dto.TableRuleDto;
+import de.tu_berlin.imolcean.tdm.api.services.LowLevelDataService;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.api.services.DataService;
 import de.tu_berlin.imolcean.tdm.core.generation.*;
@@ -15,7 +17,11 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.io.ClassPathResource;
+import schemacrawler.schema.Column;
+import schemacrawler.schema.Table;
 
+import java.sql.Connection;
+import java.sql.Statement;
 import java.util.*;
 
 @SpringBootApplication
@@ -29,6 +35,9 @@ public class TdmApplication implements CommandLineRunner
 
     @Autowired
     private DataService dataService;
+
+    @Autowired
+    private LowLevelDataService lowLevelDataService;
 
     @Autowired
     private DataSourceService dataSourceService;
@@ -125,7 +134,7 @@ public class TdmApplication implements CommandLineRunner
 
 
 //        ruleBasedDataGenerator.generate(dataSourceService.getInternalDataSource(), createTableRulesAppendAll());
-//        ruleBasedDataGenerator.generate(dataSourceService.getInternalDataSource(), createTableRulesUpdate());
+        ruleBasedDataGenerator.generate(dataSourceService.getInternalDataSource(), createTableRulesUpdate());
 
 
 //        ValueLibrary lib = valueLibraryService.getLists().get("$LibLastNamesDE");
@@ -162,13 +171,13 @@ public class TdmApplication implements CommandLineRunner
         trs.add(new TableRuleDto("A", TableRuleDto.FillMode.UPDATE, 0, crsA));
 
         List<TableRuleDto.ColumnRuleDto> crsC = new ArrayList<>();
-        crsC.add(new TableRuleDto.ColumnRuleDto("a", "FormulaGenerationMethod", true, 0, paramsCa));
+        crsC.add(new TableRuleDto.ColumnRuleDto("a", "FormulaGenerationMethod", false, 0, paramsCa));
         crsC.add(new TableRuleDto.ColumnRuleDto("b", "FormulaGenerationMethod", false, 0, paramsCb));
         crsC.add(new TableRuleDto.ColumnRuleDto("c", "FormulaGenerationMethod", false, 0, paramsCc));
         trs.add(new TableRuleDto("C", TableRuleDto.FillMode.UPDATE, 0, crsC));
 
         List<TableRuleDto.ColumnRuleDto> crsE = new ArrayList<>();
-        crsE.add(new TableRuleDto.ColumnRuleDto("A_id", "FkGenerationMethod", true, 0, null));
+        crsE.add(new TableRuleDto.ColumnRuleDto("A_id", "FkGenerationMethod", false, 0, null));
 //        trs.add(new TableRuleDto("E", TableRuleDto.FillMode.UPDATE, 0, crsE));
 
         return trs;

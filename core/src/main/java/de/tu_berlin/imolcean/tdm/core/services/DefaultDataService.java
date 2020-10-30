@@ -56,6 +56,15 @@ public class DefaultDataService implements DataService
     }
 
     @Override
+    public List<Object> getTableContentForColumn(DataSource ds, Table table, Column column) throws SQLException
+    {
+        try(Connection connection = ds.getConnection())
+        {
+            return lowLevelDataService.getTableContentForColumn(connection, table, column);
+        }
+    }
+
+    @Override
     public List<Object[]> getTableContentForColumns(DataSource ds, Table table, List<Column> columns) throws SQLException
     {
         try(Connection connection = ds.getConnection())

@@ -17,6 +17,8 @@ public interface DataService
 
     List<Object[]> getTableContent(DataSource ds, Table table) throws SQLException;
 
+    List<Object> getTableContentForColumn(DataSource ds, Table table, Column column) throws SQLException;
+
     List<Object[]> getTableContentForColumns(DataSource ds, Table table, List<Column> columns) throws SQLException;
 
     void insertRows(DataSource ds, Table table, List<Map<Column, Object>> rows) throws SQLException;

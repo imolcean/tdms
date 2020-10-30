@@ -39,6 +39,14 @@ public class DefaultLowLevelDataService implements LowLevelDataService
     }
 
     @Override
+    public List<Object> getTableContentForColumn(Connection connection, Table table, Column column) throws SQLException
+    {
+        return getTableContentForColumns(connection, table, Collections.singletonList(column)).stream()
+                .map(row -> row[0])
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<Object[]> getTableContentForColumns(Connection connection, Table table, List<Column> columns) throws SQLException
     {
         if(columns.isEmpty())

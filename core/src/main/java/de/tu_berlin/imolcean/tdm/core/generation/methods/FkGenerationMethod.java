@@ -33,21 +33,21 @@ public class FkGenerationMethod implements GenerationMethod, ColumnAwareGenerati
     public Object pick(Column pkColumn)
     {
         // Get all values of pkColumn and pick one
-        Object[] pks;
+        List<Object> pks;
         try
         {
-            pks = lowLevelDataService.getTableContentForColumns(connection, pkColumn.getParent(), Collections.singletonList(pkColumn)).get(0);
+            pks = lowLevelDataService.getTableContentForColumn(connection, pkColumn.getParent(), pkColumn);
         }
         catch(SQLException e)
         {
             throw new DataGenerationException(e);
         }
 
-        log.fine(String.format("Picking one of %s PKs", pks.length));
+        log.fine(String.format("Picking one of %s PKs", pks.size()));
 
-        int index = new IntegerGenerationMethod().generate(0, pks.length);
+        int index = new IntegerGenerationMethod().generate(0, pks.size());
 
-        return pks[index];
+        return pks.get(index);
     }
 
     @Override
