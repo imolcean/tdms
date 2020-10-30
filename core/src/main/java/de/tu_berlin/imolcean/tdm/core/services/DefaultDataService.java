@@ -49,39 +49,18 @@ public class DefaultDataService implements DataService
     @Override
     public List<Object[]> getTableContent(DataSource ds, Table table) throws SQLException
     {
-        log.info("Retrieving content of the table " + table.getName());
-
-        try(Connection connection = ds.getConnection(); Statement statement = connection.createStatement())
+        try(Connection connection = ds.getConnection())
         {
-            ResultSet rs = statement.executeQuery("SELECT * FROM " + table.getName());
-
-            log.info("Content retrieved");
-
-            return new TableContentResultSetHandler().handle(rs);
+            return lowLevelDataService.getTableContent(connection, table);
         }
     }
 
-    public List<Object[]> getTableContentForColumns(DataSource ds, Table table, Collection<Column> columns) throws SQLException
+    @Override
+    public List<Object[]> getTableContentForColumns(DataSource ds, Table table, List<Column> columns) throws SQLException
     {
-        if(columns.isEmpty())
+        try(Connection connection = ds.getConnection())
         {
-            log.warning("No columns specified");
-            return Collections.emptyList();
-        }
-
-        String columnsStr = columns.stream()
-                .map(NamedObject::getName)
-                .collect(Collectors.joining(", "));
-
-        log.info(String.format("Retrieving content of the table %s, columns %s", table.getName(), columnsStr));
-
-        try(Connection connection = ds.getConnection(); Statement statement = connection.createStatement())
-        {
-            ResultSet rs = statement.executeQuery("SELECT " + columnsStr + " FROM " + table.getName());
-
-            log.info("Content retrieved");
-
-            return new TableContentResultSetHandler().handle(rs);
+            return lowLevelDataService.getTableContentForColumns(connection, table, columns);
         }
     }
 

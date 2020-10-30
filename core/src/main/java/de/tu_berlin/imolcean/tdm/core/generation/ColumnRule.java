@@ -3,7 +3,7 @@ package de.tu_berlin.imolcean.tdm.core.generation;
 import de.tu_berlin.imolcean.tdm.api.TableContent;
 import de.tu_berlin.imolcean.tdm.api.exceptions.DataGenerationException;
 import de.tu_berlin.imolcean.tdm.core.generation.methods.FormulaGenerationMethod;
-import de.tu_berlin.imolcean.tdm.core.generation.methods.GenerationMethod;
+import de.tu_berlin.imolcean.tdm.api.interfaces.generation.method.GenerationMethod;
 import lombok.*;
 import lombok.extern.java.Log;
 import schemacrawler.schema.Column;
@@ -47,21 +47,6 @@ public class ColumnRule
         {
             this.dependencies = new HashSet<>();
         }
-    }
-
-    public ColumnRule(TableRule parent, Column column, GenerationMethod generationMethod, boolean uniqueValues, double nullPart)
-    {
-        this(parent, column, generationMethod, uniqueValues, nullPart, new HashMap<>());
-    }
-
-    public ColumnRule(TableRule parent, Column column, GenerationMethod generationMethod, Map<String, Object> params)
-    {
-        this(parent, column, generationMethod, false, 0, params);
-    }
-
-    public ColumnRule(TableRule parent, Column column, GenerationMethod generationMethod)
-    {
-        this(parent, column, generationMethod, false, 0);
     }
 
     public Object generate(List<Object> content, TableContent.Row currentRow)

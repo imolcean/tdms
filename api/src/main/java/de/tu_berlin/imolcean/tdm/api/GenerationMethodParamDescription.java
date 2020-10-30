@@ -1,4 +1,4 @@
-package de.tu_berlin.imolcean.tdm.core.generation;
+package de.tu_berlin.imolcean.tdm.api;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

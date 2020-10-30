@@ -1,7 +1,9 @@
 package de.tu_berlin.imolcean.tdm.core.generation.methods;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.DataGenerationException;
-import de.tu_berlin.imolcean.tdm.core.generation.GenerationMethodParamDescription;
+import de.tu_berlin.imolcean.tdm.api.interfaces.generation.method.ColumnAwareGenerationMethod;
+import de.tu_berlin.imolcean.tdm.api.interfaces.generation.method.GenerationMethod;
+import de.tu_berlin.imolcean.tdm.api.GenerationMethodParamDescription;
 import lombok.extern.java.Log;
 import schemacrawler.schema.Column;
 

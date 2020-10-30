@@ -1,15 +1,21 @@
 package de.tu_berlin.imolcean.tdm.api.services;
 
+import schemacrawler.schema.Column;
 import schemacrawler.schema.Table;
 
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 
 public interface LowLevelDataService
 {
+    List<Object[]> getTableContent(Connection connection, Table table) throws SQLException;
+
+    List<Object[]> getTableContentForColumns(Connection connection, Table table, List<Column> columns) throws SQLException;
+
     void insertRows(Connection connection, Table table, List<Object[]> rows) throws SQLException;
 
     void clearTable(Connection connection, Table table) throws SQLException;

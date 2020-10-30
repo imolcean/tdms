@@ -1,4 +1,4 @@
-package de.tu_berlin.imolcean.tdm.api.interfaces.deployment;
+package de.tu_berlin.imolcean.tdm.api.interfaces.deployer;
 
 import de.tu_berlin.imolcean.tdm.api.interfaces.PublicInterface;
 import org.pf4j.ExtensionPoint;

@@ -1,7 +1,8 @@
 package de.tu_berlin.imolcean.tdm.core.generation.methods;
 
 import com.github.curiousoddman.rgxgen.RgxGen;
-import de.tu_berlin.imolcean.tdm.core.generation.GenerationMethodParamDescription;
+import de.tu_berlin.imolcean.tdm.api.interfaces.generation.method.GenerationMethod;
+import de.tu_berlin.imolcean.tdm.api.GenerationMethodParamDescription;
 import lombok.extern.java.Log;
 
 import java.util.List;

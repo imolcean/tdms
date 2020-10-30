@@ -17,6 +17,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler
     @ExceptionHandler({
             StageDataSourceNotFoundException.class,
             TableNotFoundException.class,
+            ColumnNotFoundException.class,
             TableContentRowIndexOutOfBoundsException.class,
             ImplementationNotFoundException.class
     })

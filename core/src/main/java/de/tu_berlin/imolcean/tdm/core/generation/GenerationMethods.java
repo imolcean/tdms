@@ -1,6 +1,8 @@
 package de.tu_berlin.imolcean.tdm.core.generation;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.DataGenerationException;
+import de.tu_berlin.imolcean.tdm.api.interfaces.generation.method.ColumnAwareGenerationMethod;
+import de.tu_berlin.imolcean.tdm.api.interfaces.generation.method.PrimitiveGenerationMethod;
 import de.tu_berlin.imolcean.tdm.core.generation.methods.*;
 import schemacrawler.schema.Column;
 

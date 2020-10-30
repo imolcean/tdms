@@ -11,18 +11,18 @@ import javax.script.ScriptException;
 
 @Service
 @Log
-public class FormulaService
+public class FormulaEngineCreator
 {
-    private final ValueLibraryService libraries;
-    private final FormulaFunctionService functions;
+    private final ValueLibraryLoader libraries;
+    private final ScriptLoader scripts;
     private final ScriptEngineManager manager;
 
-    public FormulaService(ValueLibraryService libraries, FormulaFunctionService functions)
+    public FormulaEngineCreator(ValueLibraryLoader libraries, ScriptLoader scripts)
     {
         System.setProperty("polyglot.js.nashorn-compat", "true");
 
         this.libraries = libraries;
-        this.functions = functions;
+        this.scripts = scripts;
         this.manager = new ScriptEngineManager();
 
         loadGlobalEnvironment(manager);
@@ -75,19 +75,19 @@ public class FormulaService
 
         // TODO Load custom generation methods
 
-        for(String functionName : functions.getFunctions().keySet())
+        for(String functionName : scripts.getScripts().keySet())
         {
             try
             {
-                engine.eval(functions.getFunctions().get(functionName));
+                engine.eval(scripts.getScripts().get(functionName));
             }
             catch(ScriptException e)
             {
-                log.warning(String.format("Function %s could not be loaded into the ScriptEngine", functionName));
+                log.warning(String.format("Script %s could not be loaded into the ScriptEngine", functionName));
                 e.printStackTrace();
             }
 
-            log.info(String.format("Function %s is loaded", functionName));
+            log.info(String.format("Script %s is loaded", functionName));
         }
     }
 }

@@ -3,27 +3,19 @@ package de.tu_berlin.imolcean.tdm.core;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.tu_berlin.imolcean.tdm.api.DataSourceWrapper;
-import de.tu_berlin.imolcean.tdm.api.TableContent;
-import de.tu_berlin.imolcean.tdm.api.ValueLibrary;
 import de.tu_berlin.imolcean.tdm.api.dto.ProjectDto;
+import de.tu_berlin.imolcean.tdm.api.dto.TableRuleDto;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.api.services.DataService;
 import de.tu_berlin.imolcean.tdm.core.generation.*;
-import de.tu_berlin.imolcean.tdm.core.generation.methods.*;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
 import de.tu_berlin.imolcean.tdm.core.services.ProjectService;
-import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.io.ClassPathResource;
-import schemacrawler.schema.Column;
-import schemacrawler.schema.Table;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import java.util.*;
 
 @SpringBootApplication
@@ -42,16 +34,16 @@ public class TdmApplication implements CommandLineRunner
     private DataSourceService dataSourceService;
 
     @Autowired
-    private ValueLibraryService valueLibraryService;
+    private ValueLibraryLoader valueLibraryLoader;
 
     @Autowired
-    private FormulaFunctionService formulaFunctionService;
+    private ScriptLoader scriptLoader;
 
     @Autowired
-    private DefaultDataGenerator defaultDataGenerator;
+    private RuleBasedDataGenerator ruleBasedDataGenerator;
 
     @Autowired
-    private FormulaService formulaService;
+    private FormulaEngineCreator formulaEngineCreator;
 
     private final ObjectMapper mapper = new ObjectMapper()
             .setDefaultPrettyPrinter(
@@ -132,9 +124,8 @@ public class TdmApplication implements CommandLineRunner
 //        System.out.println(rand.generate(params));
 
 
-        Map<Table, TableContent> generated = new HashMap<>();
-//        defaultDataGenerator.generate(createTableRulesAppendAll(generated), generated);
-        defaultDataGenerator.generate(createTableRulesUpdate(generated), generated);
+//        ruleBasedDataGenerator.generate(dataSourceService.getInternalDataSource(), createTableRulesAppendAll());
+//        ruleBasedDataGenerator.generate(dataSourceService.getInternalDataSource(), createTableRulesUpdate());
 
 
 //        ValueLibrary lib = valueLibraryService.getLists().get("$LibLastNamesDE");
@@ -145,14 +136,10 @@ public class TdmApplication implements CommandLineRunner
         System.out.println("DONE!");
     }
 
-    @SneakyThrows
-    private Map<Table, TableRule> createTableRulesUpdate(Map<Table, TableContent> generated)
+    private List<TableRuleDto> createTableRulesUpdate()
     {
-        DataSourceWrapper ds = dataSourceService.getInternalDataSource();
-        Map<Table, TableRule> map = new HashMap<>();
-
-        Map<String, Object> params0 = new HashMap<>();
-        params0.put("options", new Integer[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+        Map<String, Object> paramsAa = new HashMap<>();
+        paramsAa.put("options", new Integer[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
 
         Map<String, Object> paramsAd = new HashMap<>();
         paramsAd.put("formula", "var val = RandBoolean.generate(); test(); test_param(val); val;");
@@ -166,84 +153,74 @@ public class TdmApplication implements CommandLineRunner
         Map<String, Object> paramsCc = new HashMap<>();
         paramsCc.put("formula", "$a + \" \" + str_reverse($b)");
 
-        Table A = schemaService.getTable(ds, "A");
-        TableRule trA = new TableRule(A, TableRule.FillMode.UPDATE, 100);
-        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(0), new IntegerGenerationMethod()));
-        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(1), new ValueListGenerationMethod(), params0));
-        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(4), new FormulaGenerationMethod(formulaService.createEngine(A.getColumns().get(4)), A.getColumns().get(4)), paramsAd));
+        List<TableRuleDto> trs = new ArrayList<>();
 
-        Table C = schemaService.getTable(ds, "C");
-        TableRule trC = new TableRule(C, TableRule.FillMode.UPDATE, 100);
-        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(1), new FormulaGenerationMethod(formulaService.createEngine(C.getColumns().get(1)), C.getColumns().get(1)), paramsCa));
-        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(2), new FormulaGenerationMethod(formulaService.createEngine(C.getColumns().get(2)), C.getColumns().get(2)), paramsCb));
-        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(3), new FormulaGenerationMethod(formulaService.createEngine(C.getColumns().get(3)), C.getColumns().get(3)), paramsCc));
+        List<TableRuleDto.ColumnRuleDto> crsA = new ArrayList<>();
+        crsA.add(new TableRuleDto.ColumnRuleDto("id", "IntegerGenerationMethod", true, 0, null));
+        crsA.add(new TableRuleDto.ColumnRuleDto("a", "ValueListGenerationMethod", false, 0, paramsAa));
+        crsA.add(new TableRuleDto.ColumnRuleDto("d", "FormulaGenerationMethod", false, 0, paramsAd));
+        trs.add(new TableRuleDto("A", TableRuleDto.FillMode.UPDATE, 0, crsA));
 
-        Table E = schemaService.getTable(ds, "E");
-        TableRule trE = new TableRule(E, TableRule.FillMode.UPDATE, 100);
-        trE.setColumnRule(new ColumnRule(trE, E.getColumns().get(1), new FkGenerationMethod(ds, generated, E.getColumns().get(1))));
+        List<TableRuleDto.ColumnRuleDto> crsC = new ArrayList<>();
+        crsC.add(new TableRuleDto.ColumnRuleDto("a", "FormulaGenerationMethod", true, 0, paramsCa));
+        crsC.add(new TableRuleDto.ColumnRuleDto("b", "FormulaGenerationMethod", false, 0, paramsCb));
+        crsC.add(new TableRuleDto.ColumnRuleDto("c", "FormulaGenerationMethod", false, 0, paramsCc));
+        trs.add(new TableRuleDto("C", TableRuleDto.FillMode.UPDATE, 0, crsC));
 
-        map.put(A, trA);
-        map.put(C, trC);
-//        map.put(E, trE);
+        List<TableRuleDto.ColumnRuleDto> crsE = new ArrayList<>();
+        crsE.add(new TableRuleDto.ColumnRuleDto("A_id", "FkGenerationMethod", true, 0, null));
+//        trs.add(new TableRuleDto("E", TableRuleDto.FillMode.UPDATE, 0, crsE));
 
-        return map;
+        return trs;
     }
 
-    @SneakyThrows
-    private Map<Table, TableRule> createTableRulesAppendAll(Map<Table, TableContent> generated)
+    private List<TableRuleDto> createTableRulesAppendAll()
     {
-        DataSourceWrapper ds = dataSourceService.getInternalDataSource();
-        Map<Table, TableRule> map = new HashMap<>();
+        List<TableRuleDto> trs = new ArrayList<>();
 
-        Table A = schemaService.getTable(ds, "A");
-        TableRule trA = new TableRule(A, TableRule.FillMode.APPEND, 10);
-        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
-        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(1), new LongGenerationMethod(), true, 0.5));
-        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(2), new ShortGenerationMethod(), false, 1));
-        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(3), new TinyIntGenerationMethod(), false, 0.5)); // Tinyint: [0, 255]
-        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(4), new BooleanGenerationMethod()));
-        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(5), new FkGenerationMethod(ds, generated, A.getColumns().get(5))));
-        trA.setColumnRule(new ColumnRule(trA, A.getColumns().get(6), new FkGenerationMethod(ds, generated, A.getColumns().get(6))));
+        List<TableRuleDto.ColumnRuleDto> crsA = new ArrayList<>();
+        crsA.add(new TableRuleDto.ColumnRuleDto("id", "IntegerGenerationMethod", true, 0, null));
+        crsA.add(new TableRuleDto.ColumnRuleDto("a", "LongGenerationMethod", true, 0.5, null));
+        crsA.add(new TableRuleDto.ColumnRuleDto("b", "ShortGenerationMethod", false, 1, null));
+        crsA.add(new TableRuleDto.ColumnRuleDto("c", "TinyIntGenerationMethod", false, 0.5, null));
+        crsA.add(new TableRuleDto.ColumnRuleDto("d", "BooleanGenerationMethod", false, 0, null));
+        crsA.add(new TableRuleDto.ColumnRuleDto("B_id", "FkGenerationMethod", false, 0, null));
+        crsA.add(new TableRuleDto.ColumnRuleDto("D_id", "FkGenerationMethod", false, 0, null));
+        trs.add(new TableRuleDto("A", TableRuleDto.FillMode.APPEND, 10, crsA));
 
-        Table B = schemaService.getTable(ds, "B");
-        TableRule trB = new TableRule(B, TableRule.FillMode.APPEND, 10);
-        trB.setColumnRule(new ColumnRule(trB, B.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
-        trB.setColumnRule(new ColumnRule(trB, B.getColumns().get(1), new FloatGenerationMethod()));
-        trB.setColumnRule(new ColumnRule(trB, B.getColumns().get(2), new DoubleGenerationMethod()));
-        trB.setColumnRule(new ColumnRule(trB, B.getColumns().get(3), new BigDecimalGenerationMethod(B.getColumns().get(3))));
-        trB.setColumnRule(new ColumnRule(trB, B.getColumns().get(4), new BigDecimalGenerationMethod(B.getColumns().get(4))));
-        trB.setColumnRule(new ColumnRule(trB, B.getColumns().get(5), new FkGenerationMethod(ds, generated, B.getColumns().get(5))));
+        List<TableRuleDto.ColumnRuleDto> crsB = new ArrayList<>();
+        crsB.add(new TableRuleDto.ColumnRuleDto("id", "IntegerGenerationMethod", true, 0, null));
+        crsB.add(new TableRuleDto.ColumnRuleDto("a", "FloatGenerationMethod", false, 0, null));
+        crsB.add(new TableRuleDto.ColumnRuleDto("b", "DoubleGenerationMethod", false, 0, null));
+        crsB.add(new TableRuleDto.ColumnRuleDto("c", "BigDecimalGenerationMethod", false, 0, null));
+        crsB.add(new TableRuleDto.ColumnRuleDto("d", "BigDecimalGenerationMethod", false, 0, null));
+        crsB.add(new TableRuleDto.ColumnRuleDto("C_id", "FkGenerationMethod", false, 0, null));
+        trs.add(new TableRuleDto("B", TableRuleDto.FillMode.APPEND, 10, crsB));
 
-        Table C = schemaService.getTable(ds, "C");
-        TableRule trC = new TableRule(C, TableRule.FillMode.APPEND, 10);
-        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
-        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(1), new StringGenerationMethod(C.getColumns().get(1))));
-        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(2), new StringGenerationMethod(C.getColumns().get(2))));
-        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(3), new StringGenerationMethod(C.getColumns().get(3))));
-        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(4), new StringGenerationMethod(C.getColumns().get(4))));
-        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(5), new FkGenerationMethod(ds, generated, C.getColumns().get(5))));
-        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(6), new FkGenerationMethod(ds, generated, C.getColumns().get(6))));
-        trC.setColumnRule(new ColumnRule(trC, C.getColumns().get(7), new FkGenerationMethod(ds, generated, C.getColumns().get(7))));
+        List<TableRuleDto.ColumnRuleDto> crsC = new ArrayList<>();
+        crsC.add(new TableRuleDto.ColumnRuleDto("id", "IntegerGenerationMethod", true, 0, null));
+        crsC.add(new TableRuleDto.ColumnRuleDto("a", "StringGenerationMethod", false, 0, null));
+        crsC.add(new TableRuleDto.ColumnRuleDto("b", "StringGenerationMethod", false, 0, null));
+        crsC.add(new TableRuleDto.ColumnRuleDto("c", "StringGenerationMethod", false, 0, null));
+        crsC.add(new TableRuleDto.ColumnRuleDto("d", "StringGenerationMethod", false, 0, null));
+        crsC.add(new TableRuleDto.ColumnRuleDto("A_id", "FkGenerationMethod", false, 0, null));
+        crsC.add(new TableRuleDto.ColumnRuleDto("B_id", "FkGenerationMethod", false, 0, null));
+        crsC.add(new TableRuleDto.ColumnRuleDto("C_id", "FkGenerationMethod", false, 0, null));
+        trs.add(new TableRuleDto("C", TableRuleDto.FillMode.APPEND, 10, crsC));
 
-        Table D = schemaService.getTable(ds, "D");
-        TableRule trD = new TableRule(D, TableRule.FillMode.APPEND, 10);
-        trD.setColumnRule(new ColumnRule(trD, D.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
-        trD.setColumnRule(new ColumnRule(trD, D.getColumns().get(1), new DateGenerationMethod()));
-        trD.setColumnRule(new ColumnRule(trD, D.getColumns().get(2), new TimeGenerationMethod()));
-        trD.setColumnRule(new ColumnRule(trD, D.getColumns().get(3), new TimestampGenerationMethod())); // Datetime starts from 1753, Datetime2 - from 0001
-        trD.setColumnRule(new ColumnRule(trD, D.getColumns().get(4), new FkGenerationMethod(ds, generated, D.getColumns().get(4))));
+        List<TableRuleDto.ColumnRuleDto> crsD = new ArrayList<>();
+        crsD.add(new TableRuleDto.ColumnRuleDto("id", "IntegerGenerationMethod", true, 0, null));
+        crsD.add(new TableRuleDto.ColumnRuleDto("a", "DateGenerationMethod", false, 0, null));
+        crsD.add(new TableRuleDto.ColumnRuleDto("b", "TimeGenerationMethod", false, 0, null));
+        crsD.add(new TableRuleDto.ColumnRuleDto("c", "TimestampGenerationMethod", false, 0, null));
+        crsD.add(new TableRuleDto.ColumnRuleDto("E_id", "FkGenerationMethod", false, 0, null));
+        trs.add(new TableRuleDto("D", TableRuleDto.FillMode.APPEND, 10, crsD));
 
-        Table E = schemaService.getTable(ds, "E");
-        TableRule trE = new TableRule(E, TableRule.FillMode.APPEND, 10);
-        trE.setColumnRule(new ColumnRule(trE, E.getColumns().get(0), new IntegerGenerationMethod(), true, 0));
-        trE.setColumnRule(new ColumnRule(trE, E.getColumns().get(1), new FkGenerationMethod(ds, generated, E.getColumns().get(1))));
+        List<TableRuleDto.ColumnRuleDto> crsE = new ArrayList<>();
+        crsE.add(new TableRuleDto.ColumnRuleDto("id", "IntegerGenerationMethod", true, 0, null));
+        crsE.add(new TableRuleDto.ColumnRuleDto("A_id", "FkGenerationMethod", false, 0, null));
+        trs.add(new TableRuleDto("E", TableRuleDto.FillMode.APPEND, 10, crsE));
 
-        map.put(A, trA);
-        map.put(B, trB);
-        map.put(C, trC);
-        map.put(D, trD);
-        map.put(E, trE);
-
-        return map;
+        return trs;
     }
 }

@@ -1,4 +1,4 @@
-package de.tu_berlin.imolcean.tdm.core.generation.methods;
+package de.tu_berlin.imolcean.tdm.api.interfaces.generation.method;
 
 import java.util.Map;
 

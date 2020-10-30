@@ -18,6 +18,7 @@ import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 import schemacrawler.inclusionrule.RegularExpressionInclusionRule;
 import schemacrawler.schema.Catalog;
+import schemacrawler.schema.Column;
 import schemacrawler.schema.NamedObject;
 import schemacrawler.schema.Table;
 import schemacrawler.schemacrawler.*;
@@ -33,6 +34,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,7 +42,7 @@ import java.util.stream.Collectors;
 public class DefaultSchemaService implements SchemaService
 {
     // TODO Cache
-    // TODO Remove dependency on TableContentService
+    // TODO Remove dependency on DataService
 
     private final DataService dataService;
 
@@ -247,6 +249,16 @@ public class DefaultSchemaService implements SchemaService
         }
 
         return tables;
+    }
+
+    @Override
+    public Optional<Column> findColumn(Table table, String columnName)
+    {
+        return Optional.ofNullable(
+                table.getColumns().stream()
+                        .filter(column -> column.getName().equals(columnName))
+                        .collect(Collectors.toList())
+                        .get(0));
     }
 
     @Override

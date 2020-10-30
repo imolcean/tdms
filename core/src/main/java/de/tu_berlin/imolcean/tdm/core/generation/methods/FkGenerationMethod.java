@@ -1,12 +1,15 @@
 package de.tu_berlin.imolcean.tdm.core.generation.methods;
 
-import de.tu_berlin.imolcean.tdm.api.DataSourceWrapper;
-import de.tu_berlin.imolcean.tdm.api.TableContent;
-import de.tu_berlin.imolcean.tdm.core.generation.GenerationMethodParamDescription;
+import de.tu_berlin.imolcean.tdm.api.exceptions.DataGenerationException;
+import de.tu_berlin.imolcean.tdm.api.interfaces.generation.method.ColumnAwareGenerationMethod;
+import de.tu_berlin.imolcean.tdm.api.interfaces.generation.method.GenerationMethod;
+import de.tu_berlin.imolcean.tdm.api.GenerationMethodParamDescription;
+import de.tu_berlin.imolcean.tdm.api.services.LowLevelDataService;
 import lombok.extern.java.Log;
 import schemacrawler.schema.Column;
-import schemacrawler.schema.Table;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -14,51 +17,31 @@ import java.util.Map;
 @Log
 public class FkGenerationMethod implements GenerationMethod, ColumnAwareGenerationMethod
 {
-    private final DataSourceWrapper ds;
-//    private final TableContentService tableContentService;
-    private final Map<Table, TableContent> generated;
+    private final LowLevelDataService lowLevelDataService;
+    private final Connection connection;
     private final Column column;
 
-    public FkGenerationMethod(DataSourceWrapper ds,
-//                              TableContentService tableContentService,
-                              Map<Table, TableContent> generated,
+    public FkGenerationMethod(LowLevelDataService lowLevelDataService,
+                              Connection connection,
                               Column column)
     {
-        this.ds = ds;
-//        this.tableContentService = tableContentService;
-        this.generated = generated;
+        this.lowLevelDataService = lowLevelDataService;
+        this.connection = connection;
         this.column = column;
     }
-
-//    public Object pick(Column pkColumn)
-//    {
-//        // Get all values of pkColumn and pick one
-//        try
-//        {
-//            Object[] pks = tableContentService
-//                    .getTableContentForColumns(
-//                            ds,
-//                            pkColumn.getParent(),
-//                            Collections.singletonList(pkColumn))
-//                    .get(0);
-//
-//            int index = new IntegerGenerationMethod().generate(0, pks.length);
-//
-//            return pks[index];
-//        }
-//        catch(SQLException e)
-//        {
-//            throw new DataGenerationException(e);
-//        }
-//    }
 
     public Object pick(Column pkColumn)
     {
         // Get all values of pkColumn and pick one
-        Object[] pks = generated.get(pkColumn.getParent())
-                .getRowsAsMaps().stream()
-                .map(row -> row.get(pkColumn))
-                .toArray();
+        Object[] pks;
+        try
+        {
+            pks = lowLevelDataService.getTableContentForColumns(connection, pkColumn.getParent(), Collections.singletonList(pkColumn)).get(0);
+        }
+        catch(SQLException e)
+        {
+            throw new DataGenerationException(e);
+        }
 
         log.fine(String.format("Picking one of %s PKs", pks.length));
 

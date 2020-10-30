@@ -17,32 +17,30 @@ import java.util.Map;
 @Service
 @Log
 
-// TODO Test!
-
-public class FormulaFunctionService
+public class ScriptLoader
 {
-    private final String funcDir;
+    private final String scriptDir;
 
     @Getter
-    private final Map<String, String> functions;
+    private final Map<String, String> scripts;
 
-    public FormulaFunctionService(@Value("${app.generation.func}") String funcDir) throws IOException
+    public ScriptLoader(@Value("${app.generation.script}") String scriptDir) throws IOException
     {
-        this.funcDir = funcDir;
-        this.functions = new HashMap<>();
+        this.scriptDir = scriptDir;
+        this.scripts = new HashMap<>();
 
         load();
     }
 
     private void load() throws IOException
     {
-        Collection<File> files = FileUtils.listFiles(Path.of(funcDir).toFile(), new String[]{"js"}, false);
+        Collection<File> files = FileUtils.listFiles(Path.of(scriptDir).toFile(), new String[]{"js"}, false);
 
         for(File file : files)
         {
-            functions.put(file.getName().split(".js")[0], Files.readString(file.toPath()));
+            scripts.put(file.getName().split(".js")[0], Files.readString(file.toPath()));
 
-            log.fine(String.format("Function %s is found", file.getName()));
+            log.fine(String.format("Script %s is found", file.getName()));
         }
     }
 }

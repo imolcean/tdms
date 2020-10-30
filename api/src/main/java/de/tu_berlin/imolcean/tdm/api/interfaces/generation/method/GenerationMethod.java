@@ -1,6 +1,6 @@
-package de.tu_berlin.imolcean.tdm.core.generation.methods;
+package de.tu_berlin.imolcean.tdm.api.interfaces.generation.method;
 
-import de.tu_berlin.imolcean.tdm.core.generation.GenerationMethodParamDescription;
+import de.tu_berlin.imolcean.tdm.api.GenerationMethodParamDescription;
 
 import java.util.ArrayList;
 import java.util.List;

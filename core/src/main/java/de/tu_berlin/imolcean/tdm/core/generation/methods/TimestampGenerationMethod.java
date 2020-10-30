@@ -1,5 +1,6 @@
 package de.tu_berlin.imolcean.tdm.core.generation.methods;
 
+import de.tu_berlin.imolcean.tdm.api.interfaces.generation.method.TimelineGenerationMethod;
 import lombok.extern.java.Log;
 
 import java.sql.Timestamp;

@@ -170,7 +170,7 @@ public class TableRule
         rules.forEach(rule -> columnRules.put(rule.getColumn(), rule));
     }
 
-    public void setColumnRule(ColumnRule columnRule)
+    public void putColumnRule(ColumnRule columnRule)
     {
         orderCache.clear();
         columnRules.put(columnRule.getColumn(), columnRule);

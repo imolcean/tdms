@@ -1,6 +1,6 @@
 package de.tu_berlin.imolcean.tdm.x.deployers;
 
-import de.tu_berlin.imolcean.tdm.api.interfaces.deployment.Deployer;
+import de.tu_berlin.imolcean.tdm.api.interfaces.deployer.Deployer;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.api.services.DataService;
 import lombok.extern.java.Log;

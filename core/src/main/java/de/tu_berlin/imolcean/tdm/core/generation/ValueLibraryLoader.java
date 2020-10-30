@@ -16,7 +16,7 @@ import java.util.*;
 
 @Service
 @Log
-public class ValueLibraryService
+public class ValueLibraryLoader
 {
     private final String libDir;
 
@@ -26,7 +26,7 @@ public class ValueLibraryService
     @Getter
     private final Map<String, ValueLibrary> libraries;
 
-    public ValueLibraryService(@Value("${app.generation.lib}") String libDir) throws IOException
+    public ValueLibraryLoader(@Value("${app.generation.lib}") String libDir) throws IOException
     {
         this.libDir = libDir;
         this.lists = new HashMap<>();

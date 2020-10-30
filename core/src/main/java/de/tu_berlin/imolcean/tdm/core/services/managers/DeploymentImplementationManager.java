@@ -1,6 +1,6 @@
 package de.tu_berlin.imolcean.tdm.core.services.managers;
 
-import de.tu_berlin.imolcean.tdm.api.interfaces.deployment.Deployer;
+import de.tu_berlin.imolcean.tdm.api.interfaces.deployer.Deployer;
 import org.pf4j.spring.SpringPluginManager;
 import org.springframework.stereotype.Service;
 

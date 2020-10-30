@@ -1,6 +1,7 @@
 package de.tu_berlin.imolcean.tdm.api.services;
 
 import schemacrawler.schema.Catalog;
+import schemacrawler.schema.Column;
 import schemacrawler.schema.Table;
 import schemacrawler.schemacrawler.SchemaCrawlerException;
 
@@ -8,6 +9,7 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public interface SchemaService
 {
@@ -26,6 +28,8 @@ public interface SchemaService
     Table getTable(DataSource ds, String tableName) throws SQLException, SchemaCrawlerException;
 
     List<Table> getTables(DataSource ds, Collection<String> tableNames) throws SQLException, SchemaCrawlerException;
+
+    Optional<Column> findColumn(Table table, String columnName);
 
     boolean tableExists(DataSource ds, String tableName) throws SQLException, SchemaCrawlerException;
 
