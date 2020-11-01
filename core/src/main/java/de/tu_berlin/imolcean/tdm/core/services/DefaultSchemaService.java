@@ -41,19 +41,27 @@ import java.util.stream.Collectors;
 @Log
 public class DefaultSchemaService implements SchemaService
 {
-    // TODO Cache
     // TODO Remove dependency on DataService
 
     private final DataService dataService;
 
+    private Catalog cache;
+
     public DefaultSchemaService(DataService dataService)
     {
         this.dataService = dataService;
+        this.cache = null;
     }
 
     @Override
     public Catalog getSchema(DataSource ds) throws SQLException, SchemaCrawlerException
     {
+        if(cache != null)
+        {
+            log.fine("Cached schema found");
+            return cache;
+        }
+
         log.fine("Retrieving schema");
 
         try(Connection connection = ds.getConnection())
@@ -67,13 +75,17 @@ public class DefaultSchemaService implements SchemaService
                     .withLoadOptions(load)
                     .toOptions();
 
-            return SchemaCrawlerUtility.getCatalog(connection, options);
+            cache = SchemaCrawlerUtility.getCatalog(connection, options);
+
+            return cache;
         }
     }
 
     @Override
     public void copySchema(DataSource src, DataSource target) throws Exception
     {
+        cache = null;
+
         Connection srcConnection = src.getConnection();
         Connection targetConnection = target.getConnection();
 
@@ -137,6 +149,8 @@ public class DefaultSchemaService implements SchemaService
     @Override
     public void purgeSchema(DataSource ds) throws Exception
     {
+        cache = null;
+
         log.info("Purging schema");
 
         Database db = DatabaseFactory.getInstance()
@@ -214,6 +228,14 @@ public class DefaultSchemaService implements SchemaService
     @Override
     public Table getTable(DataSource ds, String tableName) throws SQLException, SchemaCrawlerException
     {
+        if(cache != null)
+        {
+            return cache.getTables().stream()
+                    .filter(table -> table.getName().equals(tableName))
+                    .findFirst()
+                    .orElseThrow(() -> new TableNotFoundException(tableName));
+        }
+
         try(Connection connection = ds.getConnection())
         {
             LimitOptions limit = LimitOptionsBuilder.builder()
