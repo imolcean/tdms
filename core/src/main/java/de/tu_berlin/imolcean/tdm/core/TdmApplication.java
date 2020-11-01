@@ -134,7 +134,7 @@ public class TdmApplication implements CommandLineRunner
 
 
 //        ruleBasedDataGenerator.generate(dataSourceService.getInternalDataSource(), createTableRulesAppendAll());
-        ruleBasedDataGenerator.generate(dataSourceService.getInternalDataSource(), createTableRulesUpdate());
+//        ruleBasedDataGenerator.generate(dataSourceService.getInternalDataSource(), createTableRulesUpdate());
 
 
 //        ValueLibrary lib = valueLibraryService.getLists().get("$LibLastNamesDE");

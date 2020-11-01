@@ -1,7 +1,6 @@
 package de.tu_berlin.imolcean.tdm.core.controllers;
 
 import de.tu_berlin.imolcean.tdm.api.dto.TableContentDto;
-import de.tu_berlin.imolcean.tdm.core.services.GitService;
 import de.tu_berlin.imolcean.tdm.core.services.ProjectService;
 import de.tu_berlin.imolcean.tdm.core.services.proxies.DataExportProxy;
 import de.tu_berlin.imolcean.tdm.core.services.proxies.DataImportProxy;
@@ -23,29 +22,26 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/data")
-public class TableContentController
+public class DataController
 {
     private final ProjectService projectService;
     private final DataSourceService dsService;
     private final SchemaService schemaService;
     private final DataService dataService;
-    private final GitService gitService;
     private final DataImportProxy dataImportProxy;
     private final DataExportProxy dataExportProxy;
 
-    public TableContentController(ProjectService projectService,
-                                  DataSourceService dsService,
-                                  SchemaService SchemaService,
-                                  DataService dataService,
-                                  GitService gitService,
-                                  DataImportProxy dataImportProxy,
-                                  DataExportProxy dataExportProxy)
+    public DataController(ProjectService projectService,
+                          DataSourceService dsService,
+                          SchemaService SchemaService,
+                          DataService dataService,
+                          DataImportProxy dataImportProxy,
+                          DataExportProxy dataExportProxy)
     {
         this.projectService = projectService;
         this.dsService = dsService;
         this.schemaService = SchemaService;
         this.dataService = dataService;
-        this.gitService = gitService;
         this.dataImportProxy = dataImportProxy;
         this.dataExportProxy = dataExportProxy;
     }
@@ -83,12 +79,11 @@ public class TableContentController
                         dataService.getTableContentForColumns(ds, table, columns)));
     }
 
-    @PostMapping("/{alias}/{table}")
-    public ResponseEntity<Void> insertRows(@PathVariable("alias") String alias,
-                                           @PathVariable("table") String tableName,
+    @PostMapping("/internal/{table}")
+    public ResponseEntity<Void> insertRows(@PathVariable("table") String tableName,
                                            @RequestBody List<Map<String, Object>> rows) throws SQLException, SchemaCrawlerException
     {
-        DataSource ds = dsService.getDataSourceByAlias(alias);
+        DataSource ds = dsService.getInternalDataSource();
         Table table = schemaService.getTable(ds, tableName);
 
         List<Map<Column, Object>> _rows = rows.stream()
@@ -100,13 +95,12 @@ public class TableContentController
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{alias}/{table}/{row}")
-    public ResponseEntity<Void> updateRow(@PathVariable("alias") String alias,
-                                          @PathVariable("table") String tableName,
+    @PutMapping("/internal/{table}/{row}")
+    public ResponseEntity<Void> updateRow(@PathVariable("table") String tableName,
                                           @PathVariable("row") Integer rowIndex,
                                           @RequestBody Map<String, Object> row) throws SQLException, SchemaCrawlerException
     {
-        DataSource ds = dsService.getDataSourceByAlias(alias);
+        DataSource ds = dsService.getInternalDataSource();
         Table table = schemaService.getTable(ds, tableName);
 
         dataService.updateRow(ds, table, rowIndex, columnNamesMap2ColumnMap(table, row));
@@ -114,12 +108,11 @@ public class TableContentController
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{alias}/{table}/{row}")
-    public ResponseEntity<Void> deleteRowByIndex(@PathVariable("alias") String alias,
-                                                 @PathVariable("table") String tableName,
+    @DeleteMapping("/internal/{table}/{row}")
+    public ResponseEntity<Void> deleteRowByIndex(@PathVariable("table") String tableName,
                                                  @PathVariable("row") Integer rowIndex) throws SQLException, SchemaCrawlerException
     {
-        DataSource ds = dsService.getDataSourceByAlias(alias);
+        DataSource ds = dsService.getInternalDataSource();
         Table table = schemaService.getTable(ds, tableName);
 
         dataService.deleteRow(ds, table, rowIndex);
@@ -127,26 +120,10 @@ public class TableContentController
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("copy/{src_alias}/{target_alias}")
-    public ResponseEntity<Void> copyAllData(@PathVariable("src_alias") String srcAlias,
-                                            @PathVariable("target_alias") String targetAlias)
-            throws SQLException, SchemaCrawlerException, IOException
+    @DeleteMapping("/internal/{table}")
+    public ResponseEntity<Void> clearTable(@PathVariable("table") String tableName) throws SQLException, SchemaCrawlerException
     {
-        DataSource src = dsService.getDataSourceByAlias(srcAlias);
-        DataSource target = dsService.getDataSourceByAlias(targetAlias);
-
-        Collection<Table> tables = schemaService.getSchema(src).getTables();
-
-        dataService.copyData(src, target, tables);
-
-        return ResponseEntity.noContent().build();
-    }
-
-    @DeleteMapping("/{alias}/{table}")
-    public ResponseEntity<Void> clearTable(@PathVariable("alias") String alias,
-                                           @PathVariable("table") String tableName) throws SQLException, SchemaCrawlerException
-    {
-        DataSource ds = dsService.getDataSourceByAlias(alias);
+        DataSource ds = dsService.getInternalDataSource();
         Table table = schemaService.getTable(ds, tableName);
 
         dataService.clearTable(ds, table);
@@ -154,11 +131,11 @@ public class TableContentController
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{alias}")
-    public ResponseEntity<Void> clearAllTables(@PathVariable("alias") String alias)
+    @DeleteMapping("/internal")
+    public ResponseEntity<Void> clearAllTables()
             throws SQLException, IOException, SchemaCrawlerException
     {
-        DataSource ds = dsService.getDataSourceByAlias(alias);
+        DataSource ds = dsService.getInternalDataSource();
 
         dataService.clearTables(ds, schemaService.getSchema(ds).getTables());
 
@@ -181,27 +158,15 @@ public class TableContentController
         return ResponseEntity.noContent().build();
     }
 
-//    @PutMapping("/internal/update")
-//    public ResponseEntity<Void> updateDataFromGit()
-//    {
-//    }
-
     private Map<Column, Object> columnNamesMap2ColumnMap(Table table, Map<String, Object> row)
     {
         Map<Column, Object> _row = new HashMap<>();
         for(String columnName : row.keySet())
         {
-            findColumnByName(table, columnName)
+            schemaService.findColumn(table, columnName)
                     .ifPresent(column -> _row.put(column, row.get(column.getName())));
         }
 
         return _row;
-    }
-
-    private Optional<Column> findColumnByName(Table table, String columnName)
-    {
-        return table.getColumns().stream()
-                .filter(column -> column.getName().equals(columnName))
-                .findFirst();
     }
 }
