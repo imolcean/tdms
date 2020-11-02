@@ -1,5 +1,6 @@
 package de.tu_berlin.imolcean.tdm.api;
 
+import de.tu_berlin.imolcean.tdm.api.dto.DataSourceDto;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -37,6 +38,11 @@ public class DataSourceWrapper implements DataSource
                 .username(this.username)
                 .password(this.password)
                 .build();
+    }
+
+    public DataSourceWrapper(DataSourceDto dto)
+    {
+        this(dto.getDriverClassName(), dto.getUrl(), dto.getDatabase(), dto.getUsername(), dto.getPassword());
     }
 
     @Override

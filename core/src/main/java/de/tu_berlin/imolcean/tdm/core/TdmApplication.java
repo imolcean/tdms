@@ -3,7 +3,6 @@ package de.tu_berlin.imolcean.tdm.core;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.tu_berlin.imolcean.tdm.api.TableContent;
 import de.tu_berlin.imolcean.tdm.api.dto.ProjectDto;
 import de.tu_berlin.imolcean.tdm.api.dto.TableRuleDto;
 import de.tu_berlin.imolcean.tdm.api.services.LowLevelDataService;
@@ -17,11 +16,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.io.ClassPathResource;
-import schemacrawler.schema.Column;
-import schemacrawler.schema.Table;
 
-import java.sql.Connection;
-import java.sql.Statement;
 import java.util.*;
 
 @SpringBootApplication
@@ -69,7 +64,7 @@ public class TdmApplication implements CommandLineRunner
         ProjectDto project = mapper.readValue(new ClassPathResource("EXP.tdm.json").getInputStream(), ProjectDto.class);
         projectService.open(project);
 
-        StageContextHolder.setStageName("exp");
+        StageSelectionContextHolder.setStageName("exp");
 
 
 //        for(String tableName : schemaService.getTableNames(dataSourceService.getInternalDataSource()))

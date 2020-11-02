@@ -1,18 +1,18 @@
 package de.tu_berlin.imolcean.tdm.core.controllers;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoCurrentStageException;
-import de.tu_berlin.imolcean.tdm.core.StageContextHolder;
+import de.tu_berlin.imolcean.tdm.core.StageSelectionContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/stage/")
-public class StageController
+public class StageSelectionController
 {
     @GetMapping("/current")
-    public ResponseEntity<String> getCurrentStageName()
+    public ResponseEntity<String> getSelection()
     {
-        String stageName = StageContextHolder.getStageName();
+        String stageName = StageSelectionContextHolder.getStageName();
 
         if(stageName == null)
         {
@@ -23,17 +23,17 @@ public class StageController
     }
 
     @PutMapping("/current/{name}")
-    public ResponseEntity<Void> setCurrentStage(@PathVariable("name") String stageName)
+    public ResponseEntity<Void> select(@PathVariable("name") String stageName)
     {
-        StageContextHolder.setStageName(stageName);
+        StageSelectionContextHolder.setStageName(stageName);
 
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/current")
-    public ResponseEntity<Void> clearCurrentStageSelection()
+    public ResponseEntity<Void> clearSelection()
     {
-        StageContextHolder.clearStageName();
+        StageSelectionContextHolder.clearStageName();
 
         return ResponseEntity.noContent().build();
     }

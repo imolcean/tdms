@@ -2,9 +2,7 @@ package de.tu_berlin.imolcean.tdm.core;
 
 import de.tu_berlin.imolcean.tdm.api.exceptions.InvalidStageNameException;
 
-// TODO Make into StageService
-
-public class StageContextHolder
+public class StageSelectionContextHolder
 {
     private static String stageName = null;
 

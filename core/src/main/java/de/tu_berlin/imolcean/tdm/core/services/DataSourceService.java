@@ -1,28 +1,25 @@
 package de.tu_berlin.imolcean.tdm.core.services;
 
+import de.tu_berlin.imolcean.tdm.api.dto.DataSourceDto;
 import de.tu_berlin.imolcean.tdm.api.exceptions.*;
 import de.tu_berlin.imolcean.tdm.api.DataSourceWrapper;
-import de.tu_berlin.imolcean.tdm.core.StageContextHolder;
-import de.tu_berlin.imolcean.tdm.core.entities.StageDataSourceParams;
-import de.tu_berlin.imolcean.tdm.core.repositories.StageDataSourceParamsRepository;
+import de.tu_berlin.imolcean.tdm.core.StageSelectionContextHolder;
+import de.tu_berlin.imolcean.tdm.core.repositories.StageDataSourceRepository;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @Log
 public class DataSourceService
 {
-    private final StageDataSourceParamsRepository stageDsParamsRepo;
+    private final StageDataSourceRepository stageDsRepo;
 
     private DataSourceWrapper internalDs;
     private DataSourceWrapper tmpDs;
 
-    public DataSourceService(StageDataSourceParamsRepository stageDsParamsRepo)
+    public DataSourceService(StageDataSourceRepository stageDsRepo)
     {
-        this.stageDsParamsRepo = stageDsParamsRepo;
+        this.stageDsRepo = stageDsRepo;
         this.internalDs = null;
         this.tmpDs = null;
     }
@@ -77,66 +74,24 @@ public class DataSourceService
 
     /**
      * Provides access to the {@link DataSourceWrapper} of the staging environment
-     * that is currently selected in the {@link StageContextHolder}.
+     * that is currently selected in the {@link StageSelectionContextHolder}.
      *
      * @throws StageDataSourceNotFoundException if no {@link DataSourceWrapper} is configured for the given {@code name}
      * @return {@link DataSourceWrapper} of the currently selected staging environment
      */
     public DataSourceWrapper getCurrentStageDataSource()
     {
-        String currentStage = StageContextHolder.getStageName();
+        String currentStage = StageSelectionContextHolder.getStageName();
 
         if(currentStage == null)
         {
             throw new NoCurrentStageException();
         }
 
-        return getStageDataSourceByName(currentStage);
-    }
+        DataSourceDto dto = stageDsRepo.findById(currentStage)
+                .orElseThrow(() -> new StageDataSourceNotFoundException(currentStage));
 
-    /**
-     * Provides access to the {@link DataSourceWrapper} of the stage with the given {@code name}.
-     *
-     * @param name name of the stage
-     * @throws StageDataSourceNotFoundException if no {@link DataSourceWrapper} is configured for the given {@code name}
-     * @return {@link DataSourceWrapper} of the stage with the given {@code name}
-     */
-    public DataSourceWrapper getStageDataSourceByName(String name)
-    {
-        StageDataSourceParams params = stageDsParamsRepo.findByStageName(name)
-                .orElseThrow(() -> new StageDataSourceNotFoundException(name));
-
-        return new DataSourceWrapper(
-                params.getDriverClassName(),
-                params.getUrl(),
-                params.getDatabase(),
-                params.getUsername(),
-                params.getPassword());
-    }
-
-    /**
-     * Provides access to the {@link DataSourceWrapper} objects of the
-     * staging environments that are currently known.
-     *
-     * @return {@link Map} of all staging environments that are known at the moment with names as keys
-     */
-    public Map<String, DataSourceWrapper> getAllStagesDataSources()
-    {
-        Map<String, DataSourceWrapper> map = new HashMap<>();
-
-        for(StageDataSourceParams params : stageDsParamsRepo.findAll())
-        {
-            map.put(
-                    params.getStageName(),
-                    new DataSourceWrapper(
-                            params.getDriverClassName(),
-                            params.getUrl(),
-                            params.getDatabase(),
-                            params.getUsername(),
-                            params.getPassword()));
-        }
-
-        return map;
+        return new DataSourceWrapper(dto);
     }
 
     /**
@@ -162,71 +117,5 @@ public class DataSourceService
             default:
                 throw new InvalidDataSourceAliasException(alias);
         }
-    }
-
-    /**
-     * Stores parameters of a new stage.
-     *
-     * @param params {@link StageDataSourceParams} of the newly created stage
-     * @return {@link DataSourceWrapper} of the newly created stage
-     */
-    public DataSourceWrapper storeStageDsParams(StageDataSourceParams params)
-    {
-        if(params.getStageName().equalsIgnoreCase("internal")
-                || params.getStageName().equalsIgnoreCase("tmp")
-                || params.getStageName().equalsIgnoreCase("current"))
-        {
-            throw new InvalidStageNameException(params.getStageName());
-        }
-
-        if(stageDsParamsRepo.existsByStageName(params.getStageName()))
-        {
-            throw new StageDataSourceAlreadyExistsException(params.getStageName());
-        }
-
-        StageDataSourceParams savedParams = stageDsParamsRepo.save(params);
-
-        return new DataSourceWrapper(
-                savedParams.getDriverClassName(),
-                savedParams.getUrl(),
-                savedParams.getDatabase(),
-                savedParams.getUsername(),
-                savedParams.getPassword());
-    }
-
-    /**
-     * Updates parameters of an existing stage.
-     *
-     * @param params new {@link StageDataSourceParams} for the stage specified in {@code StageDataSourceParams::stageName}
-     * @return new {@link DataSourceWrapper} of the stage
-     */
-    public DataSourceWrapper updateStageDataSource(StageDataSourceParams params)
-    {
-        StageDataSourceParams existing = stageDsParamsRepo.findByStageName(params.getStageName())
-                .orElseThrow(() -> new StageDataSourceNotFoundException(params.getStageName()));
-
-        params.setId(existing.getId());
-
-        StageDataSourceParams savedParams = stageDsParamsRepo.save(params);
-
-        return new DataSourceWrapper(
-                savedParams.getDriverClassName(),
-                savedParams.getUrl(),
-                savedParams.getDatabase(),
-                savedParams.getUsername(),
-                savedParams.getPassword());
-    }
-
-    /**
-     * Removes data source parameters for the stage with the specified {@code name}.
-     *
-     * @param name name of the stage
-     */
-    public void deleteStageDataSource(String name)
-    {
-        StageDataSourceParams params = stageDsParamsRepo.findByStageName(name)
-                .orElseThrow(() -> new StageDataSourceNotFoundException(name));
-
-        stageDsParamsRepo.delete(params);
     }
 }
