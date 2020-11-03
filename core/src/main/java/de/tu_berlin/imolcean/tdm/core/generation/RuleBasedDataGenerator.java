@@ -11,7 +11,9 @@ import lombok.extern.java.Log;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
-import org.springframework.stereotype.Service;
+import org.pf4j.Extension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import schemacrawler.schema.Column;
 import schemacrawler.schema.NamedObject;
 import schemacrawler.schema.Table;
@@ -24,36 +26,31 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
+@Component
+@Extension
 @Log
+@SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
 public class RuleBasedDataGenerator implements DataGenerator
 {
-    private final SchemaService schemaService;
-    private final DataService dataService;
-    private final LowLevelDataService lowLevelDataService;
-    private final GenerationMethodCreator generationMethodCreator;
+    @Autowired
+    private SchemaService schemaService;
 
-    public RuleBasedDataGenerator(SchemaService schemaService,
-                                  DataService dataService,
-                                  LowLevelDataService lowLevelDataService,
-                                  GenerationMethodCreator generationMethodCreator)
-    {
-        this.schemaService = schemaService;
-        this.dataService = dataService;
-        this.lowLevelDataService = lowLevelDataService;
-        this.generationMethodCreator = generationMethodCreator;
-    }
+    @Autowired
+    private DataService dataService;
 
-    @Override
-    public void generate(DataSourceWrapper ds)
-    {
-        throw new UnsupportedOperationException("This data generator requires table rules to perform generation");
-    }
+    @Autowired
+    private LowLevelDataService lowLevelDataService;
+
+    @Autowired
+    private GenerationMethodCreator generationMethodCreator;
 
     // TODO Test!
 
-    public void generate(DataSourceWrapper ds, Collection<TableRuleDto> dtos) throws SchemaCrawlerException, IOException, SQLException
+    public void generate(DataSourceWrapper ds, Collection<?> _dtos) throws SchemaCrawlerException, IOException, SQLException
     {
+        // Validate parameters
+        List<TableRuleDto> dtos = validateDtos(_dtos);
+
         // Disable constraints
         lowLevelDataService.disableConstraints(ds);
 
@@ -178,6 +175,23 @@ public class RuleBasedDataGenerator implements DataGenerator
 
         // Enable constraints
         lowLevelDataService.enableConstraints(ds);
+    }
+
+    private List<TableRuleDto> validateDtos(Collection<?> _dtos)
+    {
+        List<TableRuleDto> dtos = new ArrayList<>(_dtos.size());
+
+        for(Object dto : _dtos)
+        {
+            if(!(dto instanceof TableRuleDto))
+            {
+                throw new IllegalArgumentException("This generator requires TableRuleDto as parameters");
+            }
+
+            dtos.add((TableRuleDto) dto);
+        }
+
+        return dtos;
     }
 
     private Map<Table, TableRule> getRulesFromDtos(Collection<TableRuleDto> dtos, DataSourceWrapper ds, Connection connection) throws SQLException, SchemaCrawlerException

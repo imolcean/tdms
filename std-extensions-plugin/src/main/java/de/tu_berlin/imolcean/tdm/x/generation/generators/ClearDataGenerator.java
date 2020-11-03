@@ -1,7 +1,7 @@
 package de.tu_berlin.imolcean.tdm.x.generation.generators;
 
 import de.tu_berlin.imolcean.tdm.api.DataSourceWrapper;
-import de.tu_berlin.imolcean.tdm.api.interfaces.generation.generator.DataGenerator;
+import de.tu_berlin.imolcean.tdm.api.interfaces.generation.generator.SimpleDataGenerator;
 import de.tu_berlin.imolcean.tdm.api.services.DataService;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import lombok.extern.java.Log;
@@ -16,11 +16,11 @@ import java.sql.SQLException;
 @Component
 @Extension
 @Log
-
-// TODO Test!
-
-public class ClearDataGenerator implements DataGenerator
+public class ClearDataGenerator implements SimpleDataGenerator
 {
+
+    // TODO Test!
+
     @Autowired
     SchemaService schemaService;
 

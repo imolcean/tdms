@@ -20,6 +20,7 @@ public class ProjectDto
     private String dataImporter;
     private String dataExporter;
     private String deployer;
+    private String dataGenerator;
 
     private String dataDir;
 }

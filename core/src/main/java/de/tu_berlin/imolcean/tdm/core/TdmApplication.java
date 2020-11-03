@@ -11,6 +11,7 @@ import de.tu_berlin.imolcean.tdm.api.services.DataService;
 import de.tu_berlin.imolcean.tdm.core.generation.*;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
 import de.tu_berlin.imolcean.tdm.core.services.ProjectService;
+import de.tu_berlin.imolcean.tdm.core.services.managers.DataGenerationImplementationManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -41,13 +42,10 @@ public class TdmApplication implements CommandLineRunner
     private ValueLibraryLoader valueLibraryLoader;
 
     @Autowired
-    private ScriptLoader scriptLoader;
-
-    @Autowired
-    private RuleBasedDataGenerator ruleBasedDataGenerator;
-
-    @Autowired
     private FormulaEngineCreator formulaEngineCreator;
+
+    @Autowired
+    private DataGenerationImplementationManager dataGenerationManager;
 
     private final ObjectMapper mapper = new ObjectMapper()
             .setDefaultPrettyPrinter(
@@ -128,8 +126,13 @@ public class TdmApplication implements CommandLineRunner
 //        System.out.println(rand.generate(params));
 
 
-//        ruleBasedDataGenerator.generate(dataSourceService.getInternalDataSource(), createTableRulesAppendAll());
-//        ruleBasedDataGenerator.generate(dataSourceService.getInternalDataSource(), createTableRulesUpdate());
+//        dataGenerationManager.getSelectedImplementation()
+//                .orElseThrow(() -> new IllegalStateException("No generator selected"))
+//                .generate(dataSourceService.getInternalDataSource(), createTableRulesAppendAll());
+
+//        dataGenerationManager.getSelectedImplementation()
+//                .orElseThrow(() -> new IllegalStateException("No generator selected"))
+//                .generate(dataSourceService.getInternalDataSource(), createTableRulesUpdate());
 
 
 //        ValueLibrary lib = valueLibraryService.getLists().get("$LibLastNamesDE");

@@ -27,6 +27,7 @@
   "dataImporter": "de.tu_berlin.imolcean.tdm.x.importers.JsonDataImporter",
   "dataExporter": "de.tu_berlin.imolcean.tdm.x.exporters.JsonDataExporter",
   "deployer": "de.tu_berlin.imolcean.tdm.x.deployers.MigrationDeployer",
+  "dataGenerator": "de.tu_berlin.imolcean.tdm.core.generation.RuleBasedDataGenerator",
 
   "dataDir": "C:\\tdm\\repo\\data"
 }

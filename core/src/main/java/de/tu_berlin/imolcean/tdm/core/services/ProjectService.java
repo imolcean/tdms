@@ -1,16 +1,11 @@
 package de.tu_berlin.imolcean.tdm.core.services;
 
-import de.tu_berlin.imolcean.tdm.api.dto.DataSourceDto;
 import de.tu_berlin.imolcean.tdm.api.dto.ProjectDto;
 import de.tu_berlin.imolcean.tdm.api.exceptions.NoOpenProjectException;
-import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import de.tu_berlin.imolcean.tdm.api.DataSourceWrapper;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.DataSourceMapper;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.GitRepositoryMapper;
-import de.tu_berlin.imolcean.tdm.core.services.managers.DataExportImplementationManager;
-import de.tu_berlin.imolcean.tdm.core.services.managers.DataImportImplementationManager;
-import de.tu_berlin.imolcean.tdm.core.services.managers.DeploymentImplementationManager;
-import de.tu_berlin.imolcean.tdm.core.services.managers.SchemaUpdateImplementationManager;
+import de.tu_berlin.imolcean.tdm.core.services.managers.*;
 import lombok.extern.java.Log;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
@@ -22,31 +17,31 @@ import java.nio.file.Path;
 public class ProjectService
 {
     private final DataSourceService dsService;
-    private final SchemaService schemaService;
     private final GitService gitService;
     private final SchemaUpdateImplementationManager schemaUpdateManager;
     private final DataImportImplementationManager dataImportManager;
     private final DataExportImplementationManager dataExportManager;
     private final DeploymentImplementationManager deploymentManager;
+    private final DataGenerationImplementationManager dataGenerationManager;
 
     private String projectName;
     private Path dataDir;
 
     public ProjectService(DataSourceService dsService,
-                          SchemaService schemaService,
                           GitService gitService,
                           SchemaUpdateImplementationManager schemaUpdateManager,
                           DataImportImplementationManager dataImportManager,
                           DataExportImplementationManager dataExportManager,
-                          DeploymentImplementationManager deploymentManager)
+                          DeploymentImplementationManager deploymentManager,
+                          DataGenerationImplementationManager dataGenerationManager)
     {
         this.dsService = dsService;
-        this.schemaService = schemaService;
         this.gitService = gitService;
         this.schemaUpdateManager = schemaUpdateManager;
         this.dataImportManager = dataImportManager;
         this.dataExportManager = dataExportManager;
         this.deploymentManager = deploymentManager;
+        this.dataGenerationManager = dataGenerationManager;
 
         this.projectName = null;
     }
@@ -111,8 +106,8 @@ public class ProjectService
         projectName = project.getProjectName();
         dataDir = Path.of(project.getDataDir());
 
-        dsService.setInternalDataSource(createDsFromDto(project.getInternal()));
-        dsService.setTmpDataSource(createDsFromDto(project.getTmp()));
+        dsService.setInternalDataSource(new DataSourceWrapper(project.getInternal()));
+        dsService.setTmpDataSource(new DataSourceWrapper(project.getTmp()));
 
         gitService.openRepository(
                 project.getGitRepository().getUrl(),
@@ -155,6 +150,15 @@ public class ProjectService
             log.warning("Deployer not configured");
         }
 
+        if(project.getDataGenerator() != null)
+        {
+            dataGenerationManager.selectImplementation(project.getDataGenerator());
+        }
+        else
+        {
+            log.warning("DataGenerator not configured");
+        }
+
         // TODO Update schema, pull and import data
 
         log.info(String.format("Project %s opened successfully", projectName));
@@ -185,7 +189,10 @@ public class ProjectService
                         .orElse(null),
                 deploymentManager.getSelectedImplementation()
                         .map(impl -> impl.getClass().getName())
-                .orElse(null),
+                        .orElse(null),
+                dataGenerationManager.getSelectedImplementation()
+                        .map(impl -> impl.getClass().getName())
+                        .orElse(null),
                 dataDir.toString());
     }
 
@@ -209,17 +216,9 @@ public class ProjectService
         schemaUpdateManager.clearSelection();
         dataImportManager.clearSelection();
         dataExportManager.clearSelection();
+        deploymentManager.clearSelection();
+        dataGenerationManager.clearSelection();
 
         log.info("Project closed successfully");
-    }
-
-    private DataSourceWrapper createDsFromDto(DataSourceDto dto)
-    {
-        return new DataSourceWrapper(
-                dto.getDriverClassName(),
-                dto.getUrl(),
-                dto.getDatabase(),
-                dto.getUsername(),
-                dto.getPassword());
     }
 }
