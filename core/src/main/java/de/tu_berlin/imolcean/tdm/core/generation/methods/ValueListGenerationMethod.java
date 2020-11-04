@@ -21,21 +21,21 @@ public class ValueListGenerationMethod implements GenerationMethod
             throw new DataGenerationException(String.format("The value library %s is not a value list", lib.getId()));
         }
 
-        return pick(lib.getList().toArray());
+        return pick(lib.getList());
     }
 
-    public Object pick(Object[] options)
+    public Object pick(List<?> options)
     {
-        log.fine(String.format("Picking from a list of %s elements", options == null ? null : options.length));
+        log.fine(String.format("Picking from a list of %s elements", options == null ? null : options.size()));
 
-        if(options == null || options.length == 0)
+        if(options == null || options.size() == 0)
         {
             return null;
         }
 
-        int randomIndex = new IntegerGenerationMethod().generate(0, options.length);
+        int randomIndex = new IntegerGenerationMethod().generate(0, options.size());
 
-        return options[randomIndex];
+        return options.get(randomIndex);
     }
 
     @Override
@@ -43,13 +43,13 @@ public class ValueListGenerationMethod implements GenerationMethod
     {
         List<Object> args = parseParams(params);
 
-        return pick((Object[]) args.get(0));
+        return pick((List<?>) args.get(0));
     }
 
     @Override
     public List<GenerationMethodParamDescription> getParamDescription()
     {
         return List.of(
-                new GenerationMethodParamDescription("options", Object[].class, true));
+                new GenerationMethodParamDescription("options", List.class, true));
     }
 }

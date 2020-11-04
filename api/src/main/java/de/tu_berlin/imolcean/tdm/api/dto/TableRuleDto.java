@@ -1,7 +1,9 @@
 package de.tu_berlin.imolcean.tdm.api.dto;
 
+import de.tu_berlin.imolcean.tdm.api.annotations.TsOptional;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
@@ -31,8 +33,13 @@ public class TableRuleDto
     }
 
     private String tableName;
+    
     private FillMode fillMode;
-    private int rowCount;
-    // TODO rowCount min, max
+
+    private int rowCountTotalOrMin;
+
+    @Getter(onMethod_ = {@TsOptional})
+    private int rowCountMax;
+
     private List<ColumnRuleDto> columnRules;
 }

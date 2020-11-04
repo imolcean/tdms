@@ -1,4 +1,4 @@
-package de.tu_berlin.imolcean.tdm.x.generation.generators;
+package de.tu_berlin.imolcean.tdm.x.generators;
 
 import de.tu_berlin.imolcean.tdm.api.DataSourceWrapper;
 import de.tu_berlin.imolcean.tdm.api.interfaces.generation.generator.SimpleDataGenerator;
@@ -7,6 +7,7 @@ import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
 import lombok.extern.java.Log;
 import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import schemacrawler.schemacrawler.SchemaCrawlerException;
 
@@ -16,11 +17,9 @@ import java.sql.SQLException;
 @Component
 @Extension
 @Log
+@SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
 public class ClearDataGenerator implements SimpleDataGenerator
 {
-
-    // TODO Test!
-
     @Autowired
     SchemaService schemaService;
 

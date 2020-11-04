@@ -2,8 +2,13 @@ package de.tu_berlin.imolcean.tdm.core.plugins;
 
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
+import org.pf4j.Plugin;
 import org.pf4j.PluginManager;
+import org.pf4j.PluginWrapper;
 import org.pf4j.spring.SingletonSpringExtensionFactory;
+import org.pf4j.spring.SpringPlugin;
+import org.pf4j.spring.SpringPluginManager;
+import org.springframework.context.ApplicationContext;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -14,12 +19,56 @@ import java.util.Properties;
 @Log
 public class TdmExtensionFactory extends SingletonSpringExtensionFactory
 {
+    private final boolean autowire;
+    private final PluginManager pluginManager;
     private final Path configsRoot;
 
     public TdmExtensionFactory(PluginManager pluginManager, Path configsRoot)
     {
         super(pluginManager);
+        this.autowire = true;
+        this.pluginManager = pluginManager;
         this.configsRoot = configsRoot;
+    }
+
+    @Override
+    public <T> T create(Class<T> extensionClass)
+    {
+        T extension = createWithoutSpring(extensionClass);
+
+        if (autowire && extension != null)
+        {
+            // test for SpringBean
+            PluginWrapper pluginWrapper = pluginManager.whichPlugin(extensionClass);
+
+            if(pluginWrapper != null)
+            { // is plugin extension
+                Plugin plugin = pluginWrapper.getPlugin();
+
+                if (plugin instanceof SpringPlugin)
+                {
+                    // autowire
+                    ApplicationContext pluginContext = ((SpringPlugin) plugin).getApplicationContext();
+                    pluginContext.getAutowireCapableBeanFactory().autowireBean(extension);
+                }
+                else if(this.pluginManager instanceof SpringPluginManager)
+                {
+                    // is system extension and plugin manager is SpringPluginManager
+                    SpringPluginManager springPluginManager = (SpringPluginManager) this.pluginManager;
+                    ApplicationContext pluginContext = springPluginManager.getApplicationContext();
+                    pluginContext.getAutowireCapableBeanFactory().autowireBean(extension);
+                }
+            }
+            else if(this.pluginManager instanceof SpringPluginManager)
+            {
+                // is system extension and plugin manager is SpringPluginManager
+                SpringPluginManager springPluginManager = (SpringPluginManager) this.pluginManager;
+                ApplicationContext pluginContext = springPluginManager.getApplicationContext();
+                pluginContext.getAutowireCapableBeanFactory().autowireBean(extension);
+            }
+        }
+
+        return extension;
     }
 
     @Override

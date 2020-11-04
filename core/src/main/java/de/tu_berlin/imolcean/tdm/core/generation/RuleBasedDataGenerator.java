@@ -44,13 +44,8 @@ public class RuleBasedDataGenerator implements DataGenerator
     @Autowired
     private GenerationMethodCreator generationMethodCreator;
 
-    // TODO Test!
-
-    public void generate(DataSourceWrapper ds, Collection<?> _dtos) throws SchemaCrawlerException, IOException, SQLException
+    public void generate(DataSourceWrapper ds, Collection<TableRuleDto> dtos) throws SchemaCrawlerException, IOException, SQLException
     {
-        // Validate parameters
-        List<TableRuleDto> dtos = validateDtos(_dtos);
-
         // Disable constraints
         lowLevelDataService.disableConstraints(ds);
 
@@ -177,23 +172,6 @@ public class RuleBasedDataGenerator implements DataGenerator
         lowLevelDataService.enableConstraints(ds);
     }
 
-    private List<TableRuleDto> validateDtos(Collection<?> _dtos)
-    {
-        List<TableRuleDto> dtos = new ArrayList<>(_dtos.size());
-
-        for(Object dto : _dtos)
-        {
-            if(!(dto instanceof TableRuleDto))
-            {
-                throw new IllegalArgumentException("This generator requires TableRuleDto as parameters");
-            }
-
-            dtos.add((TableRuleDto) dto);
-        }
-
-        return dtos;
-    }
-
     private Map<Table, TableRule> getRulesFromDtos(Collection<TableRuleDto> dtos, DataSourceWrapper ds, Connection connection) throws SQLException, SchemaCrawlerException
     {
         Map<Table, TableRule> rules = new HashMap<>();
@@ -201,7 +179,7 @@ public class RuleBasedDataGenerator implements DataGenerator
         for(TableRuleDto trDto : dtos)
         {
             Table table = schemaService.getTable(ds, trDto.getTableName());
-            TableRule tr = new TableRule(table, TableRule.FillMode.valueOf(trDto.getFillMode().name()), trDto.getRowCount());
+            TableRule tr = new TableRule(table, TableRule.FillMode.valueOf(trDto.getFillMode().name()), trDto.getRowCountTotalOrMin(), trDto.getRowCountMax());
 
             for(TableRuleDto.ColumnRuleDto crDto : trDto.getColumnRules())
             {

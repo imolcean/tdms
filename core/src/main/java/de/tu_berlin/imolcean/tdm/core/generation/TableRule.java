@@ -50,7 +50,12 @@ public class TableRule
 
     public TableRule(Table table, FillMode fillMode, int minRowCount, int maxRowCount)
     {
-        this(table, fillMode, new IntegerGenerationMethod().generate(minRowCount, maxRowCount));
+        this(
+                table,
+                fillMode,
+                maxRowCount == 0
+                        ? minRowCount
+                        : new IntegerGenerationMethod().generate(minRowCount, maxRowCount));
     }
 
     public boolean isPostponed()
@@ -58,6 +63,7 @@ public class TableRule
         return getOrderedPostponedColumnRules().size() > 0;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isValid()
     {
         // Check that columnRules only contains Columns of this Table (no foreign Columns)

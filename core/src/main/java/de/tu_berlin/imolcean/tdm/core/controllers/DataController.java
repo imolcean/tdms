@@ -1,8 +1,10 @@
 package de.tu_berlin.imolcean.tdm.core.controllers;
 
 import de.tu_berlin.imolcean.tdm.api.dto.TableContentDto;
+import de.tu_berlin.imolcean.tdm.api.dto.TableRuleDto;
 import de.tu_berlin.imolcean.tdm.core.services.ProjectService;
 import de.tu_berlin.imolcean.tdm.core.services.proxies.DataExportProxy;
+import de.tu_berlin.imolcean.tdm.core.services.proxies.DataGenerationProxy;
 import de.tu_berlin.imolcean.tdm.core.services.proxies.DataImportProxy;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
@@ -30,13 +32,15 @@ public class DataController
     private final DataService dataService;
     private final DataImportProxy dataImportProxy;
     private final DataExportProxy dataExportProxy;
+    private final DataGenerationProxy dataGenerationProxy;
 
     public DataController(ProjectService projectService,
                           DataSourceService dsService,
                           SchemaService SchemaService,
                           DataService dataService,
                           DataImportProxy dataImportProxy,
-                          DataExportProxy dataExportProxy)
+                          DataExportProxy dataExportProxy,
+                          DataGenerationProxy dataGenerationProxy)
     {
         this.projectService = projectService;
         this.dsService = dsService;
@@ -44,6 +48,7 @@ public class DataController
         this.dataService = dataService;
         this.dataImportProxy = dataImportProxy;
         this.dataExportProxy = dataExportProxy;
+        this.dataGenerationProxy = dataGenerationProxy;
     }
 
     @GetMapping("/{alias}/{table}")
@@ -168,5 +173,13 @@ public class DataController
         }
 
         return _row;
+    }
+
+    @PutMapping("/internal/generate")
+    public ResponseEntity<Void> generateData(@RequestBody Collection<TableRuleDto> params) throws Exception
+    {
+        dataGenerationProxy.generate(dsService.getInternalDataSource(), params);
+
+        return ResponseEntity.noContent().build();
     }
 }
