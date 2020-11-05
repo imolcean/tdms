@@ -6,6 +6,10 @@ import org.pf4j.ExtensionPoint;
 import javax.sql.DataSource;
 import java.nio.file.Path;
 
+/**
+ * Represents a piece of TDMS functionality that is responsible for exporting serialised content of a database,
+ * usually the internal database.
+ */
 public interface DataExporter extends PublicInterface, ExtensionPoint
 {
     /**

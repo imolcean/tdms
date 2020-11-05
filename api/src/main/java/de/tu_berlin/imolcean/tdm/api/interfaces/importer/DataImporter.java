@@ -6,6 +6,10 @@ import org.pf4j.ExtensionPoint;
 import javax.sql.DataSource;
 import java.nio.file.Path;
 
+/**
+ * Represents a piece of TDMS functionality that is responsible for importing serialised content into a database,
+ * usually the internal database.
+ */
 public interface DataImporter extends PublicInterface, ExtensionPoint
 {
     /**
