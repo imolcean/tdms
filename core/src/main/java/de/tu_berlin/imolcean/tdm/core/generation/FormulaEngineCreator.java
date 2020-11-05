@@ -73,8 +73,6 @@ public class FormulaEngineCreator
         engine.put("RandRegexp", new RegexGenerationMethod());
         engine.put("RandFrom", new ValueListGenerationMethod());
 
-        // TODO Load custom generation methods
-
         for(String functionName : scripts.getScripts().keySet())
         {
             try
