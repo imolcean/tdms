@@ -12,6 +12,13 @@ import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
 
+/**
+ * This service is used to open, close, or modify TDMS projects.
+ *
+ * A project is a set of parameters ({@link ProjectDto}) that identify work environment. Usually,
+ * a user would create one TDMS project for every software project which requires managing of the test data. In order
+ * to use TDMS, one should create a new project or open an existing one.
+ */
 @Service
 @Log
 public class ProjectService
@@ -46,12 +53,23 @@ public class ProjectService
         this.projectName = null;
     }
 
+    /**
+     * Checks if there is any project open currently.
+     *
+     * @return true if a project is open, false otherwise
+     */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isProjectOpen()
     {
         return projectName != null;
     }
 
+    /**
+     * Looks for the name of the currently open project.
+     *
+     * @return name of the currently open project
+     * @throws NoOpenProjectException if there is no project open currently
+     */
     public String getProjectName()
     {
         if(!isProjectOpen())
@@ -62,6 +80,12 @@ public class ProjectService
         return projectName;
     }
 
+    /**
+     * Renames the currently open project.
+     *
+     * @param name new name for the currently open project
+     * @throws NoOpenProjectException if there is no project open currently
+     */
     public void renameProject(String name)
     {
         if(!isProjectOpen())
@@ -77,6 +101,12 @@ public class ProjectService
         projectName = name;
     }
 
+    /**
+     * Finds the data directory of the currently open project.
+     *
+     * @return path to the data directory of the currently open project
+     * @throws NoOpenProjectException if there is no project open currently
+     */
     public Path getDataDir()
     {
         if(!isProjectOpen())
@@ -87,6 +117,12 @@ public class ProjectService
         return dataDir;
     }
 
+    /**
+     * Changes the data directory of the currently open project.
+     *
+     * @param dir new data directory of the currently open project
+     * @throws NoOpenProjectException if there is no project open currently
+     */
     public void changeDataDir(Path dir)
     {
         if(!isProjectOpen())
@@ -97,6 +133,11 @@ public class ProjectService
         dataDir = dir;
     }
 
+    /**
+     * Opens a project.
+     *
+     * @param project project to open
+     */
     public void open(ProjectDto project) throws Exception
     {
         // TODO Close open project first
@@ -164,6 +205,14 @@ public class ProjectService
         log.info(String.format("Project %s opened successfully", projectName));
     }
 
+    /**
+     * Saves currently open project into a {@link ProjectDto} that can
+     * be serialised, stored on disk, and reopened later.
+     *
+     * This method does not close the current project.
+     *
+     * @return serialised form of the currently open project
+     */
     public ProjectDto save()
     {
         if(!isProjectOpen())
@@ -196,6 +245,11 @@ public class ProjectService
                 dataDir.toString());
     }
 
+    /**
+     * Closes the currently open project.
+     *
+     * @throws NoOpenProjectException if there is no currently open project
+     */
     public void close()
     {
         if(!isProjectOpen())

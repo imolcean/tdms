@@ -8,6 +8,9 @@ import de.tu_berlin.imolcean.tdm.core.repositories.StageDataSourceRepository;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 
+/**
+ * This service is used to retrieve and manipulate database connections.
+ */
 @Service
 @Log
 public class DataSourceService
@@ -24,6 +27,12 @@ public class DataSourceService
         this.tmpDs = null;
     }
 
+    /**
+     * Provides access to the internal database of the current project.
+     *
+     * @return reference to the internal database
+     * @throws NoDataSourceSelectedException if there is no internal datasource selected, this usually means no project is currently open
+     */
     public DataSourceWrapper getInternalDataSource()
     {
         if(internalDs == null)
@@ -34,6 +43,11 @@ public class DataSourceService
         return internalDs;
     }
 
+    /**
+     * Sets the given datasource as a reference to the internal database.
+     *
+     * @param ds reference to the internal database
+     */
     public void setInternalDataSource(DataSourceWrapper ds)
     {
         this.internalDs = ds;
@@ -41,6 +55,9 @@ public class DataSourceService
         log.fine("Internal DS set to " + ds.getUrl());
     }
 
+    /**
+     * Unselects currently selected internal database.
+     */
     public void clearInternalDataSource()
     {
         this.internalDs = null;
@@ -48,6 +65,12 @@ public class DataSourceService
         log.fine("Internal DS cleared");
     }
 
+    /**
+     * Provides access to the temp database of the current project.
+     *
+     * @return reference to the internal database
+     * @throws NoDataSourceSelectedException if there is no temp datasource selected, this usually means no project is currently open
+     */
     public DataSourceWrapper getTmpDataSource()
     {
         if(tmpDs == null)
@@ -58,6 +81,11 @@ public class DataSourceService
         return tmpDs;
     }
 
+    /**
+     * Sets the given datasource as a reference to the temp database.
+     *
+     * @param ds reference to the temp database
+     */
     public void setTmpDataSource(DataSourceWrapper ds)
     {
         this.tmpDs = ds;
@@ -65,6 +93,9 @@ public class DataSourceService
         log.fine("Temp DS set to " + ds.getUrl());
     }
 
+    /**
+     * Unselects currently selected temp database.
+     */
     public void clearTmpDataSource()
     {
         this.tmpDs = null;
@@ -76,7 +107,8 @@ public class DataSourceService
      * Provides access to the {@link DataSourceWrapper} of the staging environment
      * that is currently selected in the {@link StageSelectionContextHolder}.
      *
-     * @throws StageDataSourceNotFoundException if no {@link DataSourceWrapper} is configured for the given {@code name}
+     * @throws StageDataSourceNotFoundException if no {@link DataSourceWrapper} is configured for the currently selected stage
+     * @throws NoCurrentStageException if no stage is currently selected
      * @return {@link DataSourceWrapper} of the currently selected staging environment
      */
     public DataSourceWrapper getCurrentStageDataSource()
@@ -102,6 +134,7 @@ public class DataSourceService
      *              "current" is an alias for the {@link DataSourceWrapper} of the currently selected stage
      * @throws InvalidDataSourceAliasException if the provided {@code alias} is invalid
      * @throws NoCurrentStageException if {@code alias} is "current" but there is no stage selected
+     * @throws StageDataSourceNotFoundException if {@code alias} is "current" but no {@link DataSourceWrapper} is configured for the currently selected stage
      * @return {@link DataSourceWrapper} associated with the {@code alias}
      */
     public DataSourceWrapper getDataSourceByAlias(String alias)
