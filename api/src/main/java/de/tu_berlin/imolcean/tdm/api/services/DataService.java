@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * This service provides a way to read and modify data in the database tables.
  *
- * One distinct feature that differ this service from the {@link LowLevelDataService} is that
+ * One distinct feature that differs this service from the {@link LowLevelDataService} is that
  * this service handles every action as a separate transaction an therefore works directly with the
  * {@link DataSource} objects.
  */
@@ -134,7 +134,7 @@ public interface DataService
      * In case the removal of at least one row fails (due to database constraints, for example), the
      * whole transaction will be rolled back.
      *
-     * @param ds database containing the {@code tables}
+     * @param ds database containing the {@code table}
      * @param table table that should be cleared
      */
     void clearTable(DataSource ds, Table table) throws SQLException;
