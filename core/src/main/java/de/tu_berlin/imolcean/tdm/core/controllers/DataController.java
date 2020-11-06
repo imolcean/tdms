@@ -163,6 +163,14 @@ public class DataController
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/internal/generate")
+    public ResponseEntity<Void> generateData(@RequestBody Collection<TableRuleDto> params) throws Exception
+    {
+        dataGenerationProxy.generate(dsService.getInternalDataSource(), params);
+
+        return ResponseEntity.noContent().build();
+    }
+
     private Map<Column, Object> columnNamesMap2ColumnMap(Table table, Map<String, Object> row)
     {
         Map<Column, Object> _row = new HashMap<>();
@@ -173,13 +181,5 @@ public class DataController
         }
 
         return _row;
-    }
-
-    @PutMapping("/internal/generate")
-    public ResponseEntity<Void> generateData(@RequestBody Collection<TableRuleDto> params) throws Exception
-    {
-        dataGenerationProxy.generate(dsService.getInternalDataSource(), params);
-
-        return ResponseEntity.noContent().build();
     }
 }

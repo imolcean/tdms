@@ -119,7 +119,6 @@ public class SchemaController
         return ResponseEntity.ok(schemaUpdateProxy.isUpdateInProgress());
     }
 
-    // TODO Receive changelog file from GUI, no configs needed
     @PutMapping("/internal/update/init")
     public ResponseEntity<SchemaUpdateDto> initSchemaUpdate() throws Exception
     {

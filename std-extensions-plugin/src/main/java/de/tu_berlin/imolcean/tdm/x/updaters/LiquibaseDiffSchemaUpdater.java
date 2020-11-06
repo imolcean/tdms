@@ -9,7 +9,6 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.diff.DiffResult;
 import liquibase.diff.compare.CompareControl;
-import liquibase.diff.output.report.DiffToReport;
 import liquibase.resource.FileSystemResourceAccessor;
 import lombok.NoArgsConstructor;
 import lombok.extern.java.Log;
@@ -32,7 +31,10 @@ public class LiquibaseDiffSchemaUpdater extends DiffSchemaUpdater
         this.internalDs = null;
         this.tmpDs = null;
 
-        // TODO Fail here if path == null
+        if(this.changelogPath == null)
+        {
+            throw new IllegalStateException("Changelog path is not configured");
+        }
 
         log.fine("Liquibase changelog: " + this.changelogPath);
     }
@@ -70,9 +72,6 @@ public class LiquibaseDiffSchemaUpdater extends DiffSchemaUpdater
             schemaService.dropTable(tmpDs, "DATABASECHANGELOGLOCK");
 
             DiffResult diff = liquibase.diff(internalDb, tmpDb, CompareControl.STANDARD);
-
-            // TODO Remove
-            new DiffToReport(diff, System.out).print();
 
             log.info("Update initialised");
             log.info("Preparing schema update report");

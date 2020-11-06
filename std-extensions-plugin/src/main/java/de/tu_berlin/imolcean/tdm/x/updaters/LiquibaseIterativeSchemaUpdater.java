@@ -31,7 +31,10 @@ public class LiquibaseIterativeSchemaUpdater extends IterativeSchemaUpdater
         this.internalDs = null;
         this.tmpDs = null;
 
-        // TODO Fail here if path == null
+        if(this.changelogPath == null)
+        {
+            throw new IllegalStateException("Changelog path is not configured");
+        }
 
         log.fine("Liquibase changelog: " + this.changelogPath);
     }
@@ -66,9 +69,6 @@ public class LiquibaseIterativeSchemaUpdater extends IterativeSchemaUpdater
             liquibase.update(new Contexts());
 
             DiffResult diff = liquibase.diff(internalDb, tmpDb, CompareControl.STANDARD);
-
-            // TODO Remove
-            new DiffToReport(diff, System.out).print();
 
             log.info("Update initialised");
             log.info("Preparing schema update report");

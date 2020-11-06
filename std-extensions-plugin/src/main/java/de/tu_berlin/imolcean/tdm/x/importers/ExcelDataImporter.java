@@ -24,6 +24,7 @@ import java.util.*;
 @Component
 @Extension
 @Log
+@SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
 public class ExcelDataImporter implements DataImporter
 {
     @Autowired
@@ -53,9 +54,6 @@ public class ExcelDataImporter implements DataImporter
         }
 
         Map<Table, List<Object[]>> map = handleDirectory(importDir, tables);
-
-        // TODO Remove
-//        displayData(map);
 
         dataService.importData(ds, map);
 
@@ -154,9 +152,6 @@ public class ExcelDataImporter implements DataImporter
             {
                 Object val = getCellValue(row.getCell(i));
 
-                // TODO Remove
-//                System.out.printf("%s.%s: %s%n", row.getRowNum(), i, val);
-
                 dbRow[i] = val;
             }
 
@@ -164,25 +159,6 @@ public class ExcelDataImporter implements DataImporter
         }
         
         return dbRows;
-    }
-
-    // TODO Remove
-    private void displayData(Map<Table, List<Object[]>> data)
-    {
-        for(Map.Entry<Table, List<Object[]>> entry : data.entrySet())
-        {
-            System.out.println(entry.getKey().getName() + ":");
-
-            for(Object[] row : entry.getValue())
-            {
-                for(Object col : row)
-                {
-                    System.out.print(col + ", ");
-                }
-
-                System.out.println();
-            }
-        }
     }
 
     private boolean columnNamesMatch(Table table, Sheet sheet)
