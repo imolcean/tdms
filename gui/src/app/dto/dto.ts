@@ -1,12 +1,43 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 2.20.583 on 2020-06-29 11:26:56.
+// Generated using typescript-generator version 2.26.723 on 2020-11-11 12:26:41.
 
 export interface DataSourceDto {
     driverClassName: string;
     url: string;
-    user: string;
+    database: string;
+    username: string;
     password: string;
+}
+
+export interface GitRepositoryDto {
+    url: string;
+    dir: string;
+    token: string;
+}
+
+export interface ProjectDto {
+    projectName: string;
+    internal: DataSourceDto;
+    tmp: DataSourceDto;
+    gitRepository: GitRepositoryDto;
+    schemaUpdater: string;
+    dataImporter: string;
+    dataExporter: string;
+    deployer: string;
+    dataGenerator: string;
+    dataDir: string;
+}
+
+export interface SchemaUpdateDataMappingRequest {
+    sqlMigrationTables: SchemaUpdateDataMappingRequestTableDataMigrationRequest[];
+}
+
+export interface SchemaUpdateDto {
+    untouchedTables: string[];
+    addedTables: TableMetaDataDto[];
+    deletedTables: TableMetaDataDto[];
+    changedTables: SchemaUpdateDtoComparison[];
 }
 
 export interface StatusMessageDto {
@@ -15,15 +46,63 @@ export interface StatusMessageDto {
     addition?: string;
 }
 
+export interface TableContentDto {
+    tableName: string;
+    columnNames: string[];
+    data: any[][];
+}
+
 export interface TableMetaDataDto {
     name: string;
     columns: TableMetaDataDtoColumn[];
+    pk: TableMetaDataDtoPrimaryKey;
+    fks: TableMetaDataDtoForeignKey[];
+}
+
+export interface TableRuleDto {
+    tableName: string;
+    fillMode: TableRuleDtoFillMode;
+    rowCountTotalOrMin: number;
+    rowCountMax?: number;
+    columnRules: TableRuleDtoColumnRuleDto[];
+}
+
+export interface SchemaUpdateDataMappingRequestTableDataMigrationRequest {
+    tableName: string;
+    sql: string;
+}
+
+export interface SchemaUpdateDtoComparison {
+    before: TableMetaDataDto;
+    after: TableMetaDataDto;
 }
 
 export interface TableMetaDataDtoColumn {
     name: string;
     type: string;
-    primaryKey: boolean;
+    nullable: boolean;
+}
+
+export interface TableMetaDataDtoPrimaryKey {
+    name: string;
+    columnNames: string[];
+}
+
+export interface TableMetaDataDtoForeignKey {
+    name: string;
+    columnNames: string[];
+    pkTableName: string;
+    pkColumnNames: string[];
+}
+
+export interface TableRuleDtoColumnRuleDto {
+    columnName: string;
+    generationMethodName: string;
+    uniqueValues: boolean;
+    nullPart: number;
+    params: { [index: string]: any };
 }
 
 export type StatusMessageDtoKind = "INFO" | "SUCCESS" | "WARNING" | "ERROR";
+
+export type TableRuleDtoFillMode = "APPEND" | "UPDATE";
