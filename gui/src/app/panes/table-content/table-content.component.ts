@@ -5,8 +5,7 @@ import { Component, OnInit } from '@angular/core';
   templateUrl: './table-content.component.html',
   styleUrls: ['./table-content.component.scss']
 })
-export class TableContentComponent implements OnInit {
-
+export class TableContentComponent implements OnInit
+{
   ngOnInit(): void {}
-
 }

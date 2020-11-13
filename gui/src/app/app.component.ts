@@ -10,31 +10,44 @@ export class AppComponent implements OnInit {
 
   public items: MenuItem[];
 
-  ngOnInit(): void {
+  constructor()
+  {
     this.items = [
       {
-        label: "File",
+        label: "Project",
         items: [
           {label: 'New', icon: 'pi pi-plus'},
-          {label: 'Open', icon: 'pi pi-download'},
-          {label: 'Settings', icon: 'pi pi-cog'}
+          {label: 'Open', icon: 'pi pi-upload'},
+          {label: 'Save', icon: 'pi pi-download'},
+          {label: 'Close', icon: 'pi pi-times'},
+          {label: 'Properties', icon: 'pi pi-cog'}
         ]
       },
       {
-        label: "Edit",
+        label: "Data",
         items: [
-          {label: 'Undo', icon: 'pi pi-replay'},
-          {label: 'Redo', icon: 'pi pi-refresh'}
+          {label: 'Import', icon: 'pi pi-arrow-right'},
+          {label: 'Export', icon: 'pi pi-arrow-left'},
+          {label: 'Generation', icon: 'pi pi-briefcase'}
         ]
       },
       {
-        label: "Tools",
+        label: "Connections",
         items: [
-          {label: 'Connections', icon: 'pi pi-sitemap'},
+          {label: 'Internal', icon: 'pi pi-desktop'},
+          {label: 'Stages', icon: 'pi pi-globe'},
+        ]
+      },
+      {
+        label: "Help",
+        items: [
+          {label: 'About TDMS', icon: 'pi pi-info'},
           {label: 'Plugins', icon: 'pi pi-th-large'}
         ]
       }
     ];
   }
+
+  ngOnInit(): void {}
 
 }

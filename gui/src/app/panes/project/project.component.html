@@ -1,11 +1,17 @@
 <p-accordion [multiple]="true">
-  <p-accordionTab header="Parameters">
-    Content 1
+  <p-accordionTab header="Schema">
+    <p-tree [value]="nodes | async"
+            selectionMode="single"
+            (onNodeSelect)="nodeSelect($event)"
+            (onNodeUnselect)="nodeUnselect($event)"
+            [contextMenu]="cm"
+            [loading]="schemaLoading">
+    </p-tree>
+
+    <p-contextMenu #cm [model]="contextMenuItems"></p-contextMenu>
   </p-accordionTab>
+
   <p-accordionTab header="Resources">
     Content 2
-  </p-accordionTab>
-  <p-accordionTab header="Generation">
-    Content 3
   </p-accordionTab>
 </p-accordion>

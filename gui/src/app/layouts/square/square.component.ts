@@ -5,8 +5,7 @@ import { Component, OnInit } from '@angular/core';
   templateUrl: './square.component.html',
   styleUrls: ['./square.component.scss']
 })
-export class SquareComponent implements OnInit {
-
+export class SquareComponent implements OnInit
+{
   ngOnInit(): void {}
-
 }

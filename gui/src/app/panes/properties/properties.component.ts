@@ -5,11 +5,12 @@ import { Component, OnInit } from '@angular/core';
   templateUrl: './properties.component.html',
   styleUrls: ['./properties.component.scss']
 })
-export class PropertiesComponent implements OnInit {
-
+export class PropertiesComponent implements OnInit
+{
   public properties: Object[];
 
-  ngOnInit(): void {
+  constructor()
+  {
     this.properties = [];
 
     for(let i = 0; i < 50; i++)
@@ -18,4 +19,5 @@ export class PropertiesComponent implements OnInit {
     }
   }
 
+  ngOnInit(): void {}
 }
