@@ -1,1 +1,18 @@
-<p>Dynamic table will come here</p>
+<p-table *ngIf="content"
+         [value]="content.data">
+  <ng-template pTemplate="header">
+    <tr>
+      <th *ngFor="let col of content.columnNames">
+        {{col}}
+      </th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-row>
+    <tr>
+      <td *ngFor="let col of content.columnNames; let i = index">
+        {{row[i]}}
+      </td>
+    </tr>
+  </ng-template>
+</p-table>

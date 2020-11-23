@@ -4,8 +4,19 @@
             selectionMode="single"
             (onNodeSelect)="nodeSelect($event)"
             (onNodeUnselect)="nodeUnselect($event)"
+            (onNodeContextMenuSelect)="nodeCmSelect($event)"
             [contextMenu]="cm"
             [loading]="schemaLoading">
+
+      <ng-template let-node  pTemplate="table">
+        <p (dblclick)="open(node);">
+          {{node.label}}
+        </p>
+      </ng-template>
+
+      <ng-template let-node  pTemplate="column">
+        <p>{{node.label}}</p>
+      </ng-template>
     </p-tree>
 
     <p-contextMenu #cm [model]="contextMenuItems"></p-contextMenu>

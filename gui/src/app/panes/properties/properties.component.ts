@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {PropertiesService, Property} from "../../services/properties.service";
 
 @Component({
   selector: 'app-properties',
@@ -7,16 +8,13 @@ import { Component, OnInit } from '@angular/core';
 })
 export class PropertiesComponent implements OnInit
 {
-  public properties: Object[];
+  public properties: Property[];
 
-  constructor()
+  constructor(private propertiesService: PropertiesService)
   {
     this.properties = [];
-
-    for(let i = 0; i < 50; i++)
-    {
-      this.properties.push({key: "key", value: "value"});
-    }
+    this.propertiesService.getProperties()
+      .subscribe((value: Property[]) => this.properties = value);
   }
 
   ngOnInit(): void {}

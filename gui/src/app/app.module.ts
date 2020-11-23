@@ -15,6 +15,7 @@ import { ProjectComponent } from './panes/project/project.component';
 import { StatusComponent } from './panes/status/status.component';
 import { TableContentComponent } from './panes/table-content/table-content.component';
 import { HttpClientModule } from "@angular/common/http";
+import { FormsModule } from "@angular/forms";
 
 @NgModule({
   declarations: [
@@ -27,6 +28,7 @@ import { HttpClientModule } from "@angular/common/http";
   ],
   imports: [
     BrowserModule,
+    FormsModule,
     NoopAnimationsModule,
     HttpClientModule,
     MenubarModule,

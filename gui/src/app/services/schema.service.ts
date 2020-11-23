@@ -10,7 +10,7 @@ export class SchemaService
 {
   constructor(private http: HttpClient) {}
 
-  getSchema(): Observable<TableMetaDataDto[]>
+  public getSchema(): Observable<TableMetaDataDto[]>
   {
     return this.http.get<TableMetaDataDto[]>('api/schema/internal');
   }
