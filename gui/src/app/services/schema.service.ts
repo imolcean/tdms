@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {TableMetaDataDto} from "../dto/dto";
-import {Observable} from "rxjs";
+import {BehaviorSubject, Observable} from "rxjs";
 import {HttpClient} from "@angular/common/http";
 
 @Injectable({
@@ -8,10 +8,22 @@ import {HttpClient} from "@angular/common/http";
 })
 export class SchemaService
 {
-  constructor(private http: HttpClient) {}
+  private schema$: BehaviorSubject<TableMetaDataDto[] | undefined>;
 
-  public getSchema(): Observable<TableMetaDataDto[]>
+  constructor(private http: HttpClient)
   {
-    return this.http.get<TableMetaDataDto[]>('api/schema/internal');
+    this.schema$ = new BehaviorSubject<TableMetaDataDto[] | undefined>(undefined);
+  }
+
+  public getSchema(): Observable<TableMetaDataDto[] | undefined>
+  {
+    return this.schema$.asObservable();
+  }
+
+  public loadSchema(): void
+  {
+    this.http
+      .get<TableMetaDataDto[]>('api/schema/internal')
+      .subscribe((value: TableMetaDataDto[]) => this.schema$.next(value));
   }
 }

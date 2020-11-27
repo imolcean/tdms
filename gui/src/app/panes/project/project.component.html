@@ -1,6 +1,6 @@
 <p-accordion [multiple]="true">
   <p-accordionTab header="Schema">
-    <p-tree [value]="nodes | async"
+    <p-tree [value]="nodes$ | async"
             selectionMode="single"
             (onNodeSelect)="nodeSelect($event)"
             (onNodeUnselect)="nodeUnselect($event)"

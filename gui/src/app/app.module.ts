@@ -7,6 +7,10 @@ import { TableModule } from 'primeng/table';
 import { AccordionModule } from "primeng/accordion";
 import { TreeModule } from 'primeng/tree';
 import { ContextMenuModule } from "primeng/contextmenu";
+import { ButtonModule } from "primeng/button";
+import { ToolbarModule } from "primeng/toolbar";
+import { DialogModule } from "primeng/dialog";
+import { InputTextModule } from "primeng/inputtext";
 
 import { AppComponent } from './app.component';
 import { PropertiesComponent } from './panes/properties/properties.component';
@@ -29,9 +33,13 @@ import { FormsModule } from "@angular/forms";
   imports: [
     BrowserModule,
     FormsModule,
+    InputTextModule,
+    DialogModule,
     NoopAnimationsModule,
     HttpClientModule,
+    ToolbarModule,
     MenubarModule,
+    ButtonModule,
     TableModule,
     AccordionModule,
     TreeModule,

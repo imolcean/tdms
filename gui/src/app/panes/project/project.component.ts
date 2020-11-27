@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { TreeNode, MenuItem } from "primeng/api";
 import {TableMetaDataDto} from "../../dto/dto";
-import {EMPTY, Observable} from "rxjs";
+import {Observable} from "rxjs";
 import {SchemaService} from "../../services/schema.service";
 import {map, tap} from "rxjs/operators";
 import {PropertiesService} from "../../services/properties.service";
@@ -14,7 +14,8 @@ import {TableService} from "../../services/table.service";
 })
 export class ProjectComponent implements OnInit
 {
-  nodes: Observable<TreeNode[]>;
+  schema$: Observable<TableMetaDataDto[] | undefined>;
+  nodes$: Observable<TreeNode[]>;
   schemaLoading: boolean;
   contextMenuItems: MenuItem[];
 
@@ -22,8 +23,16 @@ export class ProjectComponent implements OnInit
               private propertiesService: PropertiesService,
               private tableService: TableService)
   {
-    this.nodes = EMPTY;
-    this.schemaLoading = false;
+    this.schema$ = schemaService.getSchema();
+    this.nodes$ = this.schema$.pipe(
+      map((schema: TableMetaDataDto[] | undefined) =>
+        {
+          return schema !== undefined ? this.schema2TreeNodes(schema) : [];
+        }),
+      tap(() => this.schemaLoading = false)
+    );
+
+    this.schemaLoading = true;
     this.contextMenuItems = [
       { label: 'Action 1', icon: 'fa fa-search', command: (event) => console.log("Action 1 on " + event.item.state[0].data.name) },
       { label: 'Action 2', icon: 'fa fa-close', command: (event) => console.log("Action 2 on " + event.item.state[0].data.name) }
@@ -37,12 +46,7 @@ export class ProjectComponent implements OnInit
 
   public update(): void
   {
-    this.schemaLoading = true;
-
-    this.nodes = this.schemaService.getSchema().pipe(
-      map((schema: TableMetaDataDto[]) => this.schema2TreeNodes(schema)),
-      tap(() => this.schemaLoading = false)
-    );
+    this.schemaService.loadSchema();
   }
 
   public nodeSelect($event: any)

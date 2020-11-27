@@ -26,4 +26,25 @@ export class TableService
       .get<TableContentDto>('api/data/internal/' + tableName)
       .subscribe((value: TableContentDto) => this.content$.next(value));
   }
+
+  public addRows(tableName: string, rows: {[key: string]: any;}[]): void
+  {
+    this.http
+      .post('api/data/internal/' + tableName, rows)
+      .subscribe(_value => this.loadData(tableName));
+  }
+
+  public updateRow(tableName: string, rowIndex: number, row: {[key: string]: any;}): void
+  {
+    this.http
+      .put('api/data/internal/' + tableName + '/' + rowIndex, row)
+      .subscribe(_value => this.loadData(tableName));
+  }
+
+  public deleteRow(tableName: string, rowIndex: number): void
+  {
+    this.http
+      .delete('api/data/internal/' + tableName + '/' + rowIndex)
+      .subscribe(_value => this.loadData(tableName));
+  }
 }
