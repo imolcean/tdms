@@ -14,7 +14,7 @@ import {TableService} from "../../services/table.service";
 })
 export class ProjectComponent implements OnInit
 {
-  schema$: Observable<TableMetaDataDto[] | undefined>;
+  schema$: Observable<TableMetaDataDto[]>;
   nodes$: Observable<TreeNode[]>;
   schemaLoading: boolean;
   contextMenuItems: MenuItem[];
@@ -25,10 +25,7 @@ export class ProjectComponent implements OnInit
   {
     this.schema$ = schemaService.getSchema();
     this.nodes$ = this.schema$.pipe(
-      map((schema: TableMetaDataDto[] | undefined) =>
-        {
-          return schema !== undefined ? this.schema2TreeNodes(schema) : [];
-        }),
+      map((schema: TableMetaDataDto[]) => this.schema2TreeNodes(schema)),
       tap(() => this.schemaLoading = false)
     );
 
