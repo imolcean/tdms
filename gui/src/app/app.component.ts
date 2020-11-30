@@ -1,16 +1,18 @@
 import {Component, OnInit} from '@angular/core';
 import {MenuItem} from "primeng/api";
+import {ImportComponent} from "./dialogs/import/import.component";
+import {DialogService} from "primeng/dynamicdialog";
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit {
-
+export class AppComponent implements OnInit
+{
   public items: MenuItem[];
 
-  constructor()
+  constructor(private dialogService: DialogService)
   {
     this.items = [
       {
@@ -26,7 +28,7 @@ export class AppComponent implements OnInit {
       {
         label: "Data",
         items: [
-          {label: 'Import', icon: 'pi pi-arrow-right'},
+          {label: 'Import', icon: 'pi pi-arrow-right', command: e => this.onShowImport()},
           {label: 'Export', icon: 'pi pi-arrow-left'},
           {label: 'Generation', icon: 'pi pi-briefcase'}
         ]
@@ -50,4 +52,12 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {}
 
+  public onShowImport() {
+    this.dialogService.open(ImportComponent, {
+      header: 'Generic dialog',
+      width: '70%',
+      dismissableMask: false,
+      closable: false
+    });
+  }
 }

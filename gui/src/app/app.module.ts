@@ -10,6 +10,7 @@ import { ContextMenuModule } from "primeng/contextmenu";
 import { ButtonModule } from "primeng/button";
 import { ToolbarModule } from "primeng/toolbar";
 import { DialogModule } from "primeng/dialog";
+import {DialogService, DynamicDialogModule} from "primeng/dynamicdialog";
 import { InputTextModule } from "primeng/inputtext";
 
 import { AppComponent } from './app.component';
@@ -20,6 +21,7 @@ import { StatusComponent } from './panes/status/status.component';
 import { TableContentComponent } from './panes/table-content/table-content.component';
 import { HttpClientModule } from "@angular/common/http";
 import { FormsModule } from "@angular/forms";
+import { ImportComponent } from './dialogs/import/import.component';
 
 @NgModule({
   declarations: [
@@ -28,13 +30,15 @@ import { FormsModule } from "@angular/forms";
     SquareComponent,
     ProjectComponent,
     StatusComponent,
-    TableContentComponent
+    TableContentComponent,
+    ImportComponent
   ],
   imports: [
     BrowserModule,
     FormsModule,
     InputTextModule,
     DialogModule,
+    DynamicDialogModule,
     NoopAnimationsModule,
     HttpClientModule,
     ToolbarModule,
@@ -45,7 +49,7 @@ import { FormsModule } from "@angular/forms";
     TreeModule,
     ContextMenuModule
   ],
-  providers: [],
+  providers: [DialogService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
