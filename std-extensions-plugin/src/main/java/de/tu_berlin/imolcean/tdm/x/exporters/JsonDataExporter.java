@@ -3,6 +3,7 @@ package de.tu_berlin.imolcean.tdm.x.exporters;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import de.tu_berlin.imolcean.tdm.api.dto.TableContentDto;
 import de.tu_berlin.imolcean.tdm.api.interfaces.exporter.DataExporter;
 import de.tu_berlin.imolcean.tdm.api.services.SchemaService;
@@ -45,6 +46,7 @@ public class JsonDataExporter implements DataExporter
         }
 
         ObjectMapper mapper = new ObjectMapper();
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mapper.setDefaultPrettyPrinter(
                 new DefaultPrettyPrinter().withArrayIndenter(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE));
 
