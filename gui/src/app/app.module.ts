@@ -23,6 +23,7 @@ import { TableContentComponent } from './panes/table-content/table-content.compo
 import { HttpClientModule } from "@angular/common/http";
 import { FormsModule } from "@angular/forms";
 import { ImportComponent } from './dialogs/import/import.component';
+import { ExportComponent } from './dialogs/export/export.component';
 
 @NgModule({
   declarations: [
@@ -32,7 +33,8 @@ import { ImportComponent } from './dialogs/import/import.component';
     ProjectComponent,
     StatusComponent,
     TableContentComponent,
-    ImportComponent
+    ImportComponent,
+    ExportComponent
   ],
   imports: [
     BrowserModule,

@@ -3,13 +3,13 @@ import {DynamicDialogConfig, DynamicDialogRef} from "primeng/dynamicdialog";
 import {TableService} from "../../services/table.service";
 
 @Component({
-  selector: 'app-import',
-  templateUrl: './import.component.html',
-  styleUrls: ['./import.component.scss']
+  selector: 'app-export',
+  templateUrl: './export.component.html',
+  styleUrls: ['./export.component.scss']
 })
-export class ImportComponent implements OnInit
+export class ExportComponent implements OnInit
 {
-  public importPath: string = "PATH"; // TODO
+  public exportPath: string = "PATH"; // TODO
 
   constructor(private ref: DynamicDialogRef,
               private config: DynamicDialogConfig,
@@ -25,6 +25,6 @@ export class ImportComponent implements OnInit
   public onConfirm()
   {
     this.ref.close(true);
-    this.data.importData();
+    this.data.exportData();
   }
 }

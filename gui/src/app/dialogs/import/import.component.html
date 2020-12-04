@@ -2,11 +2,11 @@
   Are you sure you want to import data from {{importPath}}?
 </p>
 
-<p>
+<p class="note">
   Note: Data can only be imported into empty tables
 </p>
 
 <p-footer>
   <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="onCancel()"></button>
-  <button pButton label="Import" icon="pi pi-check" class="p-button-text" (click)="onImport()"></button>
+  <button pButton label="Import" icon="pi pi-check" class="p-button-text" (click)="onConfirm()"></button>
 </p-footer>

@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {MenuItem} from "primeng/api";
 import {ImportComponent} from "./dialogs/import/import.component";
 import {DialogService} from "primeng/dynamicdialog";
+import {ExportComponent} from "./dialogs/export/export.component";
 
 @Component({
   selector: 'app-root',
@@ -28,8 +29,8 @@ export class AppComponent implements OnInit
       {
         label: "Data",
         items: [
-          {label: 'Import', icon: 'pi pi-arrow-right', command: e => this.onShowImport()},
-          {label: 'Export', icon: 'pi pi-arrow-left'},
+          {label: 'Import', icon: 'pi pi-arrow-left', command: _e => this.onShowImport()},
+          {label: 'Export', icon: 'pi pi-arrow-right', command: _e => this.onShowExport()},
           {label: 'Generation', icon: 'pi pi-briefcase'}
         ]
       },
@@ -54,8 +55,17 @@ export class AppComponent implements OnInit
 
   public onShowImport() {
     this.dialogService.open(ImportComponent, {
-      header: 'Generic dialog',
-      width: '70%',
+      header: 'Data import',
+      width: '30%',
+      dismissableMask: false,
+      closable: false
+    });
+  }
+
+  public onShowExport() {
+    this.dialogService.open(ExportComponent, {
+      header: 'Data export',
+      width: '30%',
       dismissableMask: false,
       closable: false
     });
