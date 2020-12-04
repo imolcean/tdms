@@ -3,6 +3,7 @@ import {MenuItem} from "primeng/api";
 import {ImportComponent} from "./dialogs/import/import.component";
 import {DialogService} from "primeng/dynamicdialog";
 import {ExportComponent} from "./dialogs/export/export.component";
+import {InternalDsComponent} from "./dialogs/internal-ds/internal-ds.component";
 
 @Component({
   selector: 'app-root',
@@ -37,7 +38,7 @@ export class AppComponent implements OnInit
       {
         label: "Connections",
         items: [
-          {label: 'Internal', icon: 'pi pi-desktop'},
+          {label: 'Internal', icon: 'pi pi-desktop', command: _e => this.onShowInternalDs()},
           {label: 'Stages', icon: 'pi pi-globe'},
         ]
       },
@@ -53,7 +54,7 @@ export class AppComponent implements OnInit
 
   ngOnInit(): void {}
 
-  public onShowImport() {
+  private onShowImport() {
     this.dialogService.open(ImportComponent, {
       header: 'Data import',
       width: '30%',
@@ -62,9 +63,19 @@ export class AppComponent implements OnInit
     });
   }
 
-  public onShowExport() {
+  private onShowExport() {
     this.dialogService.open(ExportComponent, {
       header: 'Data export',
+      width: '30%',
+      dismissableMask: false,
+      closable: false
+    });
+  }
+
+  private onShowInternalDs()
+  {
+    this.dialogService.open(InternalDsComponent, {
+      header: 'Internal database',
       width: '30%',
       dismissableMask: false,
       closable: false

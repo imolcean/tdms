@@ -13,6 +13,7 @@ import { DialogModule } from "primeng/dialog";
 import { DialogService, DynamicDialogModule } from "primeng/dynamicdialog";
 import { ConfirmPopupModule } from "primeng/confirmpopup";
 import { InputTextModule } from "primeng/inputtext";
+import { ProgressSpinnerModule } from "primeng/progressspinner";
 
 import { AppComponent } from './app.component';
 import { PropertiesComponent } from './panes/properties/properties.component';
@@ -24,6 +25,7 @@ import { HttpClientModule } from "@angular/common/http";
 import { FormsModule } from "@angular/forms";
 import { ImportComponent } from './dialogs/import/import.component';
 import { ExportComponent } from './dialogs/export/export.component';
+import { InternalDsComponent } from './dialogs/internal-ds/internal-ds.component';
 
 @NgModule({
   declarations: [
@@ -34,7 +36,8 @@ import { ExportComponent } from './dialogs/export/export.component';
     StatusComponent,
     TableContentComponent,
     ImportComponent,
-    ExportComponent
+    ExportComponent,
+    InternalDsComponent
   ],
   imports: [
     BrowserModule,
@@ -51,7 +54,8 @@ import { ExportComponent } from './dialogs/export/export.component';
     AccordionModule,
     TreeModule,
     ContextMenuModule,
-    ConfirmPopupModule
+    ConfirmPopupModule,
+    ProgressSpinnerModule
   ],
   providers: [DialogService],
   bootstrap: [AppComponent]

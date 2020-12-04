@@ -1,0 +1,45 @@
+<div *ngIf="ds === undefined">
+  <p-progressSpinner></p-progressSpinner>
+</div>
+
+<div class="p-fluid" *ngIf="ds !== undefined">
+  <div class="p-field">
+    <label for="driver">Driver</label>
+    <input id="driver"
+           pInputText
+           disabled
+           type="text"
+           [ngModel]="ds.driverClassName">
+  </div>
+
+  <div class="p-field">
+    <label for="url">URL</label>
+    <input id="url"
+           pInputText
+           disabled
+           type="text"
+           [ngModel]="ds.url">
+  </div>
+
+  <div class="p-field">
+    <label for="db">Database name</label>
+    <input id="db"
+           pInputText
+           disabled
+           type="text"
+           [ngModel]="ds.database">
+  </div>
+
+  <div class="p-field">
+    <label for="username">Username</label>
+    <input id="username"
+           pInputText
+           disabled
+           type="text"
+           [ngModel]="ds.username">
+  </div>
+</div>
+
+<p-footer>
+  <button pButton label="Ok" icon="pi pi-check" class="p-button-text" (click)="onOk()"></button>
+</p-footer>

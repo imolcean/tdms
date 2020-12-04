@@ -11,7 +11,8 @@ export class TableService
 {
   private content$: BehaviorSubject<TableContentDto | undefined>;
 
-  constructor(private http: HttpClient, private msg: MessageService)
+  constructor(private http: HttpClient,
+              private msg: MessageService)
   {
     this.content$ = new BehaviorSubject<TableContentDto | undefined>(undefined);
   }
