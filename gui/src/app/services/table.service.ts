@@ -84,4 +84,34 @@ export class TableService
         this.msg.publish({kind: "ERROR", content: error.error});
       });
   }
+
+  public importData(): void
+  {
+    this.msg.publish({kind: "INFO", content: "Importing data into internal database..."});
+
+    this.http
+      .put('api/data/internal/import', null)
+      .subscribe(_value =>
+      {
+        this.msg.publish({kind: "SUCCESS", content: "Import finished successfully"});
+      }, error =>
+      {
+        this.msg.publish({kind: "ERROR", content: error.error});
+      });
+  }
+
+  public exportData(): void
+  {
+    this.msg.publish({kind: "INFO", content: "Exporting data from internal database..."});
+
+    this.http
+      .put('api/data/internal/export', null)
+      .subscribe(_value =>
+      {
+        this.msg.publish({kind: "SUCCESS", content: "Export finished successfully"});
+      }, error =>
+      {
+        this.msg.publish({kind: "ERROR", content: error.error});
+      });
+  }
 }

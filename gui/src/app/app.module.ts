@@ -10,7 +10,8 @@ import { ContextMenuModule } from "primeng/contextmenu";
 import { ButtonModule } from "primeng/button";
 import { ToolbarModule } from "primeng/toolbar";
 import { DialogModule } from "primeng/dialog";
-import {DialogService, DynamicDialogModule} from "primeng/dynamicdialog";
+import { DialogService, DynamicDialogModule } from "primeng/dynamicdialog";
+import { ConfirmPopupModule } from "primeng/confirmpopup";
 import { InputTextModule } from "primeng/inputtext";
 
 import { AppComponent } from './app.component';
@@ -47,7 +48,8 @@ import { ImportComponent } from './dialogs/import/import.component';
     TableModule,
     AccordionModule,
     TreeModule,
-    ContextMenuModule
+    ContextMenuModule,
+    ConfirmPopupModule
   ],
   providers: [DialogService],
   bootstrap: [AppComponent]

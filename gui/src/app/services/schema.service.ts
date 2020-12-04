@@ -3,6 +3,7 @@ import {TableMetaDataDto} from "../dto/dto";
 import {Observable, Subject} from "rxjs";
 import {HttpClient} from "@angular/common/http";
 import {MessageService} from "./message.service";
+import {tap} from "rxjs/operators";
 
 @Injectable({
   providedIn: 'root',
@@ -35,5 +36,19 @@ export class SchemaService
       {
         this.msg.publish({kind: "ERROR", content: error.error});
       });
+  }
+
+  public getOccupiedTableNames(): Observable<string[]>
+  {
+    this.msg.publish({kind: "INFO", content: "Loading list of non-empty tables..."});
+
+    return this.http
+      .get<string[]>('api/schema/tables/internal/occupied')
+      .pipe(
+        tap(
+          (_value: string[]) => this.msg.publish({kind: "SUCCESS", content: "List of non-empty tables loaded"}),
+          error => this.msg.publish({kind: "ERROR", content: error.error})
+        )
+      );
   }
 }

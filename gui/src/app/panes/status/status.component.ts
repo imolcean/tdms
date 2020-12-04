@@ -14,7 +14,7 @@ export class StatusComponent implements OnInit
   constructor(private messageService: MessageService)
   {
     this.messageService.getMessages()
-      .subscribe((value: StatusMessageDto) => this.messages.push(value));
+      .subscribe((value: StatusMessageDto) => this.messages.unshift(value));
   }
 
   ngOnInit(): void {}
