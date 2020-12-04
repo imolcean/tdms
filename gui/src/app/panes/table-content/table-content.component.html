@@ -39,11 +39,12 @@
             [(visible)]="showDialog"
             [style]="{width: '450px'}"
             modal="true">
-    <div>
-      <label *ngFor="let col of content.columnNames; let i = index">
-        {{col}}
-        <input pInputText type="text" [(ngModel)]="tmpRow[i]">
-      </label>
+    <div class="p-fluid">
+      <div class="p-field" *ngFor="let col of content.columnNames; let i = index">
+        <label for="{{col}}">{{col}}</label>
+        <input id="{{col}}" pInputText type="text" [(ngModel)]="tmpRow[i]">
+      </div>
+
     </div>
 
     <p-footer>
