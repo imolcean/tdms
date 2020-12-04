@@ -33,24 +33,20 @@ export class TableContentComponent implements OnInit
     this.showDialog = true;
   }
 
-  public onRowEdit(row: any, ri: number)
+  public onEditRow(row: any, ri: number)
   {
     this.tmpRow = {...row};
     this.tmpRowIndex = ri;
     this.showDialog = true;
   }
 
-  public onRowSave()
+  public onEditRowSave()
   {
     const map: {[key: string]: any;} = {};
 
-    console.log(this.tmpRow);
-
     for(let i in this.tmpRow)
     {
-      console.log(i);
-
-      map[this.content!.columnNames[i]] = this.tmpRow[i];
+      map[this.content!.columnNames[i]] = this.tmpRow[i] === "" ? null : this.tmpRow[i];
     }
 
     if(this.tmpRowIndex === undefined)
@@ -67,7 +63,7 @@ export class TableContentComponent implements OnInit
     this.showDialog = false;
   }
 
-  public onRowCancel()
+  public onEditRowCancel()
   {
     this.tmpRow = [];
     delete this.tmpRowIndex;
@@ -77,7 +73,5 @@ export class TableContentComponent implements OnInit
   public onDeleteRow(ri: number)
   {
     this.tableService.deleteRow(this.content!.tableName, ri);
-
-    // TODO Ask for confirmation
   }
 }

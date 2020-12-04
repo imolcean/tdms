@@ -19,15 +19,16 @@
       <tr [pEditableRow]="row">
         <td style="text-align:center">
           <button pButton type="button" icon="pi pi-trash" (click)="onDeleteRow(ri)" class="p-button-rounded p-button-text"></button>
-          <button pButton type="button" pInitEditableRow icon="pi pi-pencil" (click)="onRowEdit(row, ri)" class="p-button-rounded p-button-text"></button>
+          <button pButton type="button" pInitEditableRow icon="pi pi-pencil" (click)="onEditRow(row, ri)" class="p-button-rounded p-button-text"></button>
         </td>
-        <td *ngFor="let col of content.columnNames; let i = index">
+        <td *ngFor="let col of content.columnNames; let i = index"
+            [class.null-container]="row[i] === null">
           <p-cellEditor>
             <ng-template pTemplate="input">
               <input pInputText type="text" [(ngModel)]="row[i]">
             </ng-template>
             <ng-template pTemplate="output">
-              {{row[i]}}
+              {{row[i] === null ? "NULL" : row[i]}}
             </ng-template>
           </p-cellEditor>
         </td>
@@ -42,14 +43,19 @@
     <div class="p-fluid">
       <div class="p-field" *ngFor="let col of content.columnNames; let i = index">
         <label for="{{col}}">{{col}}</label>
-        <input id="{{col}}" pInputText type="text" [(ngModel)]="tmpRow[i]">
+        <input id="{{col}}"
+               pInputText
+               type="text"
+               placeholder="NULL"
+               [(ngModel)]="tmpRow[i]"
+               [class.null-container]="tmpRow[i] === '' || tmpRow[i] === null || tmpRow[i] === undefined">
       </div>
 
     </div>
 
     <p-footer>
-      <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="onRowCancel()"></button>
-      <button pButton label="Save" icon="pi pi-check" class="p-button-text" (click)="onRowSave()"></button>
+      <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="onEditRowCancel()"></button>
+      <button pButton label="Save" icon="pi pi-check" class="p-button-text" (click)="onEditRowSave()"></button>
     </p-footer>
   </p-dialog>
 </div>
