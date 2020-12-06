@@ -1,0 +1,87 @@
+<div *ngIf="stages === undefined">
+  <p-progressSpinner></p-progressSpinner>
+</div>
+
+<div *ngIf="stages !== undefined">
+  <div class="p-d-flex">
+    <div class="p-mr-2">
+      <p-listbox [options]="stages"
+                 (onChange)="onStageSelect($event)"
+                 optionLabel="name"></p-listbox>
+    </div>
+
+    <div class="p-mr-2 p-fluid">
+      <div class="p-field">
+        <label for="name">Name</label>
+        <input id="name"
+               pInputText
+               [disabled]="!creating"
+               type="text"
+               [(ngModel)]="selectedStage.name">
+      </div>
+
+      <div class="p-field">
+        <label for="driver">Driver</label>
+        <input id="driver"
+               pInputText
+               [disabled]="!editing"
+               type="text"
+               [(ngModel)]="selectedStage.datasource.driverClassName">
+      </div>
+
+      <div class="p-field">
+        <label for="url">URL</label>
+        <input id="url"
+               pInputText
+               [disabled]="!editing"
+               type="text"
+               [(ngModel)]="selectedStage.datasource.url">
+      </div>
+
+      <div class="p-field">
+        <label for="db">Database name</label>
+        <input id="db"
+               pInputText
+               [disabled]="!editing"
+               type="text"
+               [(ngModel)]="selectedStage.datasource.database">
+      </div>
+
+      <div class="p-field">
+        <label for="username">Username</label>
+        <input id="username"
+               pInputText
+               [disabled]="!editing"
+               type="text"
+               [(ngModel)]="selectedStage.datasource.username">
+      </div>
+
+      <div class="p-field">
+        <label for="password">Password</label>
+        <input id="password"
+               pInputText
+               [disabled]="!editing"
+               type="text"
+               [(ngModel)]="selectedStage.datasource.password">
+      </div>
+    </div>
+  </div>
+
+  <div class="p-d-flex p-jc-center">
+    <ng-container *ngIf="!editing">
+      <button pButton label="New" icon="pi pi-plus" class="p-mr-4 p-button-success" (click)="onCreateStage()"></button>
+      <button pButton label="Copy" icon="pi pi-copy" class="p-mr-4 p-button-success" [disabled]="selectedStage.name === ''" (click)="onCopyStage()"></button>
+      <button pButton label="Edit" icon="pi pi-pencil" class="p-mr-4 p-button-warning" [disabled]="selectedStage.name === ''" (click)="onEditStage()"></button>
+      <button pButton label="Delete" icon="pi pi-times" class="p-mr-4 p-button-danger" [disabled]="selectedStage.name === ''" (click)="onDeleteStage()"></button>
+    </ng-container>
+
+    <ng-container *ngIf="editing">
+      <button pButton label="Save" icon="pi pi-check" class="p-mr-3 p-button-success" (click)="onSaveStageEditing()"></button>
+      <button pButton label="Cancel" icon="pi pi-times" class="p-mr-3 p-button-danger" (click)="onCancelStageEditing()"></button>
+    </ng-container>
+  </div>
+</div>
+
+<p-footer>
+  <button pButton label="Ok" icon="pi pi-check" class="p-button-text" (click)="onOk()"></button>
+</p-footer>

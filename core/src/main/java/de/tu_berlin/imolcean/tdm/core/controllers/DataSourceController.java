@@ -1,15 +1,19 @@
 package de.tu_berlin.imolcean.tdm.core.controllers;
 
 import de.tu_berlin.imolcean.tdm.api.dto.DataSourceDto;
+import de.tu_berlin.imolcean.tdm.api.dto.StageDto;
 import de.tu_berlin.imolcean.tdm.api.exceptions.StageDataSourceAlreadyExistsException;
 import de.tu_berlin.imolcean.tdm.api.exceptions.StageDataSourceNotFoundException;
+import de.tu_berlin.imolcean.tdm.core.controllers.mappers.StageMapper;
 import de.tu_berlin.imolcean.tdm.core.repositories.StageDataSourceRepository;
 import de.tu_berlin.imolcean.tdm.core.services.DataSourceService;
 import de.tu_berlin.imolcean.tdm.core.controllers.mappers.DataSourceMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/datasource")
@@ -37,33 +41,35 @@ public class DataSourceController
     }
 
     @GetMapping("/stages")
-    public Map<String, DataSourceDto> getAllStages()
+    public List<StageDto> getAllStages()
     {
-        return stageDsRepo.findAllAsMap();
+        return stageDsRepo.findAllAsMap().entrySet().stream()
+                .map(entry -> StageMapper.toDto(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
     }
 
     @PostMapping("/stages/{name}")
-    public ResponseEntity<DataSourceDto> createStage(@PathVariable("name") String name,
-                                                     @RequestBody DataSourceDto dto)
+    public ResponseEntity<StageDto> createStage(@PathVariable("name") String name,
+                                                @RequestBody DataSourceDto dto)
     {
         if(stageDsRepo.existsById(name))
         {
             throw new StageDataSourceAlreadyExistsException(name);
         }
 
-        return ResponseEntity.ok(stageDsRepo.save(name, dto));
+        return ResponseEntity.ok(StageMapper.toDto(name, stageDsRepo.save(name, dto)));
     }
 
     @PutMapping("/stage/{name}")
-    public ResponseEntity<DataSourceDto> updateStage(@PathVariable("name") String name,
-                                                     @RequestBody DataSourceDto dto)
+    public ResponseEntity<StageDto> updateStage(@PathVariable("name") String name,
+                                                @RequestBody DataSourceDto dto)
     {
         if(!stageDsRepo.existsById(name))
         {
             throw new StageDataSourceNotFoundException(name);
         }
 
-        return ResponseEntity.ok(stageDsRepo.save(name, dto));
+        return ResponseEntity.ok(StageMapper.toDto(name, stageDsRepo.save(name, dto)));
     }
 
     @DeleteMapping("/stage/{name}")
@@ -75,15 +81,17 @@ public class DataSourceController
     }
 
     @GetMapping("/stage/{name}")
-    public ResponseEntity<DataSourceDto> getStage(@PathVariable("name") String stageName)
+    public ResponseEntity<StageDto> getStage(@PathVariable("name") String stageName)
     {
         return ResponseEntity.ok(
-                stageDsRepo.findById(stageName)
-                        .orElseThrow(() -> new StageDataSourceNotFoundException(stageName)));
+                StageMapper.toDto(
+                        stageName,
+                        stageDsRepo.findById(stageName)
+                                .orElseThrow(() -> new StageDataSourceNotFoundException(stageName))));
     }
 
     @GetMapping("/stage/current")
-    public ResponseEntity<DataSourceDto> getCurrentStage()
+    public ResponseEntity<DataSourceDto> getCurrentStageDatasource()
     {
         return ResponseEntity.ok(
                 DataSourceMapper.toDto(

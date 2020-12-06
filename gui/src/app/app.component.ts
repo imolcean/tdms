@@ -4,6 +4,7 @@ import {ImportComponent} from "./dialogs/import/import.component";
 import {DialogService} from "primeng/dynamicdialog";
 import {ExportComponent} from "./dialogs/export/export.component";
 import {InternalDsComponent} from "./dialogs/internal-ds/internal-ds.component";
+import {StagesComponent} from "./dialogs/stages/stages.component";
 
 @Component({
   selector: 'app-root',
@@ -39,7 +40,7 @@ export class AppComponent implements OnInit
         label: "Connections",
         items: [
           {label: 'Internal', icon: 'pi pi-desktop', command: _e => this.onShowInternalDs()},
-          {label: 'Stages', icon: 'pi pi-globe'},
+          {label: 'Stages', icon: 'pi pi-globe', command: _e => this.onShowStages()},
         ]
       },
       {
@@ -77,6 +78,15 @@ export class AppComponent implements OnInit
     this.dialogService.open(InternalDsComponent, {
       header: 'Internal database',
       width: '30%',
+      dismissableMask: false,
+      closable: false
+    });
+  }
+
+  private onShowStages()
+  {
+    this.dialogService.open(StagesComponent, {
+      header: 'Stages',
       dismissableMask: false,
       closable: false
     });

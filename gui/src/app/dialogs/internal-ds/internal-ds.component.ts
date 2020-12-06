@@ -16,7 +16,7 @@ export class InternalDsComponent implements OnInit
               private config: DynamicDialogConfig,
               private dsService: DataSourceService)
   {
-    dsService.getInternalDs()
+    this.dsService.getInternalDs()
       .subscribe((value: DataSourceDto) => this.ds = value);
   }
 

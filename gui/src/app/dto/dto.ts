@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 2.26.723 on 2020-11-11 12:26:41.
+// Generated using typescript-generator version 2.26.723 on 2020-12-06 10:10:25.
 
 export interface DataSourceDto {
     driverClassName: string;
@@ -38,6 +38,11 @@ export interface SchemaUpdateDto {
     addedTables: TableMetaDataDto[];
     deletedTables: TableMetaDataDto[];
     changedTables: SchemaUpdateDtoComparison[];
+}
+
+export interface StageDto {
+    name: string;
+    datasource: DataSourceDto;
 }
 
 export interface StatusMessageDto {

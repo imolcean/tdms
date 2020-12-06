@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {MessageService} from "./message.service";
 import {Observable, Subject} from "rxjs";
-import {DataSourceDto} from "../dto/dto";
+import {DataSourceDto, StageDto} from "../dto/dto";
 
 @Injectable({
   providedIn: 'root'
@@ -11,14 +11,14 @@ export class DataSourceService
 {
   private internalDs$: Subject<DataSourceDto>;
   private tmpDs$: Subject<DataSourceDto>;
-  private stages$: Subject<{ [name: string]: DataSourceDto }>;
+  private stages$: Subject<StageDto[]>;
 
   constructor(private http: HttpClient,
               private msg: MessageService)
   {
     this.internalDs$ = new Subject<DataSourceDto>();
     this.tmpDs$ = new Subject<DataSourceDto>();
-    this.stages$ = new Subject<{[name: string]: DataSourceDto}>();
+    this.stages$ = new Subject<StageDto[]>();
   }
 
   public getInternalDs(): Observable<DataSourceDto>
@@ -31,7 +31,7 @@ export class DataSourceService
     return this.tmpDs$.asObservable();
   }
 
-  public getStages(): Observable<{ [name: string]: DataSourceDto }>
+  public getStages(): Observable<StageDto[]>
   {
     return this.stages$.asObservable();
   }
@@ -69,12 +69,60 @@ export class DataSourceService
     this.msg.publish({kind: "INFO", content: "Loading list of stages..."});
 
     this.http
-      .get<{ [name: string]: DataSourceDto }>('api/datasource/stages')
-      .subscribe((value: { [name: string]: DataSourceDto }) =>
+      .get<StageDto[]>('api/datasource/stages')
+      .subscribe((value: StageDto[]) =>
       {
         this.stages$.next(value);
         this.msg.publish({kind: "SUCCESS", content: "Stages loaded"});
       }, error =>
         this.msg.publish({kind: "ERROR", content: error.error}));
+  }
+
+  public createStage(stage: StageDto): void
+  {
+    this.msg.publish({kind: "INFO", content: "Creating new stage..."});
+
+    this.http
+      .post<StageDto>('api/datasource/stages/' + stage.name, stage.datasource)
+      .subscribe(_value =>
+      {
+        this.msg.publish({kind: "SUCCESS", content: "Stage created"});
+        this.loadStages();
+      }, error =>
+      {
+        this.msg.publish({kind: "ERROR", content: error.error});
+      });
+  }
+
+  public updateStage(stage: StageDto): void
+  {
+    this.msg.publish({kind: "INFO", content: "Updating stage..."});
+
+    this.http
+      .put<StageDto>('api/datasource/stage/' + stage.name, stage.datasource)
+      .subscribe(_value =>
+      {
+        this.msg.publish({kind: "SUCCESS", content: "Stage updated"});
+        this.loadStages();
+      }, error =>
+      {
+        this.msg.publish({kind: "ERROR", content: error.error});
+      });
+  }
+
+  public deleteStage(stageName:string): void
+  {
+    this.msg.publish({kind: "INFO", content: "Deleting stage..."});
+
+    this.http
+      .delete('api/datasource/stage/' + stageName)
+      .subscribe(_value =>
+      {
+        this.msg.publish({kind: "SUCCESS", content: "Stage deleted"});
+        this.loadStages();
+      }, error =>
+      {
+        this.msg.publish({kind: "ERROR", content: error.error});
+      });
   }
 }
