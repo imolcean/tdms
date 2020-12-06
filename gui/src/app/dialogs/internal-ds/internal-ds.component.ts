@@ -14,12 +14,15 @@ export class InternalDsComponent implements OnInit
 
   constructor(private ref: DynamicDialogRef,
               private config: DynamicDialogConfig,
-              private dsService: DataSourceService) {}
+              private dsService: DataSourceService)
+  {
+    dsService.getInternalDs()
+      .subscribe((value: DataSourceDto) => this.ds = value);
+  }
 
   ngOnInit(): void
   {
-    this.dsService.loadInternalDatasource()
-      .subscribe(value => this.ds = value);
+    this.dsService.loadInternalDatasource();
   }
 
   public onOk()
