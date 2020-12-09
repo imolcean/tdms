@@ -10,8 +10,8 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>de.tu_berlin.imolcean</groupId>
-    <artifactId>tdm</artifactId>
+    <groupId>io.github.imolcean</groupId>
+    <artifactId>tdms</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <packaging>pom</packaging>

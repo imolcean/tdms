@@ -3,8 +3,8 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>tdm</artifactId>
-        <groupId>de.tu_berlin.imolcean</groupId>
+        <artifactId>tdms</artifactId>
+        <groupId>io.github.imolcean</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -32,11 +32,11 @@
                     <outputKind>module</outputKind>
                     <outputFile>../gui/src/app/dto/dto.ts</outputFile>
                     <classPatterns>
-                        <pattern>de.tu_berlin.imolcean.tdm.api.dto.*</pattern>
+                        <pattern>io.github.imolcean.tdms.api.dto.*</pattern>
                     </classPatterns>
                     <scanSpringApplication>true</scanSpringApplication>
                     <optionalAnnotations>
-                        <annotation>de.tu_berlin.imolcean.tdm.api.annotations.TsOptional</annotation>
+                        <annotation>io.github.imolcean.tdms.api.annotations.TsOptional</annotation>
                     </optionalAnnotations>
                     <customTypeNamingFunction>
                         function(name, simpleName) {

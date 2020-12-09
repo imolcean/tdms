@@ -19,15 +19,15 @@
 
   "gitRepository": {
     "url": "https://github.com/imolcean/exp.git",
-    "dir": "C:\\tdm\\repo",
+    "dir": "C:\\tdms\\repo",
     "token": "914a332435833eb10e2f9fcf526f9f8b20878a07"
   },
 
-  "schemaUpdater": "de.tu_berlin.imolcean.tdm.x.updaters.LiquibaseDiffSchemaUpdater",
-  "dataImporter": "de.tu_berlin.imolcean.tdm.x.importers.JsonDataImporter",
-  "dataExporter": "de.tu_berlin.imolcean.tdm.x.exporters.JsonDataExporter",
-  "deployer": "de.tu_berlin.imolcean.tdm.x.deployers.MigrationDeployer",
-  "dataGenerator": "de.tu_berlin.imolcean.tdm.core.generation.RuleBasedDataGenerator",
+  "schemaUpdater": "io.github.imolcean.tdms.x.updaters.LiquibaseDiffSchemaUpdater",
+  "dataImporter": "io.github.imolcean.tdms.x.importers.JsonDataImporter",
+  "dataExporter": "io.github.imolcean.tdms.x.exporters.JsonDataExporter",
+  "deployer": "io.github.imolcean.tdms.x.deployers.MigrationDeployer",
+  "dataGenerator": "io.github.imolcean.tdms.core.generation.RuleBasedDataGenerator",
 
-  "dataDir": "C:\\tdm\\repo\\data"
+  "dataDir": "C:\\tdms\\repo\\data"
 }
