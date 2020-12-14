@@ -58,7 +58,6 @@ public class ProjectService
      *
      * @return true if a project is open, false otherwise
      */
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isProjectOpen()
     {
         return projectName != null;
@@ -140,7 +139,10 @@ public class ProjectService
      */
     public void open(ProjectDto project) throws Exception
     {
-        // TODO Close open project first
+        if(isProjectOpen())
+        {
+            throw new IllegalStateException("A project is already open");
+        }
 
         log.info("Opening project");
 
@@ -219,8 +221,6 @@ public class ProjectService
         {
             throw new NoOpenProjectException();
         }
-
-        // TODO Export and push data
 
         return new ProjectDto(
                 projectName,

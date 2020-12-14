@@ -60,6 +60,12 @@ public class ProjectController
     }
 
     @GetMapping(value = "/")
+    public ResponseEntity<ProjectDto> project()
+    {
+        return ResponseEntity.ok(projectService.save());
+    }
+
+    @GetMapping(value = "/save")
     public ResponseEntity<Resource> save() throws IOException
     {
         try(ByteArrayOutputStream baos = new ByteArrayOutputStream())
@@ -79,12 +85,12 @@ public class ProjectController
     }
 
     @PostMapping("/")
-    public ResponseEntity<Void> open(@RequestParam("file") MultipartFile file) throws Exception
+    public ResponseEntity<ProjectDto> open(@RequestParam("file") MultipartFile file) throws Exception
     {
         ProjectDto project = mapper.readValue(file.getInputStream(), ProjectDto.class);
         projectService.open(project);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(projectService.save());
     }
 
     @DeleteMapping("/")

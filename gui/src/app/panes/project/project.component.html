@@ -1,5 +1,5 @@
 <p-accordion [multiple]="true">
-  <p-accordionTab header="Schema">
+  <p-accordionTab header="Schema" [disabled]="(project$ | async) === undefined">
     <p-tree [value]="nodes$ | async"
             selectionMode="single"
             (onNodeSelect)="nodeSelect($event)"

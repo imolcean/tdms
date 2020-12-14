@@ -1,0 +1,13 @@
+<div class="p-fluid">
+  <div class="p-field">
+    <label for="file">Choose File</label>
+    <input type="file"
+           id="file"
+           (change)="onUpload($event.target['files'])">
+  </div>
+</div>
+
+<p-footer>
+  <button pButton label="Open" icon="pi pi-check" class="p-button-text" (click)="onOk()" [disabled]="!ready"></button>
+  <button pButton label="Cancel" icon="pi pi-check" class="p-button-text" (click)="onCancel()"></button>
+</p-footer>

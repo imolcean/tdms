@@ -1,0 +1,90 @@
+<div *ngIf="project === undefined">
+  <p-progressSpinner></p-progressSpinner>
+</div>
+
+<p-tabView *ngIf="project !== undefined">
+  <p-tabPanel header="General">
+    <div class="p-fluid">
+      <div class="p-field">
+        <label for="name">Name</label>
+        <input id="name"
+               pInputText
+               disabled
+               type="text"
+               [ngModel]="project.projectName">
+      </div>
+
+      <div class="p-field">
+        <label for="data-dir">Data directory</label>
+        <input id="data-dir"
+               pInputText
+               disabled
+               type="text"
+               [ngModel]="project.dataDir">
+      </div>
+    </div>
+  </p-tabPanel>
+
+  <p-tabPanel header="Databases">
+    <div class="p-fluid">
+      <!-- TODO: DataSource internal -->
+
+      <!-- TODO: DataSource tmp -->
+
+      <!-- TODO: Git repo -->
+    </div>
+  </p-tabPanel>
+
+  <p-tabPanel header="Extensions">
+    <div class="p-fluid">
+      <div class="p-field">
+        <label for="schema-updater">Schema updater</label>
+        <input id="schema-updater"
+               pInputText
+               disabled
+               type="text"
+               [ngModel]="project.schemaUpdater">
+      </div>
+
+      <div class="p-field">
+        <label for="data-importer">Data importer</label>
+        <input id="data-importer"
+               pInputText
+               disabled
+               type="text"
+               [ngModel]="project.dataImporter">
+      </div>
+
+      <div class="p-field">
+        <label for="data-exporter">Data exporter</label>
+        <input id="data-exporter"
+               pInputText
+               disabled
+               type="text"
+               [ngModel]="project.dataExporter">
+      </div>
+
+      <div class="p-field">
+        <label for="deployer">Deployer</label>
+        <input id="deployer"
+               pInputText
+               disabled
+               type="text"
+               [ngModel]="project.deployer">
+      </div>
+
+      <div class="p-field">
+        <label for="data-generator">Data generator</label>
+        <input id="data-generator"
+               pInputText
+               disabled
+               type="text"
+               [ngModel]="project.dataGenerator">
+      </div>
+    </div>
+  </p-tabPanel>
+</p-tabView>
+
+<p-footer>
+  <button pButton label="Ok" icon="pi pi-check" class="p-button-text" (click)="onOk()"></button>
+</p-footer>

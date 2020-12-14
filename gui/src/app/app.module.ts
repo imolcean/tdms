@@ -15,6 +15,7 @@ import { ConfirmPopupModule } from "primeng/confirmpopup";
 import { InputTextModule } from "primeng/inputtext";
 import { ProgressSpinnerModule } from "primeng/progressspinner";
 import { ListboxModule } from "primeng/listbox";
+import { TabViewModule } from 'primeng/tabview';
 
 import { AppComponent } from './app.component';
 import { PropertiesComponent } from './panes/properties/properties.component';
@@ -28,6 +29,8 @@ import { ImportComponent } from './dialogs/import/import.component';
 import { ExportComponent } from './dialogs/export/export.component';
 import { InternalDsComponent } from './dialogs/internal-ds/internal-ds.component';
 import { StagesComponent } from './dialogs/stages/stages.component';
+import { ProjectProfileComponent } from "./dialogs/project/profile/project-profile.component";
+import { ProjectOpenComponent } from './dialogs/project/open/project-open.component';
 
 @NgModule({
   declarations: [
@@ -40,7 +43,9 @@ import { StagesComponent } from './dialogs/stages/stages.component';
     ImportComponent,
     ExportComponent,
     InternalDsComponent,
-    StagesComponent
+    StagesComponent,
+    ProjectProfileComponent,
+    ProjectOpenComponent
   ],
   imports: [
     BrowserModule,
@@ -59,7 +64,8 @@ import { StagesComponent } from './dialogs/stages/stages.component';
     ContextMenuModule,
     ConfirmPopupModule,
     ProgressSpinnerModule,
-    ListboxModule
+    ListboxModule,
+    TabViewModule
   ],
   providers: [DialogService],
   bootstrap: [AppComponent]

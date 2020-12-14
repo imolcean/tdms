@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { TreeNode, MenuItem } from "primeng/api";
-import {TableMetaDataDto} from "../../dto/dto";
+import {ProjectDto, TableMetaDataDto} from "../../dto/dto";
 import {Observable} from "rxjs";
 import {SchemaService} from "../../services/schema.service";
 import {map, tap} from "rxjs/operators";
 import {PropertiesService} from "../../services/properties.service";
 import {TableService} from "../../services/table.service";
+import {ProjectService} from "../../services/project.service";
 
 @Component({
   selector: 'app-project',
@@ -14,15 +15,18 @@ import {TableService} from "../../services/table.service";
 })
 export class ProjectComponent implements OnInit
 {
+  project$: Observable<ProjectDto | undefined>;
   schema$: Observable<TableMetaDataDto[]>;
   nodes$: Observable<TreeNode[]>;
   schemaLoading: boolean;
   contextMenuItems: MenuItem[];
 
-  constructor(private schemaService: SchemaService,
+  constructor(private projectService: ProjectService,
+              private schemaService: SchemaService,
               private propertiesService: PropertiesService,
               private tableService: TableService)
   {
+    this.project$ = this.projectService.getProject();
     this.schema$ = schemaService.getSchema();
     this.nodes$ = this.schema$.pipe(
       map((schema: TableMetaDataDto[]) => this.schema2TreeNodes(schema)),
@@ -36,10 +40,7 @@ export class ProjectComponent implements OnInit
     ];
   }
 
-  ngOnInit(): void
-  {
-    this.update();
-  }
+  ngOnInit(): void {}
 
   public update(): void
   {
