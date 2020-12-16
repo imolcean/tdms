@@ -53,15 +53,15 @@ export class AppComponent implements OnInit
       {
         label: "Data",
         items: [
-          {label: 'Import', icon: 'pi pi-arrow-left', command: _e => this.onShowImport()},
-          {label: 'Export', icon: 'pi pi-arrow-right', command: _e => this.onShowExport()},
-          {label: 'Generation', icon: 'pi pi-briefcase'}
+          {label: 'Import', icon: 'pi pi-arrow-left', command: _e => this.onShowImport(), disabled: this.project === undefined},
+          {label: 'Export', icon: 'pi pi-arrow-right', command: _e => this.onShowExport(), disabled: this.project === undefined},
+          {label: 'Generation', icon: 'pi pi-briefcase', disabled: this.project === undefined}
         ]
       },
       {
         label: "Connections",
         items: [
-          {label: 'Internal', icon: 'pi pi-desktop', command: _e => this.onShowInternalDs()},
+          {label: 'Internal', icon: 'pi pi-desktop', command: _e => this.onShowInternalDs(), disabled: this.project === undefined},
           {label: 'Stages', icon: 'pi pi-globe', command: _e => this.onShowStages()},
         ]
       },
@@ -77,7 +77,15 @@ export class AppComponent implements OnInit
 
   private onNewProject(): void
   {
-    console.log(this.project);
+    this.dialogService.open(ProjectProfileComponent, {
+      header: 'Create project',
+      width: '30%',
+      dismissableMask: false,
+      closable: false,
+      data: {
+        creating: true
+      }
+    });
   }
 
   private onOpenProject(): void

@@ -161,7 +161,7 @@ public class ProjectService
                 Path.of(project.getGitRepository().getDir()),
                 project.getGitRepository().getToken());
 
-        if(project.getSchemaUpdater() != null)
+        if(!Strings.isBlank(project.getSchemaUpdater()))
         {
             schemaUpdateManager.selectImplementation(project.getSchemaUpdater());
         }
@@ -170,7 +170,7 @@ public class ProjectService
             log.warning("SchemaUpdater not configured");
         }
 
-        if(project.getDataImporter() != null)
+        if(!Strings.isBlank(project.getDataImporter()))
         {
             dataImportManager.selectImplementation(project.getDataImporter());
         }
@@ -179,7 +179,7 @@ public class ProjectService
             log.warning("DataImporter not configured");
         }
 
-        if(project.getDataExporter() != null)
+        if(!Strings.isBlank(project.getDataExporter()))
         {
             dataExportManager.selectImplementation(project.getDataExporter());
         }
@@ -188,7 +188,7 @@ public class ProjectService
             log.warning("DataExporter not configured");
         }
 
-        if(project.getDeployer() != null)
+        if(!Strings.isBlank(project.getDeployer()))
         {
             deploymentManager.selectImplementation(project.getDeployer());
         }
@@ -197,7 +197,7 @@ public class ProjectService
             log.warning("Deployer not configured");
         }
 
-        if(project.getDataGenerator() != null)
+        if(!Strings.isBlank(project.getDataGenerator()))
         {
             dataGenerationManager.selectImplementation(project.getDataGenerator());
         }

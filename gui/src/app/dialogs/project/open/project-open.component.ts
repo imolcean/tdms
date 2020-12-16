@@ -24,7 +24,7 @@ export class ProjectOpenComponent implements OnInit
 
   public onOk(): void
   {
-    this.projectService.openProject(this.file as File);
+    this.projectService.openProjectFromFile(this.file as File);
     this.ref.close(true);
   }
 

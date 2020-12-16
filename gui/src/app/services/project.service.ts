@@ -48,7 +48,7 @@ export class ProjectService
       });
   }
 
-  public openProject(file: File): void
+  public openProjectFromFile(file: File): void
   {
     this.msg.publish({kind: "INFO", content: "Opening project..."});
 
@@ -56,7 +56,23 @@ export class ProjectService
     formData.append('file', file, file.name);
 
     this.http
-      .post('api/project/', formData)
+      .post('api/project/upload', formData)
+      .subscribe(_value =>
+      {
+        this.msg.publish({kind: "SUCCESS", content: "Project opened"});
+        this.loadProject();
+      }, error =>
+      {
+        this.msg.publish({kind: "ERROR", content: error.error});
+      });
+  }
+
+  public openProject(project: ProjectDto): void
+  {
+    this.msg.publish({kind: "INFO", content: "Opening project..."});
+
+    this.http
+      .post('api/project/', project)
       .subscribe(_value =>
       {
         this.msg.publish({kind: "SUCCESS", content: "Project opened"});

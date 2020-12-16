@@ -84,10 +84,18 @@ public class ProjectController
         }
     }
 
-    @PostMapping("/")
-    public ResponseEntity<ProjectDto> open(@RequestParam("file") MultipartFile file) throws Exception
+    @PostMapping("/upload")
+    public ResponseEntity<ProjectDto> openFromFile(@RequestParam("file") MultipartFile file) throws Exception
     {
         ProjectDto project = mapper.readValue(file.getInputStream(), ProjectDto.class);
+        projectService.open(project);
+
+        return ResponseEntity.ok(projectService.save());
+    }
+
+    @PostMapping("/")
+    public ResponseEntity<ProjectDto> open(@RequestBody ProjectDto project) throws Exception
+    {
         projectService.open(project);
 
         return ResponseEntity.ok(projectService.save());

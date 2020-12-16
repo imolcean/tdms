@@ -10,17 +10,26 @@ import {ProjectService} from "../../../services/project.service";
 })
 export class ProjectProfileComponent implements OnInit
 {
+  public editing: boolean;
+  public creating: boolean;
   public tabIndex: number;
   public project: ProjectDto | undefined;
-  public editing: boolean;
 
   private backup: ProjectDto | undefined;
+
+  // TODO Select implementations with a dropdown list
 
   constructor(private ref: DynamicDialogRef,
               private config: DynamicDialogConfig,
               private projectService: ProjectService)
   {
     this.editing = false;
+
+    this.creating = false;
+    if(this.config.data && this.config.data['creating'])
+    {
+      this.creating = this.config.data['creating'];
+    }
 
     this.tabIndex = 0;
     if(this.config.data && this.config.data['tabIndex'])
@@ -29,7 +38,16 @@ export class ProjectProfileComponent implements OnInit
     }
 
     this.projectService.getProject()
-      .subscribe((value: ProjectDto | undefined) => this.project = value);
+      .subscribe((value: ProjectDto | undefined) =>
+      {
+        this.project = value;
+
+        if(this.creating && this.project === undefined)
+        {
+          this.project = this.createProject();
+          this.editing = true;
+        }
+      });
   }
 
   ngOnInit(): void {}
@@ -49,7 +67,16 @@ export class ProjectProfileComponent implements OnInit
   {
     this.editing = false;
     delete this.backup;
-    this.projectService.updateProject(this.project!);
+
+    if(this.creating)
+    {
+      this.projectService.openProject(this.project!);
+      this.ref.close(true);
+    }
+    else
+    {
+      this.projectService.updateProject(this.project!);
+    }
   }
 
   public onCancelEditing(): void
@@ -57,6 +84,11 @@ export class ProjectProfileComponent implements OnInit
     this.editing = false;
     this.project = this.backup;
     delete this.backup;
+
+    if(this.project === undefined)
+    {
+      this.ref.close(true);
+    }
   }
 
   private cloneProject(original: ProjectDto): ProjectDto
@@ -88,6 +120,38 @@ export class ProjectProfileComponent implements OnInit
       deployer: original.deployer,
       dataGenerator: original.dataGenerator,
       dataDir: original.dataDir
+    } as ProjectDto
+  }
+
+  private createProject(): ProjectDto
+  {
+    return {
+      projectName: "",
+      internal: {
+        driverClassName: "",
+        url: "",
+        database: "",
+        username: "",
+        password: ""
+      } as DataSourceDto,
+      tmp: {
+        driverClassName: "",
+        url: "",
+        database: "",
+        username: "",
+        password: ""
+      } as DataSourceDto,
+      gitRepository: {
+        url: "",
+        dir: "",
+        token: ""
+      } as GitRepositoryDto,
+      schemaUpdater: "",
+      dataImporter: "",
+      dataExporter: "",
+      deployer: "",
+      dataGenerator: "",
+      dataDir: ""
     } as ProjectDto
   }
 }
