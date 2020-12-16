@@ -1,0 +1,61 @@
+<div *ngIf="ds === undefined">
+  <p-progressSpinner></p-progressSpinner>
+</div>
+
+<div class="p-fluid" *ngIf="ds !== undefined">
+  <div class="p-field">
+    <label for="driver">Driver</label>
+    <input id="driver"
+           pInputText
+           [disabled]="!editing"
+           type="text"
+           [(ngModel)]="ds.driverClassName">
+  </div>
+
+  <div class="p-field">
+    <label for="url">URL</label>
+    <input id="url"
+           pInputText
+           [disabled]="!editing"
+           type="text"
+           [(ngModel)]="ds.url">
+  </div>
+
+  <div class="p-field">
+    <label for="db">Database name</label>
+    <input id="db"
+           pInputText
+           [disabled]="!editing"
+           type="text"
+           [(ngModel)]="ds.database">
+  </div>
+
+  <div class="p-field">
+    <label for="username">Username</label>
+    <input id="username"
+           pInputText
+           [disabled]="!editing"
+           type="text"
+           [(ngModel)]="ds.username">
+  </div>
+
+  <div class="p-field">
+    <label for="password">Password</label>
+    <input id="password"
+           pInputText
+           [disabled]="!editing"
+           type="text"
+           [(ngModel)]="ds.password">
+  </div>
+</div>
+
+<!--<div class="p-d-flex p-jc-center">-->
+<!--  <ng-container *ngIf="!editing">-->
+<!--    <button pButton label="Edit" icon="pi pi-pencil" class="p-mr-4 p-button-warning" (click)="onEdit()"></button>-->
+<!--  </ng-container>-->
+
+<!--  <ng-container *ngIf="editing">-->
+<!--    <button pButton label="Save" icon="pi pi-check" class="p-mr-3 p-button-success" (click)="onSaveEditing()"></button>-->
+<!--    <button pButton label="Cancel" icon="pi pi-times" class="p-mr-3 p-button-danger" (click)="onCancelEditing()"></button>-->
+<!--  </ng-container>-->
+<!--</div>-->

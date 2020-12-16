@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { InternalDsComponent } from './internal-ds.component';
+import { DatasourceComponent } from './datasource.component';
 
-describe('InternalDsComponent', () => {
-  let component: InternalDsComponent;
-  let fixture: ComponentFixture<InternalDsComponent>;
+describe('DatasourceComponent', () => {
+  let component: DatasourceComponent;
+  let fixture: ComponentFixture<DatasourceComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ InternalDsComponent ]
+      declarations: [ DatasourceComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(InternalDsComponent);
+    fixture = TestBed.createComponent(DatasourceComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

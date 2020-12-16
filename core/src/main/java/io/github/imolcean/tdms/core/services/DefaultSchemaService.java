@@ -53,6 +53,11 @@ public class DefaultSchemaService implements SchemaService
         this.cache = null;
     }
 
+    public void invalidateCache()
+    {
+        this.cache = null;
+    }
+
     @Override
     public Catalog getSchema(DataSource ds) throws SQLException, SchemaCrawlerException
     {

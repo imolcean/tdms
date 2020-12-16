@@ -100,4 +100,20 @@ export class ProjectService
         this.msg.publish({kind: "ERROR", content: error.error});
       });
   }
+
+  public updateProject(project: ProjectDto): void
+  {
+    this.msg.publish({kind: "INFO", content: "Updating project..."});
+
+    this.http
+      .put<ProjectDto>('api/project/', project)
+      .subscribe((value: ProjectDto) =>
+      {
+        this.msg.publish({kind: "SUCCESS", content: "Project updated"});
+        this.project$.next(value);
+      }, error =>
+      {
+        this.msg.publish({kind: "ERROR", content: error.error});
+      });
+  }
 }

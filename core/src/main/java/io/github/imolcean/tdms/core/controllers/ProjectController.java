@@ -100,4 +100,12 @@ public class ProjectController
 
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/")
+    public ResponseEntity<ProjectDto> update(@RequestBody ProjectDto project) throws Exception
+    {
+        projectService.close();
+        projectService.open(project);
+        return ResponseEntity.ok(projectService.save());
+    }
 }

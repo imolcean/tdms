@@ -27,10 +27,10 @@ import { HttpClientModule } from "@angular/common/http";
 import { FormsModule } from "@angular/forms";
 import { ImportComponent } from './dialogs/import/import.component';
 import { ExportComponent } from './dialogs/export/export.component';
-import { InternalDsComponent } from './dialogs/internal-ds/internal-ds.component';
 import { StagesComponent } from './dialogs/stages/stages.component';
 import { ProjectProfileComponent } from "./dialogs/project/profile/project-profile.component";
 import { ProjectOpenComponent } from './dialogs/project/open/project-open.component';
+import { DatasourceComponent } from './elements/datasource/datasource.component';
 
 @NgModule({
   declarations: [
@@ -42,10 +42,10 @@ import { ProjectOpenComponent } from './dialogs/project/open/project-open.compon
     TableContentComponent,
     ImportComponent,
     ExportComponent,
-    InternalDsComponent,
     StagesComponent,
     ProjectProfileComponent,
-    ProjectOpenComponent
+    ProjectOpenComponent,
+    DatasourceComponent
   ],
   imports: [
     BrowserModule,

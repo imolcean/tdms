@@ -23,6 +23,11 @@ import java.util.Optional;
 public interface SchemaService
 {
     /**
+     * Clears cached schema.
+     */
+    void invalidateCache();
+
+    /**
      * Retrieves the whole schema of a database with all the tables, indexes, etc.
      *
      * This method may take some time when called for databases with large schemas,

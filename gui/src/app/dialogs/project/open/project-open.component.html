@@ -1,10 +1,8 @@
-<div class="p-fluid">
-  <div class="p-field">
-    <label for="file">Choose File</label>
-    <input type="file"
-           id="file"
-           (change)="onUpload($event.target['files'])">
-  </div>
+<div>
+  <label for="file">Choose File</label>
+  <input type="file"
+         id="file"
+         (change)="onUpload($event.target['files'])">
 </div>
 
 <p-footer>

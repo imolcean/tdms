@@ -3,6 +3,7 @@ package io.github.imolcean.tdms.core.services;
 import io.github.imolcean.tdms.api.dto.ProjectDto;
 import io.github.imolcean.tdms.api.exceptions.NoOpenProjectException;
 import io.github.imolcean.tdms.api.DataSourceWrapper;
+import io.github.imolcean.tdms.api.services.SchemaService;
 import io.github.imolcean.tdms.core.controllers.mappers.DataSourceMapper;
 import io.github.imolcean.tdms.core.controllers.mappers.GitRepositoryMapper;
 import io.github.imolcean.tdms.core.services.managers.*;
@@ -24,6 +25,7 @@ import java.nio.file.Path;
 public class ProjectService
 {
     private final DataSourceService dsService;
+    private final SchemaService schemaService;
     private final GitService gitService;
     private final SchemaUpdateImplementationManager schemaUpdateManager;
     private final DataImportImplementationManager dataImportManager;
@@ -35,6 +37,7 @@ public class ProjectService
     private Path dataDir;
 
     public ProjectService(DataSourceService dsService,
+                          SchemaService schemaService,
                           GitService gitService,
                           SchemaUpdateImplementationManager schemaUpdateManager,
                           DataImportImplementationManager dataImportManager,
@@ -43,6 +46,7 @@ public class ProjectService
                           DataGenerationImplementationManager dataGenerationManager)
     {
         this.dsService = dsService;
+        this.schemaService = schemaService;
         this.gitService = gitService;
         this.schemaUpdateManager = schemaUpdateManager;
         this.dataImportManager = dataImportManager;
@@ -272,6 +276,8 @@ public class ProjectService
         dataExportManager.clearSelection();
         deploymentManager.clearSelection();
         dataGenerationManager.clearSelection();
+
+        schemaService.invalidateCache();
 
         log.info("Project closed successfully");
     }

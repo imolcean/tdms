@@ -2,36 +2,114 @@
   <p-progressSpinner></p-progressSpinner>
 </div>
 
-<p-tabView *ngIf="project !== undefined">
+<p-tabView *ngIf="project !== undefined"
+           [(activeIndex)]="tabIndex">
   <p-tabPanel header="General">
     <div class="p-fluid">
       <div class="p-field">
         <label for="name">Name</label>
         <input id="name"
                pInputText
-               disabled
+               [disabled]="!editing"
                type="text"
-               [ngModel]="project.projectName">
+               [(ngModel)]="project.projectName">
       </div>
 
       <div class="p-field">
         <label for="data-dir">Data directory</label>
         <input id="data-dir"
                pInputText
-               disabled
+               [disabled]="!editing"
                type="text"
-               [ngModel]="project.dataDir">
+               [(ngModel)]="project.dataDir">
       </div>
+    </div>
+
+    <div class="p-d-flex p-jc-center">
+      <ng-container *ngIf="!editing">
+        <button pButton label="Edit" icon="pi pi-pencil" class="p-mr-4 p-button-warning" (click)="onEdit()"></button>
+      </ng-container>
+
+      <ng-container *ngIf="editing">
+        <button pButton label="Save" icon="pi pi-check" class="p-mr-3 p-button-success" (click)="onSaveEditing()"></button>
+        <button pButton label="Cancel" icon="pi pi-times" class="p-mr-3 p-button-danger" (click)="onCancelEditing()"></button>
+      </ng-container>
     </div>
   </p-tabPanel>
 
   <p-tabPanel header="Databases">
     <div class="p-fluid">
-      <!-- TODO: DataSource internal -->
+      <p-tabView>
+        <p-tabPanel header="Internal">
+          <app-datasource [ds]="project.internal" [editing]="editing"></app-datasource>
+          <div class="p-d-flex p-jc-center">
+            <ng-container *ngIf="!editing">
+              <button pButton label="Edit" icon="pi pi-pencil" class="p-mr-4 p-button-warning" (click)="onEdit()"></button>
+            </ng-container>
 
-      <!-- TODO: DataSource tmp -->
+            <ng-container *ngIf="editing">
+              <button pButton label="Save" icon="pi pi-check" class="p-mr-3 p-button-success" (click)="onSaveEditing()"></button>
+              <button pButton label="Cancel" icon="pi pi-times" class="p-mr-3 p-button-danger" (click)="onCancelEditing()"></button>
+            </ng-container>
+          </div>
+        </p-tabPanel>
 
-      <!-- TODO: Git repo -->
+        <p-tabPanel header="Temp">
+          <app-datasource [ds]="project.tmp" [editing]="editing"></app-datasource>
+          <div class="p-d-flex p-jc-center">
+            <ng-container *ngIf="!editing">
+              <button pButton label="Edit" icon="pi pi-pencil" class="p-mr-4 p-button-warning" (click)="onEdit()"></button>
+            </ng-container>
+
+            <ng-container *ngIf="editing">
+              <button pButton label="Save" icon="pi pi-check" class="p-mr-3 p-button-success" (click)="onSaveEditing()"></button>
+              <button pButton label="Cancel" icon="pi pi-times" class="p-mr-3 p-button-danger" (click)="onCancelEditing()"></button>
+            </ng-container>
+          </div>
+        </p-tabPanel>
+      </p-tabView>
+    </div>
+  </p-tabPanel>
+
+  <p-tabPanel header="Git">
+    <div class="p-fluid">
+      <div class="p-field">
+        <label for="git-url">URL</label>
+        <input id="git-url"
+               pInputText
+               disabled
+               type="text"
+               [(ngModel)]="project.gitRepository.url">
+      </div>
+
+      <div class="p-field">
+        <label for="git-dir">Directory</label>
+        <input id="git-dir"
+               pInputText
+               disabled
+               type="text"
+               [(ngModel)]="project.gitRepository.dir">
+      </div>
+
+      <div class="p-field">
+        <label for="git-token">Token</label>
+        <input id="git-token"
+               pInputText
+               disabled
+               type="text"
+               [(ngModel)]="project.gitRepository.token">
+      </div>
+    </div>
+
+    <div class="p-d-flex p-jc-center">
+      <ng-container *ngIf="!editing">
+        <button pButton label="Edit" icon="pi pi-pencil" class="p-mr-4 p-button-warning" (click)="onEdit()"></button>
+      </ng-container>
+
+      <ng-container *ngIf="editing">
+        <button pButton label="Save" icon="pi pi-check" class="p-mr-3 p-button-success" (click)="onSaveEditing()"></button>
+        <button pButton label="Cancel" icon="pi pi-times" class="p-mr-3 p-button-danger" (click)="onCancelEditing()"></button>
+      </ng-container>
     </div>
   </p-tabPanel>
 
@@ -43,7 +121,7 @@
                pInputText
                disabled
                type="text"
-               [ngModel]="project.schemaUpdater">
+               [(ngModel)]="project.schemaUpdater">
       </div>
 
       <div class="p-field">
@@ -52,7 +130,7 @@
                pInputText
                disabled
                type="text"
-               [ngModel]="project.dataImporter">
+               [(ngModel)]="project.dataImporter">
       </div>
 
       <div class="p-field">
@@ -61,7 +139,7 @@
                pInputText
                disabled
                type="text"
-               [ngModel]="project.dataExporter">
+               [(ngModel)]="project.dataExporter">
       </div>
 
       <div class="p-field">
@@ -70,7 +148,7 @@
                pInputText
                disabled
                type="text"
-               [ngModel]="project.deployer">
+               [(ngModel)]="project.deployer">
       </div>
 
       <div class="p-field">
@@ -79,8 +157,19 @@
                pInputText
                disabled
                type="text"
-               [ngModel]="project.dataGenerator">
+               [(ngModel)]="project.dataGenerator">
       </div>
+    </div>
+
+    <div class="p-d-flex p-jc-center">
+      <ng-container *ngIf="!editing">
+        <button pButton label="Edit" icon="pi pi-pencil" class="p-mr-4 p-button-warning" (click)="onEdit()"></button>
+      </ng-container>
+
+      <ng-container *ngIf="editing">
+        <button pButton label="Save" icon="pi pi-check" class="p-mr-3 p-button-success" (click)="onSaveEditing()"></button>
+        <button pButton label="Cancel" icon="pi pi-times" class="p-mr-3 p-button-danger" (click)="onCancelEditing()"></button>
+      </ng-container>
     </div>
   </p-tabPanel>
 </p-tabView>

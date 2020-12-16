@@ -3,7 +3,6 @@ import {MenuItem} from "primeng/api";
 import {ImportComponent} from "./dialogs/import/import.component";
 import {DialogService} from "primeng/dynamicdialog";
 import {ExportComponent} from "./dialogs/export/export.component";
-import {InternalDsComponent} from "./dialogs/internal-ds/internal-ds.component";
 import {StagesComponent} from "./dialogs/stages/stages.component";
 import {ProjectProfileComponent} from "./dialogs/project/profile/project-profile.component";
 import {ProjectService} from "./services/project.service";
@@ -133,11 +132,14 @@ export class AppComponent implements OnInit
 
   private onShowInternalDs(): void
   {
-    this.dialogService.open(InternalDsComponent, {
+    this.dialogService.open(ProjectProfileComponent, {
       header: 'Internal database',
       width: '30%',
       dismissableMask: false,
-      closable: false
+      closable: false,
+      data: {
+        tabIndex: 1
+      }
     });
   }
 
