@@ -7,7 +7,11 @@
     <div class="p-mr-2">
       <p-listbox [options]="stages"
                  (onChange)="onStageSelect($event)"
-                 optionLabel="name"></p-listbox>
+                 optionLabel="name">
+        <ng-template let-stage pTemplate="item">
+          <p [class.current]="stage.name === currentStage">{{stage.name}}</p>
+        </ng-template>
+      </p-listbox>
     </div>
 
     <div class="p-mr-2 p-fluid">
@@ -20,54 +24,61 @@
                [(ngModel)]="selectedStage.name">
       </div>
 
-      <div class="p-field">
-        <label for="driver">Driver</label>
-        <input id="driver"
-               pInputText
-               [disabled]="!editing"
-               type="text"
-               [(ngModel)]="selectedStage.datasource.driverClassName">
-      </div>
+      <app-datasource [ds]="selectedStage.datasource" [editing]="editing"></app-datasource>
 
-      <div class="p-field">
-        <label for="url">URL</label>
-        <input id="url"
-               pInputText
-               [disabled]="!editing"
-               type="text"
-               [(ngModel)]="selectedStage.datasource.url">
-      </div>
+<!--      <div class="p-field">-->
+<!--        <label for="driver">Driver</label>-->
+<!--        <input id="driver"-->
+<!--               pInputText-->
+<!--               [disabled]="!editing"-->
+<!--               type="text"-->
+<!--               [(ngModel)]="selectedStage.datasource.driverClassName">-->
+<!--      </div>-->
 
-      <div class="p-field">
-        <label for="db">Database name</label>
-        <input id="db"
-               pInputText
-               [disabled]="!editing"
-               type="text"
-               [(ngModel)]="selectedStage.datasource.database">
-      </div>
+<!--      <div class="p-field">-->
+<!--        <label for="url">URL</label>-->
+<!--        <input id="url"-->
+<!--               pInputText-->
+<!--               [disabled]="!editing"-->
+<!--               type="text"-->
+<!--               [(ngModel)]="selectedStage.datasource.url">-->
+<!--      </div>-->
 
-      <div class="p-field">
-        <label for="username">Username</label>
-        <input id="username"
-               pInputText
-               [disabled]="!editing"
-               type="text"
-               [(ngModel)]="selectedStage.datasource.username">
-      </div>
+<!--      <div class="p-field">-->
+<!--        <label for="db">Database name</label>-->
+<!--        <input id="db"-->
+<!--               pInputText-->
+<!--               [disabled]="!editing"-->
+<!--               type="text"-->
+<!--               [(ngModel)]="selectedStage.datasource.database">-->
+<!--      </div>-->
 
-      <div class="p-field">
-        <label for="password">Password</label>
-        <input id="password"
-               pInputText
-               [disabled]="!editing"
-               type="text"
-               [(ngModel)]="selectedStage.datasource.password">
-      </div>
+<!--      <div class="p-field">-->
+<!--        <label for="username">Username</label>-->
+<!--        <input id="username"-->
+<!--               pInputText-->
+<!--               [disabled]="!editing"-->
+<!--               type="text"-->
+<!--               [(ngModel)]="selectedStage.datasource.username">-->
+<!--      </div>-->
+
+<!--      <div class="p-field">-->
+<!--        <label for="password">Password</label>-->
+<!--        <input id="password"-->
+<!--               pInputText-->
+<!--               [disabled]="!editing"-->
+<!--               type="text"-->
+<!--               [(ngModel)]="selectedStage.datasource.password">-->
+<!--      </div>-->
     </div>
   </div>
 
-  <div class="p-d-flex p-jc-center">
+  <div class="selection-pane p-d-flex p-jc-center" *ngIf="!editing && selectedStage.name !== ''">
+    <button pButton label="Select" icon="pi pi-check" class="p-mr-4 p-button-secondary" *ngIf="selectedStage.name !== currentStage" (click)="onSelectCurrentStage()"></button>
+    <button pButton label="Unselect" icon="pi pi-times" class="p-mr-4 p-button-secondary" *ngIf="selectedStage.name === currentStage" (click)="onUnselectCurrentStage()"></button>
+  </div>
+
+  <div class="crud-pane p-d-flex p-jc-center">
     <ng-container *ngIf="!editing">
       <button pButton label="New" icon="pi pi-plus" class="p-mr-4 p-button-success" (click)="onCreateStage()"></button>
       <button pButton label="Copy" icon="pi pi-copy" class="p-mr-4 p-button-success" [disabled]="selectedStage.name === ''" (click)="onCopyStage()"></button>
@@ -76,7 +87,7 @@
     </ng-container>
 
     <ng-container *ngIf="editing">
-      <button pButton label="Save" icon="pi pi-check" class="p-mr-3 p-button-success" (click)="onSaveStageEditing()"></button>
+      <button pButton label="Save" icon="pi pi-save" class="p-mr-3 p-button-success" (click)="onSaveStageEditing()"></button>
       <button pButton label="Cancel" icon="pi pi-times" class="p-mr-3 p-button-danger" (click)="onCancelStageEditing()"></button>
     </ng-container>
   </div>

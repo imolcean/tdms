@@ -3,3 +3,15 @@ p-listbox {
   max-height: 475px;
   overflow-y: auto;
 }
+
+p.current {
+  font-weight: bold;
+}
+
+div.selection-pane {
+  margin-bottom: 5px;
+}
+
+div.crud-pane {
+  margin-bottom: 5px;
+}

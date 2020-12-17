@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {DynamicDialogConfig, DynamicDialogRef} from "primeng/dynamicdialog";
 import {DataSourceService} from "../../services/data-source.service";
 import {StageDto} from "../../dto/dto";
+import {StageSelectionService} from "../../services/stage-selection.service";
 
 @Component({
   selector: 'app-stages',
@@ -11,6 +12,7 @@ import {StageDto} from "../../dto/dto";
 export class StagesComponent implements OnInit
 {
   public stages: StageDto[] | undefined;
+  public currentStage: string | undefined;
   public selectedStage: StageDto;
   public editing: boolean;
   public creating: boolean;
@@ -19,10 +21,14 @@ export class StagesComponent implements OnInit
 
   constructor(private ref: DynamicDialogRef,
               private config: DynamicDialogConfig,
-              private dsService: DataSourceService)
+              private dsService: DataSourceService,
+              private stageSelectionService: StageSelectionService)
   {
     this.dsService.getStages()
       .subscribe((value: StageDto[]) => this.stages = value);
+
+    this.stageSelectionService.getCurrentStage()
+      .subscribe((value: string | undefined) => this.currentStage = value);
 
     this.selectedStage = this.createEmptyStage();
     this.editing = false;
@@ -32,6 +38,7 @@ export class StagesComponent implements OnInit
   ngOnInit(): void
   {
     this.dsService.loadStages();
+    this.stageSelectionService.loadCurrentStage();
   }
 
   public onOk()
@@ -112,5 +119,15 @@ export class StagesComponent implements OnInit
         password: original.datasource.password
       }
     } as StageDto;
+  }
+
+  public onSelectCurrentStage(): void
+  {
+    this.stageSelectionService.selectCurrentStage(this.selectedStage.name);
+  }
+
+  public onUnselectCurrentStage(): void
+  {
+    this.stageSelectionService.clearCurrentStage();
   }
 }

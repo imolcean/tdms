@@ -23,11 +23,11 @@ public class StageSelectionController
     }
 
     @PutMapping("/current/{name}")
-    public ResponseEntity<Void> select(@PathVariable("name") String stageName)
+    public ResponseEntity<String> select(@PathVariable("name") String stageName)
     {
         StageSelectionContextHolder.setStageName(stageName);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(stageName);
     }
 
     @DeleteMapping("/current")
