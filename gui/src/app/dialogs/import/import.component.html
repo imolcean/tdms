@@ -1,5 +1,7 @@
 <p>
-  Are you sure you want to import data from {{importPath}}?
+  Are you sure you want to import data from
+  <br>
+  {{importPath}}?
 </p>
 
 <p class="note">
@@ -7,6 +9,6 @@
 </p>
 
 <p-footer>
-  <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="onCancel()"></button>
   <button pButton label="Import" icon="pi pi-check" class="p-button-text" (click)="onConfirm()"></button>
+  <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="onCancel()"></button>
 </p-footer>

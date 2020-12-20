@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import {DynamicDialogConfig, DynamicDialogRef} from "primeng/dynamicdialog";
 import {TableService} from "../../services/table.service";
+import {PathsMap, PathsService} from "../../services/paths.service";
+import {ProjectService} from "../../services/project.service";
+import {ProjectDto} from "../../dto/dto";
 
 @Component({
   selector: 'app-export',
@@ -9,11 +12,16 @@ import {TableService} from "../../services/table.service";
 })
 export class ExportComponent implements OnInit
 {
-  public exportPath: string = "PATH"; // TODO
+  public exportPath: string| undefined;
 
   constructor(private ref: DynamicDialogRef,
               private config: DynamicDialogConfig,
-              private data: TableService) {}
+              private data: TableService,
+              private projectService: ProjectService)
+  {
+    this.projectService.getProject()
+      .subscribe((value: ProjectDto | undefined) => this.exportPath = value ? value.dataDir : undefined);
+  }
 
   ngOnInit(): void {}
 

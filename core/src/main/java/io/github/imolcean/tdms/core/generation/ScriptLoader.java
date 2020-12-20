@@ -24,7 +24,7 @@ public class ScriptLoader
     @Getter
     private final Map<String, String> scripts;
 
-    public ScriptLoader(@Value("${app.generation.script}") String scriptDir) throws IOException
+    public ScriptLoader(@Value("${app.generation.script.path}") String scriptDir) throws IOException
     {
         this.scriptDir = scriptDir;
         this.scripts = new HashMap<>();

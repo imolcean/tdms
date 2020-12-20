@@ -1,8 +1,10 @@
 <p>
-  Are you sure you want to export data to the {{exportPath}}?
+  Are you sure you want to export data to the
+  <br>
+  {{exportPath}}?
 </p>
 
 <p-footer>
-  <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="onCancel()"></button>
   <button pButton label="Export" icon="pi pi-check" class="p-button-text" (click)="onConfirm()"></button>
+  <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="onCancel()"></button>
 </p-footer>

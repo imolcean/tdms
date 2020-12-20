@@ -26,7 +26,7 @@ public class ValueLibraryLoader
     @Getter
     private final Map<String, ValueLibrary> libraries;
 
-    public ValueLibraryLoader(@Value("${app.generation.lib}") String libDir) throws IOException
+    public ValueLibraryLoader(@Value("${app.generation.lib.path}") String libDir) throws IOException
     {
         this.libDir = libDir;
         this.lists = new HashMap<>();

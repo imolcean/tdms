@@ -9,6 +9,7 @@ import {ProjectService} from "./services/project.service";
 import {ProjectOpenComponent} from "./dialogs/project/open/project-open.component";
 import {ProjectDto} from "./dto/dto";
 import {ExtensionsService} from "./services/extensions.service";
+import {PathsService} from "./services/paths.service";
 
 @Component({
   selector: 'app-root',
@@ -22,7 +23,8 @@ export class AppComponent implements OnInit
 
   constructor(private dialogService: DialogService,
               private projectService: ProjectService,
-              private extensionsService: ExtensionsService)
+              private extensionsService: ExtensionsService,
+              private pathsService: PathsService)
   {
     this.menuItems = this.getMenuContent();
 
@@ -31,12 +33,12 @@ export class AppComponent implements OnInit
         this.project = value;
         this.menuItems = this.getMenuContent();
       });
-
-    this.extensionsService.loadAvailable();
   }
 
   ngOnInit(): void
   {
+    this.pathsService.loadPaths();
+    this.extensionsService.loadAvailable();
     this.projectService.loadProject();
   }
 
