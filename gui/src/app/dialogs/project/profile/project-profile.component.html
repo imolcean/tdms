@@ -1,8 +1,8 @@
-<div *ngIf="project === undefined">
+<div *ngIf="project === undefined || extensions === undefined">
   <p-progressSpinner></p-progressSpinner>
 </div>
 
-<p-tabView *ngIf="project !== undefined"
+<p-tabView *ngIf="project !== undefined && extensions !== undefined"
            [(activeIndex)]="tabIndex">
   <p-tabPanel header="General">
     <div class="p-fluid">
@@ -117,47 +117,42 @@
     <div class="p-fluid">
       <div class="p-field">
         <label for="schema-updater">Schema updater</label>
-        <input id="schema-updater"
-               pInputText
-               [disabled]="!editing"
-               type="text"
-               [(ngModel)]="project.schemaUpdater">
+        <p-dropdown id="schema-updater"
+                    [disabled]="!editing"
+                    [options]="extensions.updaters"
+                    [(ngModel)]="project.schemaUpdater"></p-dropdown>
       </div>
 
       <div class="p-field">
         <label for="data-importer">Data importer</label>
-        <input id="data-importer"
-               pInputText
-               [disabled]="!editing"
-               type="text"
-               [(ngModel)]="project.dataImporter">
+        <p-dropdown id="data-importer"
+                    [disabled]="!editing"
+                    [options]="extensions.importers"
+                    [(ngModel)]="project.dataImporter"></p-dropdown>
       </div>
 
       <div class="p-field">
         <label for="data-exporter">Data exporter</label>
-        <input id="data-exporter"
-               pInputText
-               [disabled]="!editing"
-               type="text"
-               [(ngModel)]="project.dataExporter">
+        <p-dropdown id="data-exporter"
+                    [disabled]="!editing"
+                    [options]="extensions.exporters"
+                    [(ngModel)]="project.dataExporter"></p-dropdown>
       </div>
 
       <div class="p-field">
         <label for="deployer">Deployer</label>
-        <input id="deployer"
-               pInputText
-               [disabled]="!editing"
-               type="text"
-               [(ngModel)]="project.deployer">
+        <p-dropdown id="deployer"
+                    [disabled]="!editing"
+                    [options]="extensions.deployers"
+                    [(ngModel)]="project.deployer"></p-dropdown>
       </div>
 
       <div class="p-field">
         <label for="data-generator">Data generator</label>
-        <input id="data-generator"
-               pInputText
-               [disabled]="!editing"
-               type="text"
-               [(ngModel)]="project.dataGenerator">
+        <p-dropdown id="data-generator"
+                    [disabled]="!editing"
+                    [options]="extensions.generators"
+                    [(ngModel)]="project.dataGenerator"></p-dropdown>
       </div>
     </div>
 

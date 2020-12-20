@@ -8,6 +8,7 @@ import {ProjectProfileComponent} from "./dialogs/project/profile/project-profile
 import {ProjectService} from "./services/project.service";
 import {ProjectOpenComponent} from "./dialogs/project/open/project-open.component";
 import {ProjectDto} from "./dto/dto";
+import {ExtensionsService} from "./services/extensions.service";
 
 @Component({
   selector: 'app-root',
@@ -17,11 +18,11 @@ import {ProjectDto} from "./dto/dto";
 export class AppComponent implements OnInit
 {
   public menuItems: MenuItem[];
-
-  private project: ProjectDto | undefined;
+  public project: ProjectDto | undefined;
 
   constructor(private dialogService: DialogService,
-              private projectService: ProjectService)
+              private projectService: ProjectService,
+              private extensionsService: ExtensionsService)
   {
     this.menuItems = this.getMenuContent();
 
@@ -30,6 +31,8 @@ export class AppComponent implements OnInit
         this.project = value;
         this.menuItems = this.getMenuContent();
       });
+
+    this.extensionsService.loadAvailable();
   }
 
   ngOnInit(): void

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {DataSourceDto, GitRepositoryDto, ProjectDto} from "../../../dto/dto";
 import {DynamicDialogConfig, DynamicDialogRef} from "primeng/dynamicdialog";
 import {ProjectService} from "../../../services/project.service";
+import {ExtensionsMap, ExtensionsService} from "../../../services/extensions.service";
 
 @Component({
   selector: 'app-project-profile',
@@ -14,14 +15,14 @@ export class ProjectProfileComponent implements OnInit
   public creating: boolean;
   public tabIndex: number;
   public project: ProjectDto | undefined;
+  public extensions: ExtensionsMap | undefined;
 
   private backup: ProjectDto | undefined;
 
-  // TODO Select implementations with a dropdown list
-
   constructor(private ref: DynamicDialogRef,
               private config: DynamicDialogConfig,
-              private projectService: ProjectService)
+              private projectService: ProjectService,
+              private extensionsService: ExtensionsService)
   {
     this.editing = false;
 
@@ -47,6 +48,12 @@ export class ProjectProfileComponent implements OnInit
           this.project = this.createProject();
           this.editing = true;
         }
+      });
+
+    this.extensionsService.getAvailable()
+      .subscribe((value: ExtensionsMap | undefined) =>
+      {
+        this.extensions = value;
       });
   }
 

@@ -16,6 +16,7 @@ import { InputTextModule } from "primeng/inputtext";
 import { ProgressSpinnerModule } from "primeng/progressspinner";
 import { ListboxModule } from "primeng/listbox";
 import { TabViewModule } from 'primeng/tabview';
+import { DropdownModule } from "primeng/dropdown";
 
 import { AppComponent } from './app.component';
 import { PropertiesComponent } from './panes/properties/properties.component';
@@ -65,7 +66,8 @@ import { DatasourceComponent } from './elements/datasource/datasource.component'
     ConfirmPopupModule,
     ProgressSpinnerModule,
     ListboxModule,
-    TabViewModule
+    TabViewModule,
+    DropdownModule
   ],
   providers: [DialogService],
   bootstrap: [AppComponent]

@@ -1,5 +1,5 @@
 <div class="container">
-  <header>Project DABAG</header>
+  <header>{{project === undefined ? 'No project' : 'Project ' + project.projectName}}</header>
 
   <nav>
     <p-menubar [model]="menuItems"></p-menubar>
