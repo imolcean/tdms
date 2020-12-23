@@ -31,6 +31,12 @@ public abstract class DiffSchemaUpdater extends AbstractSchemaUpdater
     protected boolean dataMapped;
 
     @Override
+    public boolean isDataMapped()
+    {
+        return this.dataMapped;
+    }
+
+    @Override
     public void mapData(SchemaUpdateDataMappingRequest request) throws SQLException, SchemaCrawlerException
     {
         if(!isUpdateInProgress())

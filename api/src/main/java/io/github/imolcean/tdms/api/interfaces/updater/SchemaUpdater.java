@@ -55,6 +55,14 @@ public interface SchemaUpdater extends PublicInterface, ExtensionPoint
     boolean isUpdateInProgress();
 
     /**
+     * Indicates whether the data that needs migration scripts for mapping has already been mapped.
+     *
+     * @return {@code true} if data has been mapped or mapping is not needed,
+     *         {@code false} otherwise
+     */
+    boolean isDataMapped();
+
+    /**
      * Applies new database schema to a Temp DB and provides a {@link SchemaUpdateReport}
      * that describes all changes in the new schema with respect to the old one.
      *

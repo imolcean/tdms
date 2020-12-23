@@ -119,6 +119,20 @@ public class SchemaController
         return ResponseEntity.ok(schemaUpdateProxy.isUpdateInProgress());
     }
 
+    @GetMapping("/internal/update/data")
+    public ResponseEntity<Boolean> isDataMapped()
+    {
+        return ResponseEntity.ok(schemaUpdateProxy.isDataMapped());
+    }
+
+    @GetMapping("/internal/update/changes")
+    public ResponseEntity<SchemaUpdateDto> getCurrentUpdateReport()
+    {
+        return ResponseEntity.ok(
+                SchemaUpdateMapper.toDto(
+                        schemaUpdateProxy.getCurrentUpdateReport()));
+    }
+
     @PutMapping("/internal/update/init")
     public ResponseEntity<SchemaUpdateDto> initSchemaUpdate() throws Exception
     {

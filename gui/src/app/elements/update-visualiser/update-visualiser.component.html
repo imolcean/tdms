@@ -1,0 +1,38 @@
+<p *ngIf="update === undefined">Nothing to show :(</p>
+
+<p-accordion *ngIf="update !== undefined">
+  <p-accordionTab header="Untouched tables">
+    <ul>
+      <li *ngFor="let tableName of update.untouchedTables">{{tableName}}</li>
+    </ul>
+  </p-accordionTab>
+
+  <p-accordionTab header="Added tables">
+    <p-tabView>
+      <p-tabPanel *ngFor="let table of update.addedTables" [header]="table.name">
+        <app-table-visualiser [table]="table"></app-table-visualiser>
+      </p-tabPanel>
+    </p-tabView>
+  </p-accordionTab>
+
+  <p-accordionTab header="Deleted tables">
+    <ul>
+      <li *ngFor="let table of update.deletedTables">{{table.name}}</li>
+    </ul>
+  </p-accordionTab>
+
+  <p-accordionTab header="Changed tables">
+    <p-tabView>
+      <p-tabPanel *ngFor="let comparison of update.changedTables" [header]="comparison.before.name">
+        <p-tabView>
+          <p-tabPanel header="Before">
+            <app-table-visualiser [table]="comparison.before"></app-table-visualiser>
+          </p-tabPanel>
+          <p-tabPanel header="After">
+            <app-table-visualiser [table]="comparison.after"></app-table-visualiser>
+          </p-tabPanel>
+        </p-tabView>
+      </p-tabPanel>
+    </p-tabView>
+  </p-accordionTab>
+</p-accordion>

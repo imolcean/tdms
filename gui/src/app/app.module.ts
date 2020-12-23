@@ -17,6 +17,8 @@ import { ProgressSpinnerModule } from "primeng/progressspinner";
 import { ListboxModule } from "primeng/listbox";
 import { TabViewModule } from 'primeng/tabview';
 import { DropdownModule } from "primeng/dropdown";
+import { StepsModule } from "primeng/steps";
+import { InputTextareaModule } from "primeng/inputtextarea";
 
 import { AppComponent } from './app.component';
 import { PropertiesComponent } from './panes/properties/properties.component';
@@ -32,6 +34,17 @@ import { StagesComponent } from './dialogs/stages/stages.component';
 import { ProjectProfileComponent } from "./dialogs/project/profile/project-profile.component";
 import { ProjectOpenComponent } from './dialogs/project/open/project-open.component';
 import { DatasourceComponent } from './elements/datasource/datasource.component';
+import { UpdateComponent } from './dialogs/update/update.component';
+import {RouterModule, Routes} from "@angular/router";
+import { UpdateVisualiserComponent } from './elements/update-visualiser/update-visualiser.component';
+import { TableVisualiserComponent } from './elements/table-visualiser/table-visualiser.component';
+import { MigrationFormComponent } from './elements/migration-form/migration-form.component';
+
+const appRoutes: Routes = [
+  // { path: 'crisis-center', component: CrisisListComponent },
+  // { path: 'hero/:id', component: HeroDetailComponent },
+  // { path: '**', component: PageNotFoundComponent }
+];
 
 @NgModule({
   declarations: [
@@ -46,9 +59,14 @@ import { DatasourceComponent } from './elements/datasource/datasource.component'
     StagesComponent,
     ProjectProfileComponent,
     ProjectOpenComponent,
-    DatasourceComponent
+    DatasourceComponent,
+    UpdateComponent,
+    UpdateVisualiserComponent,
+    TableVisualiserComponent,
+    MigrationFormComponent
   ],
   imports: [
+    RouterModule.forRoot([]),
     BrowserModule,
     FormsModule,
     InputTextModule,
@@ -67,7 +85,9 @@ import { DatasourceComponent } from './elements/datasource/datasource.component'
     ProgressSpinnerModule,
     ListboxModule,
     TabViewModule,
-    DropdownModule
+    DropdownModule,
+    StepsModule,
+    InputTextareaModule
   ],
   providers: [DialogService],
   bootstrap: [AppComponent]

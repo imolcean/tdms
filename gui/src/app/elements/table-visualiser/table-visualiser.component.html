@@ -1,0 +1,21 @@
+<p *ngIf="table === undefined">Nothing to show :(</p>
+
+<ng-container *ngIf="table !== undefined">
+  <h3>Columns</h3>
+  <ul>
+    <li *ngFor="let column of table.columns">{{column.name}}: {{column.type}} (Nullable: {{column.nullable}})</li>
+  </ul>
+
+  <h3>Primary key</h3>
+  <ul>
+    <li *ngFor="let columnName of table.pk.columnNames">{{columnName}}</li>
+  </ul>
+
+  <h3>Foreign keys</h3>
+  <div *ngFor="let fk of table.fks">
+    <h4>{{fk.name}} ({{table.name}} -> {{fk.pkTableName}})</h4>
+    <ul>
+      <li *ngFor="let columnName of fk.columnNames; let i = index;">{{columnName}} -> {{fk.pkColumnNames[i]}}</li>
+    </ul>
+  </div>
+</ng-container>

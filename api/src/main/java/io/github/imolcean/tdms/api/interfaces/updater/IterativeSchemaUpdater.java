@@ -14,6 +14,12 @@ import lombok.extern.java.Log;
 @Log
 public abstract class IterativeSchemaUpdater extends AbstractSchemaUpdater
 {
+    @Override
+    public boolean isDataMapped()
+    {
+        return true;
+    }
+
     /**
      * Copies schema nad data from Internal DB to Temp DB.
      * Iterative schema update can then be made on the Temp DB using method {@code initSchemaUpdate}.

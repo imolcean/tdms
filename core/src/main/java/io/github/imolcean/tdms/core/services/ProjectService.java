@@ -277,8 +277,6 @@ public class ProjectService
         deploymentManager.clearSelection();
         dataGenerationManager.clearSelection();
 
-        schemaService.invalidateCache();
-
         log.info("Project closed successfully");
     }
 }

@@ -1,0 +1,25 @@
+<p *ngIf="update === undefined || model === undefined">Nothing to show :(</p>
+
+<ng-container *ngIf="update !== undefined && model !== undefined">
+  <p-accordion>
+    <p-accordionTab header="Added tables">
+      <p-accordion>
+        <p-accordionTab *ngFor="let table of update.addedTables" [header]="table.name">
+          <textarea pInputTextarea
+                    [defaultValue]="table.name"
+                    [(ngModel)]="model.sqlMigrationTables[table.name]"></textarea>
+        </p-accordionTab>
+      </p-accordion>
+    </p-accordionTab>
+
+    <p-accordionTab header="Changed tables">
+      <p-accordion>
+        <p-accordionTab *ngFor="let comparison of update.changedTables" [header]="comparison.before.name">
+          <textarea pInputTextarea
+                    [defaultValue]="comparison.before.name + ' -> ' + comparison.after.name"
+                    [(ngModel)]="model.sqlMigrationTables[comparison.before.name]"></textarea>
+        </p-accordionTab>
+      </p-accordion>
+    </p-accordionTab>
+  </p-accordion>
+</ng-container>

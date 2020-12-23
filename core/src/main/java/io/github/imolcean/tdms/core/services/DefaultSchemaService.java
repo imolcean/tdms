@@ -31,10 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,28 +42,14 @@ public class DefaultSchemaService implements SchemaService
 
     private final DataService dataService;
 
-    private Catalog cache;
-
     public DefaultSchemaService(DataService dataService)
     {
         this.dataService = dataService;
-        this.cache = null;
-    }
-
-    public void invalidateCache()
-    {
-        this.cache = null;
     }
 
     @Override
     public Catalog getSchema(DataSource ds) throws SQLException, SchemaCrawlerException
     {
-        if(cache != null)
-        {
-            log.fine("Cached schema found");
-            return cache;
-        }
-
         log.fine("Retrieving schema");
 
         try(Connection connection = ds.getConnection())
@@ -80,17 +63,13 @@ public class DefaultSchemaService implements SchemaService
                     .withLoadOptions(load)
                     .toOptions();
 
-            cache = SchemaCrawlerUtility.getCatalog(connection, options);
-
-            return cache;
+            return SchemaCrawlerUtility.getCatalog(connection, options);
         }
     }
 
     @Override
     public void copySchema(DataSource src, DataSource target) throws Exception
     {
-        cache = null;
-
         Connection srcConnection = src.getConnection();
         Connection targetConnection = target.getConnection();
 
@@ -154,8 +133,6 @@ public class DefaultSchemaService implements SchemaService
     @Override
     public void purgeSchema(DataSource ds) throws Exception
     {
-        cache = null;
-
         log.info("Purging schema");
 
         Database db = DatabaseFactory.getInstance()
@@ -233,14 +210,6 @@ public class DefaultSchemaService implements SchemaService
     @Override
     public Table getTable(DataSource ds, String tableName) throws SQLException, SchemaCrawlerException
     {
-        if(cache != null)
-        {
-            return cache.getTables().stream()
-                    .filter(table -> table.getName().equals(tableName))
-                    .findFirst()
-                    .orElseThrow(() -> new TableNotFoundException(tableName));
-        }
-
         try(Connection connection = ds.getConnection())
         {
             LimitOptions limit = LimitOptionsBuilder.builder()
@@ -306,6 +275,8 @@ public class DefaultSchemaService implements SchemaService
     @Override
     public void dropTable(DataSource ds, String tableName) throws SQLException, SchemaCrawlerException
     {
+        log.info(String.format("Dropping table %s", tableName));
+
         if(!tableExists(ds, tableName))
         {
             throw new TableNotFoundException(tableName);
@@ -316,6 +287,8 @@ public class DefaultSchemaService implements SchemaService
         {
             statement.executeUpdate("DROP TABLE " + tableName);
         }
+
+        log.info("Table dropped");
     }
 
     private String getFullSchemaName(Connection connection) throws SQLException

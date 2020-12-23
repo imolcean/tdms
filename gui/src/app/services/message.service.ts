@@ -22,5 +22,10 @@ export class MessageService
   public publish(msg: StatusMessageDto)
   {
     this.messages$.next(msg);
+
+    if(msg.kind === "ERROR")
+    {
+      console.error(msg.content);
+    }
   }
 }
