@@ -2,7 +2,7 @@
 
 <ng-container *ngIf="update !== undefined && model !== undefined">
   <p-accordion>
-    <p-accordionTab header="Added tables">
+    <p-accordionTab header="Added tables" [disabled]="update.addedTables.length === 0">
       <p-accordion>
         <p-accordionTab *ngFor="let table of update.addedTables" [header]="table.name">
           <textarea pInputTextarea
@@ -12,7 +12,7 @@
       </p-accordion>
     </p-accordionTab>
 
-    <p-accordionTab header="Changed tables">
+    <p-accordionTab header="Changed tables" [disabled]="update.changedTables.length === 0">
       <p-accordion>
         <p-accordionTab *ngFor="let comparison of update.changedTables" [header]="comparison.before.name">
           <textarea pInputTextarea

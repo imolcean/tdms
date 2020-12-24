@@ -32,8 +32,9 @@ public class TableMetaDataMapper
     {
         return new TableMetaDataDto.Column(
                 column.getName(),
-                column.getColumnDataType().getName(),
-                column.isNullable());
+                column.getColumnDataType().getName().toUpperCase() + "(" + column.getSize() + ")",
+                column.isNullable(),
+                column.getDefaultValue());
     }
 
     private static TableMetaDataDto.PrimaryKey mapPk(PrimaryKey pk)

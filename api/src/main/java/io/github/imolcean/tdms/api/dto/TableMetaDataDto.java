@@ -16,6 +16,7 @@ public class TableMetaDataDto
         private String name;
         private String type;
         private boolean nullable;
+        private String defaultValue;
     }
 
     @Data

@@ -3,56 +3,56 @@
 </div>
 
 <p class="updater" *ngIf="updater !== undefined">
-  Selected schema updater:
-  <br>
-  {{updater}}
-  <br>
-  {{currentStep !== undefined ? currentStep : 'undefined'}}
+  Selected schema updater: <span class="keyword">{{updater}}</span>
 </p>
 
 <p-steps *ngIf="updater !== undefined && currentStep !== undefined" [model]="steps" [activeIndex]="currentStep"></p-steps>
 
 <div class="content">
-  <div id="start" *ngIf="currentStep === 0">
+  <div class="step start" *ngIf="currentStep === 0">
     <p>
       This wizzard will help you to perform schema update.
       <br>
       Please, assure that you have a correct updater selected.
     </p>
 
-    <p-button *ngIf="!loading" (onClick)="onUpdateBegin()">Begin</p-button>
-    <p-button *ngIf="loading" [disabled]="true">Wait...</p-button>
+    <div class="step-footer">
+      <p-button *ngIf="!loading" (onClick)="onUpdateBegin()">Begin</p-button>
+      <p-button *ngIf="loading" [disabled]="true">Wait...</p-button>
+    </div>
   </div>
 
-  <div id="init" *ngIf="currentStep === 1">
+  <div class="step init" *ngIf="currentStep === 1">
     <p>
       Schema update has been initialised. Take a look at the changes that were made.
     </p>
 
     <app-update-visualiser [update]="currentUpdateReport"></app-update-visualiser>
 
-    <p-button *ngIf="!loading" (onClick)="currentStep = 2">Next</p-button>
-    <p-button *ngIf="loading" [disabled]="true">Wait...</p-button>
+    <div class="step-footer">
+      <p-button *ngIf="!loading" (onClick)="currentStep = 2">Next</p-button>
+      <p-button *ngIf="loading" [disabled]="true">Wait...</p-button>
+    </div>
   </div>
 
-  <div id="mapping" *ngIf="currentStep === 2">
+  <div class="step mapping" *ngIf="currentStep === 2">
     <p>
-      You are using a diff-based schema updater.
-      <br>
-      Please, provide data migration scripts for the tables listed below.
+      You are using a diff-based schema updater. Please, provide data migration scripts for the tables listed below.
     </p>
 
     <p>
-      You can query data from the old schema using keyword "old", and from the new schema using keyword "new".
+      You can query data from the old schema using keyword <span class="keyword">old</span>, and from the new schema using keyword <span class="keyword">new</span>.
     </p>
 
     <app-migration-form [update]="currentUpdateReport" [model]="mappingRequest"></app-migration-form>
 
-    <p-button *ngIf="!loading" (onClick)="onMapData()">Next</p-button>
-    <p-button *ngIf="loading" [disabled]="true">Wait...</p-button>
+    <div class="step-footer">
+      <p-button *ngIf="!loading" (onClick)="onMapData(mappingRequest!)">Next</p-button>
+      <p-button *ngIf="loading" [disabled]="true">Wait...</p-button>
+    </div>
   </div>
 
-  <div id="confirmation" *ngIf="currentStep === 3">
+  <div class="step confirmation" *ngIf="currentStep === 3">
     <p>
       Everything is prepared. Please, confirm the update.
     </p>
@@ -61,8 +61,10 @@
       Note: After schema update has been committed, you won't be able to roll it back
     </p>
 
-    <p-button *ngIf="!loading" (onClick)="onRollbackDataMapping()">Mapping rollback</p-button>
-    <p-button *ngIf="loading" [disabled]="true">Wait...</p-button>
+    <div class="step-footer">
+      <p-button *ngIf="!loading" (onClick)="onRollbackDataMapping()">Mapping rollback</p-button>
+      <p-button *ngIf="loading" [disabled]="true">Wait...</p-button>
+    </div>
   </div>
 </div>
 

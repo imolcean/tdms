@@ -3,7 +3,13 @@
 <ng-container *ngIf="table !== undefined">
   <h3>Columns</h3>
   <ul>
-    <li *ngFor="let column of table.columns">{{column.name}}: {{column.type}} (Nullable: {{column.nullable}})</li>
+    <li *ngFor="let column of table.columns">
+      {{column.name}}: {{column.type}}
+
+      <span *ngIf="!column.nullable || column.defaultValue">
+        (<span *ngIf="!column.nullable">NotNull</span> <span *ngIf="column.defaultValue">Default value: {{column.defaultValue}}</span>)
+      </span>
+    </li>
   </ul>
 
   <h3>Primary key</h3>
@@ -12,10 +18,10 @@
   </ul>
 
   <h3>Foreign keys</h3>
-  <div *ngFor="let fk of table.fks">
-    <h4>{{fk.name}} ({{table.name}} -> {{fk.pkTableName}})</h4>
+  <div class="fk_container" *ngFor="let fk of table.fks">
+    <h4>{{fk.name}}</h4>
     <ul>
-      <li *ngFor="let columnName of fk.columnNames; let i = index;">{{columnName}} -> {{fk.pkColumnNames[i]}}</li>
+      <li *ngFor="let columnName of fk.columnNames; let i = index;">{{table.name}}.{{columnName}} -> {{fk.pkTableName}}.{{fk.pkColumnNames[i]}}</li>
     </ul>
   </div>
 </ng-container>

@@ -1,13 +1,13 @@
 <p *ngIf="update === undefined">Nothing to show :(</p>
 
 <p-accordion *ngIf="update !== undefined">
-  <p-accordionTab header="Untouched tables">
+  <p-accordionTab header="Untouched tables" [disabled]="update.untouchedTables.length === 0">
     <ul>
       <li *ngFor="let tableName of update.untouchedTables">{{tableName}}</li>
     </ul>
   </p-accordionTab>
 
-  <p-accordionTab header="Added tables">
+  <p-accordionTab header="Added tables" [disabled]="update.addedTables.length === 0">
     <p-tabView>
       <p-tabPanel *ngFor="let table of update.addedTables" [header]="table.name">
         <app-table-visualiser [table]="table"></app-table-visualiser>
@@ -15,13 +15,13 @@
     </p-tabView>
   </p-accordionTab>
 
-  <p-accordionTab header="Deleted tables">
+  <p-accordionTab header="Deleted tables" [disabled]="update.deletedTables.length === 0">
     <ul>
       <li *ngFor="let table of update.deletedTables">{{table.name}}</li>
     </ul>
   </p-accordionTab>
 
-  <p-accordionTab header="Changed tables">
+  <p-accordionTab header="Changed tables" [disabled]="update.changedTables.length === 0">
     <p-tabView>
       <p-tabPanel *ngFor="let comparison of update.changedTables" [header]="comparison.before.name">
         <p-tabView>

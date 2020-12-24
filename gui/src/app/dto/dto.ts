@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 2.26.723 on 2020-12-06 10:10:25.
+// Generated using typescript-generator version 2.26.723 on 2020-12-24 07:25:03.
 
 export interface DataSourceDto {
     driverClassName: string;
@@ -86,6 +86,7 @@ export interface TableMetaDataDtoColumn {
     name: string;
     type: string;
     nullable: boolean;
+    defaultValue: string;
 }
 
 export interface TableMetaDataDtoPrimaryKey {
