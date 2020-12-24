@@ -74,4 +74,10 @@ export class TableContentComponent implements OnInit
   {
     this.tableService.deleteRow(this.content!.tableName, ri);
   }
+
+  public onCloseTable(): void
+  {
+    this.showDialog = false;
+    delete this.content;
+  }
 }

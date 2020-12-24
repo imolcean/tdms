@@ -2,7 +2,8 @@
   <h1>{{content.tableName}}</h1>
 
   <p-toolbar>
-    <button pButton label="New" icon="pi pi-plus" class="p-button-success p-mr-2" (click)="onAddRow()"></button>
+    <button pButton label="Add row" icon="pi pi-plus" class="p-button-success p-mr-2" (click)="onAddRow()"></button>
+    <button pButton label="Close table" type="button" icon="pi pi-times" (click)="onCloseTable()" class="p-button-text"></button>
   </p-toolbar>
 
   <p-table [value]="content.data">
