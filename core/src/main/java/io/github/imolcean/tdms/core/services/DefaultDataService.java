@@ -289,7 +289,7 @@ public class DefaultDataService implements DataService
     @Override
     public void clearTables(DataSource ds, Collection<Table> tables) throws SQLException, IOException
     {
-        log.info("Clearing all tables");
+        log.info("Clearing tables");
 
         try(Connection connection = lowLevelDataService.createTransaction(ds))
         {

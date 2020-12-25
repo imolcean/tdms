@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {MenuItem} from "primeng/api";
+import {ConfirmationService, MenuItem} from "primeng/api";
 import {ImportComponent} from "./dialogs/import/import.component";
 import {DialogService} from "primeng/dynamicdialog";
 import {ExportComponent} from "./dialogs/export/export.component";
@@ -11,6 +11,9 @@ import {ProjectDto} from "./dto/dto";
 import {ExtensionsService} from "./services/extensions.service";
 import {PathsService} from "./services/paths.service";
 import {UpdateComponent} from "./dialogs/update/update.component";
+import {UpdateService} from "./services/update.service";
+import {SchemaService} from "./services/schema.service";
+import {TableService} from "./services/table.service";
 
 @Component({
   selector: 'app-root',
@@ -23,9 +26,12 @@ export class AppComponent implements OnInit
   public project: ProjectDto | undefined;
 
   constructor(private dialogService: DialogService,
+              private confirmationService: ConfirmationService,
               private projectService: ProjectService,
               private extensionsService: ExtensionsService,
-              private pathsService: PathsService)
+              private pathsService: PathsService,
+              private schemaService: SchemaService,
+              private tableService: TableService)
   {
     this.menuItems = this.getMenuContent();
 
@@ -57,12 +63,19 @@ export class AppComponent implements OnInit
         ]
       },
       {
+        label: "Schema",
+        items: [
+          {label: 'Drop all', icon: 'pi pi-times', command: _e => this.onShowDropSchema(), disabled: this.project === undefined},
+          {label: 'Schema update', icon: 'pi pi-briefcase', command: _e => this.onShowUpdate(), disabled: this.project === undefined}
+        ]
+      },
+      {
         label: "Data",
         items: [
+          {label: 'Clear all', icon: 'pi pi-times', command: _e => this.onShowClearData(), disabled: this.project === undefined},
           {label: 'Import', icon: 'pi pi-arrow-left', command: _e => this.onShowImport(), disabled: this.project === undefined},
           {label: 'Export', icon: 'pi pi-arrow-right', command: _e => this.onShowExport(), disabled: this.project === undefined},
-          {label: 'Generation', icon: 'pi pi-briefcase', disabled: this.project === undefined},
-          {label: 'Schema update', icon: 'pi pi-briefcase', command: _e => this.onShowUpdate(), disabled: this.project === undefined}
+          {label: 'Generation', icon: 'pi pi-briefcase', disabled: this.project === undefined}
         ]
       },
       {
@@ -174,6 +187,22 @@ export class AppComponent implements OnInit
       width: '70%',
       dismissableMask: false,
       closable: false
+    });
+  }
+
+  private onShowDropSchema(): void
+  {
+    this.confirmationService.confirm({
+      message: 'Are you sure that you want to drop all tables?',
+      accept: () => this.schemaService.dropAll()
+    });
+  }
+
+  private onShowClearData(): void
+  {
+    this.confirmationService.confirm({
+      message: 'Are you sure that you want to remove data from all tables?',
+      accept: () => this.tableService.clearAll()
     });
   }
 }

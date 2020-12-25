@@ -12,6 +12,7 @@ import { ToolbarModule } from "primeng/toolbar";
 import { DialogModule } from "primeng/dialog";
 import { DialogService, DynamicDialogModule } from "primeng/dynamicdialog";
 import { ConfirmPopupModule } from "primeng/confirmpopup";
+import { ConfirmDialogModule } from "primeng/confirmdialog";
 import { InputTextModule } from "primeng/inputtext";
 import { ProgressSpinnerModule } from "primeng/progressspinner";
 import { ListboxModule } from "primeng/listbox";
@@ -39,6 +40,7 @@ import {RouterModule, Routes} from "@angular/router";
 import { UpdateVisualiserComponent } from './elements/update-visualiser/update-visualiser.component';
 import { TableVisualiserComponent } from './elements/table-visualiser/table-visualiser.component';
 import { MigrationFormComponent } from './elements/migration-form/migration-form.component';
+import {ConfirmationService} from "primeng/api";
 
 const appRoutes: Routes = [
   // { path: 'crisis-center', component: CrisisListComponent },
@@ -82,6 +84,7 @@ const appRoutes: Routes = [
     TreeModule,
     ContextMenuModule,
     ConfirmPopupModule,
+    ConfirmDialogModule,
     ProgressSpinnerModule,
     ListboxModule,
     TabViewModule,
@@ -89,7 +92,7 @@ const appRoutes: Routes = [
     StepsModule,
     InputTextareaModule
   ],
-  providers: [DialogService],
+  providers: [DialogService, ConfirmationService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

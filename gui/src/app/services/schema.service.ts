@@ -70,4 +70,20 @@ export class SchemaService
         )
       );
   }
+
+  public dropAll(): void
+  {
+    this.msg.publish({kind: "INFO", content: "Clearing schema..."});
+
+    this.http
+      .delete('api/schema/internal')
+      .subscribe(_value =>
+      {
+        this.schema$.next([]);
+        this.msg.publish({kind: "SUCCESS", content: "Schema cleared"});
+      }, error =>
+      {
+        this.msg.publish({kind: "ERROR", content: error.error});
+      });
+  }
 }

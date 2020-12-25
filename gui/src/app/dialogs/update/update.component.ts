@@ -23,6 +23,7 @@ export class UpdateComponent implements OnInit
   public currentStep: number | undefined;
   public currentUpdateReport: SchemaUpdateDto | undefined;
   public loading: boolean;
+  public closing: boolean;
   public mappingRequest: SchemaUpdateDataMappingRequest | undefined;
 
   constructor(private ref: DynamicDialogRef,
@@ -39,6 +40,7 @@ export class UpdateComponent implements OnInit
     ];
 
     this.loading = false;
+    this.closing = false;
 
     this.projectService.getProject()
       .subscribe((value: ProjectDto | undefined) => this.updater = value?.schemaUpdater);
@@ -47,9 +49,18 @@ export class UpdateComponent implements OnInit
       .subscribe((value: number | undefined) =>
       {
         this.currentStep = value;
-        if(this.currentStep == 0)
+        if(this.currentStep === undefined || this.currentStep === 0 || this.currentStep === 3)
         {
           this.loading = false;
+
+          if(this.currentStep === 0 && this.closing)
+          {
+            this.ref.close(false);
+          }
+        }
+        else
+        {
+          this.updateService.loadCurrentUpdateReport();
         }
       });
 
@@ -60,6 +71,11 @@ export class UpdateComponent implements OnInit
         this.loading = false;
         this.mappingRequest = this.createMappingRequest(value);
       });
+  }
+
+  ngOnInit(): void
+  {
+    this.updateService.loadUpdateStep();
   }
 
   private createMappingRequest(update: SchemaUpdateDto | undefined): SchemaUpdateDataMappingRequest | undefined
@@ -84,11 +100,6 @@ export class UpdateComponent implements OnInit
     return {sqlMigrationTables: migrations};
   }
 
-  ngOnInit(): void
-  {
-    this.updateService.loadUpdateStep();
-  }
-
   public onUpdateBegin(): void
   {
     this.loading = true;
@@ -109,16 +120,20 @@ export class UpdateComponent implements OnInit
 
   public onConfirm(): void
   {
+    this.closing = true;
     this.updateService.commitUpdate();
-    this.ref.close(false);
   }
 
   public onCancel(): void
   {
     if(this.currentStep !== undefined && this.currentStep > 0)
     {
+      this.closing = true;
       this.updateService.cancelUpdate();
     }
-    this.ref.close(false);
+    else
+    {
+      this.ref.close(false);
+    }
   }
 }

@@ -17,7 +17,7 @@ public abstract class IterativeSchemaUpdater extends AbstractSchemaUpdater
     @Override
     public boolean isDataMapped()
     {
-        return true;
+        return false;
     }
 
     /**
@@ -28,6 +28,7 @@ public abstract class IterativeSchemaUpdater extends AbstractSchemaUpdater
     {
         log.info("Preparing Temp DB: copying schema and data");
 
+        schemaService.purgeSchema(tmpDs);
         schemaService.copySchema(internalDs, tmpDs);
         dataService.copyData(internalDs, tmpDs, schemaService.getSchema(internalDs).getTables());
 

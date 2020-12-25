@@ -57,8 +57,8 @@ public interface SchemaUpdater extends PublicInterface, ExtensionPoint
     /**
      * Indicates whether the data that needs migration scripts for mapping has already been mapped.
      *
-     * @return {@code true} if data has been mapped or mapping is not needed,
-     *         {@code false} otherwise
+     * @return {@code true} if data has been mapped,
+     *         {@code false} if data has not yet been mapped or mapping is not required by the current updater
      */
     boolean isDataMapped();
 

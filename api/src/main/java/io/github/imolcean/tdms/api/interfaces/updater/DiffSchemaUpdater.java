@@ -37,7 +37,7 @@ public abstract class DiffSchemaUpdater extends AbstractSchemaUpdater
     }
 
     @Override
-    public void mapData(SchemaUpdateDataMappingRequest request) throws SQLException, SchemaCrawlerException
+    public void mapData(SchemaUpdateDataMappingRequest request) throws SQLException, SchemaCrawlerException, IOException
     {
         if(!isUpdateInProgress())
         {
@@ -50,6 +50,8 @@ public abstract class DiffSchemaUpdater extends AbstractSchemaUpdater
         }
 
         log.info("Mapping data to the new schema");
+
+        lowLevelDataService.disableConstraints(tmpDs);
 
         try(Connection tmpDsConnection = tmpDs.getConnection())
         {
@@ -115,11 +117,24 @@ public abstract class DiffSchemaUpdater extends AbstractSchemaUpdater
             }
 
             tmpDsConnection.commit();
+            dataMapped = true;
+
+            try
+            {
+                lowLevelDataService.enableConstraints(tmpDs);
+
+                log.info("Data mapping finished");
+            }
+            catch(Exception e)
+            {
+                log.warning("Data mapping resulted in an inconsistent state of the database and will be rolled back");
+
+                dataMapped = false;
+                dataService.clearTables(tmpDs, schemaService.getTables(tmpDs, schemaService.getOccupiedTableNames(tmpDs)));
+
+                throw e;
+            }
         }
-
-        dataMapped = true;
-
-        log.info("Data mapping finished");
     }
 
     @Override
@@ -137,6 +152,22 @@ public abstract class DiffSchemaUpdater extends AbstractSchemaUpdater
         dataMapped = false;
 
         log.info("Data mapping rolled back");
+    }
+
+    @Override
+    public void commitSchemaUpdate() throws Exception
+    {
+        super.commitSchemaUpdate();
+
+        dataMapped = false;
+    }
+
+    @Override
+    public void cancelSchemaUpdate() throws Exception
+    {
+        super.cancelSchemaUpdate();
+
+        dataMapped = false;
     }
 
     private void mapDataAutomatically(Connection connection, Table src, Table target) throws SQLException

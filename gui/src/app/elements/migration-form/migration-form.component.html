@@ -14,10 +14,10 @@
 
     <p-accordionTab header="Changed tables" [disabled]="update.changedTables.length === 0">
       <p-accordion>
-        <p-accordionTab *ngFor="let comparison of update.changedTables" [header]="comparison.before.name">
+        <p-accordionTab *ngFor="let comparison of update.changedTables; let i = index;" [header]="comparison.before.name">
           <textarea pInputTextarea
                     [defaultValue]="comparison.before.name + ' -> ' + comparison.after.name"
-                    [(ngModel)]="model.sqlMigrationTables[comparison.before.name]"></textarea>
+                    [(ngModel)]="model.sqlMigrationTables[i].sql"></textarea>
         </p-accordionTab>
       </p-accordion>
     </p-accordionTab>

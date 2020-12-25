@@ -147,7 +147,18 @@ public class DefaultLowLevelDataService implements LowLevelDataService
 
         try(Statement statement = connection.createStatement())
         {
-            statement.execute(QueryLoader.loadQuery("disable_constraints"));
+            // Yeah, I know. Why would you use a batch for a single query?
+            //
+            // SQLServer refuses to throw an exception when disabling constraints fails. It just writes to the log instead.
+            // If you use a batch, however, the exception is thrown as it should.
+
+            statement.addBatch(QueryLoader.loadQuery("disable_constraints"));
+            statement.executeBatch();
+        }
+        catch(Exception e)
+        {
+            log.warning("Database constraints cannot be disabled");
+            throw e;
         }
 
         log.fine("Database constraints disabled");
@@ -169,7 +180,18 @@ public class DefaultLowLevelDataService implements LowLevelDataService
 
         try(Statement statement = connection.createStatement())
         {
-            statement.execute(QueryLoader.loadQuery("enable_constraints"));
+            // Yeah, I know. Why would you use a batch for a single query?
+            //
+            // SQLServer refuses to throw an exception when enabling constraints fails. It just writes to the log instead.
+            // If you use a batch, however, the exception is thrown as it should.
+
+            statement.addBatch(QueryLoader.loadQuery("enable_constraints"));
+            statement.executeBatch();
+        }
+        catch(Exception e)
+        {
+            log.warning("Database constraints cannot be enabled");
+            throw e;
         }
 
         log.fine("Database constraints enabled");

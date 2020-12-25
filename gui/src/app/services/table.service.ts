@@ -115,4 +115,19 @@ export class TableService
         this.msg.publish({kind: "ERROR", content: error.error});
       });
   }
+
+  public clearAll(): void
+  {
+    this.msg.publish({kind: "INFO", content: "Clearing all data..."});
+
+    this.http
+      .delete('api/data/internal')
+      .subscribe(_value =>
+      {
+        this.msg.publish({kind: "SUCCESS", content: "All data cleared"});
+      }, error =>
+      {
+        this.msg.publish({kind: "ERROR", content: error.error});
+      });
+  }
 }

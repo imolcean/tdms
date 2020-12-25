@@ -1,6 +1,7 @@
 package io.github.imolcean.tdms.api.interfaces.updater;
 
 import io.github.imolcean.tdms.api.DataSourceWrapper;
+import io.github.imolcean.tdms.api.services.LowLevelDataService;
 import io.github.imolcean.tdms.api.services.SchemaService;
 import io.github.imolcean.tdms.api.services.DataService;
 import lombok.extern.java.Log;
@@ -16,6 +17,9 @@ public abstract class AbstractSchemaUpdater implements SchemaUpdater
 
     @Autowired
     protected DataService dataService;
+
+    @Autowired
+    protected LowLevelDataService lowLevelDataService;
 
     protected DataSourceWrapper internalDs;
     protected DataSourceWrapper tmpDs;

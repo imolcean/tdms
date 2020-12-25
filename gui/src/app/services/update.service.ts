@@ -7,6 +7,7 @@ import {SchemaUpdateDataMappingRequest, SchemaUpdateDto} from "../dto/dto";
 interface UpdateStep
 {
   updateInProgress: boolean,
+  updaterType: string,
   dataMapped: boolean
 }
 
@@ -16,7 +17,7 @@ interface UpdateStep
 export class UpdateService
 {
   private updateStep$: BehaviorSubject<number | undefined>;
-  private currentUpdateReport$: BehaviorSubject<SchemaUpdateDto | undefined>
+  private currentUpdateReport$: BehaviorSubject<SchemaUpdateDto | undefined>;
 
   constructor(private http: HttpClient,
               private msg: MessageService)
@@ -41,6 +42,7 @@ export class UpdateService
 
     forkJoin({
       updateInProgress: this.http.get<boolean>('api/schema/internal/update'),
+      updaterType: this.http.get<string>('api/schema-updaters/selected/type'),
       dataMapped: this.http.get<boolean>('api/schema/internal/update/data')
     })
       .subscribe((value: UpdateStep) =>
@@ -51,7 +53,7 @@ export class UpdateService
         {
           step = 0;
         }
-        else
+        else if(value.updaterType === 'diff')
         {
           if(!value.dataMapped)
           {
@@ -62,13 +64,12 @@ export class UpdateService
             step = 3;
           }
         }
+        else
+        {
+          step = 1;
+        }
 
         this.updateStep$.next(step);
-
-        if(step > 0)
-        {
-          this.loadCurrentUpdateReport();
-        }
 
         this.msg.publish({kind: "SUCCESS", content: "Current step of schema update: " + step});
       }, error =>
@@ -101,27 +102,28 @@ export class UpdateService
       .put<SchemaUpdateDto>('api/schema/internal/update/init', null)
       .subscribe((_value: SchemaUpdateDto) =>
       {
-        // this.currentUpdateReport$.next(value);
         this.loadUpdateStep();
         this.msg.publish({kind: "SUCCESS", content: "Schema update initialised"});
       }, error =>
       {
+        this.updateStep$.next(0);
         this.msg.publish({kind: "ERROR", content: error.error});
       });
   }
 
-  public mapData(migrationScript: SchemaUpdateDataMappingRequest): void
+  public mapData(mappingRequest: SchemaUpdateDataMappingRequest): void
   {
     this.msg.publish({kind: "INFO", content: "Applying migration script"});
 
     this.http
-      .put('api/schema/internal/update/data/map', migrationScript)
+      .put('api/schema/internal/update/data/map', mappingRequest)
       .subscribe(_value =>
       {
         this.updateStep$.next(3);
         this.msg.publish({kind: "SUCCESS", content: "Migration script applied"});
       }, error =>
       {
+        this.updateStep$.next(2);
         this.msg.publish({kind: "ERROR", content: error.error});
       });
   }
@@ -138,6 +140,7 @@ export class UpdateService
         this.msg.publish({kind: "SUCCESS", content: "Migration scripts rolled back"});
       }, error =>
       {
+        this.updateStep$.next(3);
         this.msg.publish({kind: "ERROR", content: error.error});
       });
   }
@@ -154,6 +157,7 @@ export class UpdateService
         this.msg.publish({kind: "SUCCESS", content: "Schema update cancelled successfully"});
       }, error =>
       {
+        this.updateStep$.next(0);
         this.msg.publish({kind: "ERROR", content: error.error});
       });
   }
@@ -170,6 +174,7 @@ export class UpdateService
         this.msg.publish({kind: "SUCCESS", content: "Schema update committed successfully"});
       }, error =>
       {
+        this.updateStep$.next(3);
         this.msg.publish({kind: "ERROR", content: error.error});
       });
   }
