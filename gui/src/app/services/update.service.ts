@@ -1,181 +1,136 @@
 import { Injectable } from '@angular/core';
-import {BehaviorSubject, forkJoin, Observable} from "rxjs";
+import {Observable} from "rxjs";
 import {HttpClient} from "@angular/common/http";
 import {MessageService} from "./message.service";
 import {SchemaUpdateDataMappingRequest, SchemaUpdateDto} from "../dto/dto";
-
-interface UpdateStep
-{
-  updateInProgress: boolean,
-  updaterType: string,
-  dataMapped: boolean
-}
+import {tap} from "rxjs/operators";
+import {SchemaService} from "./schema.service";
 
 @Injectable({
   providedIn: 'root'
 })
 export class UpdateService
 {
-  private updateStep$: BehaviorSubject<number | undefined>;
-  private currentUpdateReport$: BehaviorSubject<SchemaUpdateDto | undefined>;
+  constructor(private http: HttpClient, private msg: MessageService, private schemaService: SchemaService) {}
 
-  constructor(private http: HttpClient,
-              private msg: MessageService)
+  public getUpdaterType(): Observable<string>
   {
-    this.updateStep$ = new BehaviorSubject<number | undefined>(undefined);
-    this.currentUpdateReport$ = new BehaviorSubject<SchemaUpdateDto | undefined>(undefined);
+    this.msg.publish({kind: "INFO", content: "Checking schema updater type..."});
+
+    return this.http
+      .get('api/schema-updaters/selected/type', {responseType: "text"})
+      .pipe(
+        tap(
+          (value: string) => this.msg.publish({kind: "SUCCESS", content: "Schema updater is of type " + value}),
+          error => this.msg.publish({kind: "ERROR", content: error.error}))
+      );
   }
 
-  public getUpdateStep(): Observable<number | undefined>
+  public isUpdateInProgress(): Observable<boolean>
   {
-    return this.updateStep$.asObservable();
+    this.msg.publish({kind: "INFO", content: "Checking if an update is already running..."});
+
+    return this.http
+      .get<boolean>('api/schema/internal/update')
+      .pipe(
+        tap(
+          (value: boolean) => this.msg.publish({kind: "SUCCESS", content: "Update is running: " + value}),
+          error => this.msg.publish({kind: "ERROR", content: error.error}))
+      );
   }
 
-  public getCurrentUpdateReport(): Observable<SchemaUpdateDto | undefined>
+  public isDataMapped(): Observable<boolean>
   {
-    return this.currentUpdateReport$.asObservable();
+    this.msg.publish({kind: "INFO", content: "Checking if data has been mapped..."});
+
+    return this.http
+      .get<boolean>('api/schema/internal/update/data')
+      .pipe(
+        tap(
+          (value: boolean) => this.msg.publish({kind: "SUCCESS", content: "Data has been mapped: " + value}),
+          error => this.msg.publish({kind: "ERROR", content: error.error}))
+      );
   }
 
-  public loadUpdateStep(): void
+  public getCurrentUpdateReport(): Observable<SchemaUpdateDto>
   {
-    this.msg.publish({kind: "INFO", content: "Checking current step of schema update..."});
+    this.msg.publish({kind: "INFO", content: "Retrieving last created update report..."});
 
-    forkJoin({
-      updateInProgress: this.http.get<boolean>('api/schema/internal/update'),
-      updaterType: this.http.get<string>('api/schema-updaters/selected/type'),
-      dataMapped: this.http.get<boolean>('api/schema/internal/update/data')
-    })
-      .subscribe((value: UpdateStep) =>
-      {
-        let step: number;
-
-        if(!value.updateInProgress)
-        {
-          step = 0;
-        }
-        else if(value.updaterType === 'diff')
-        {
-          if(!value.dataMapped)
-          {
-            step = 1;
-          }
-          else
-          {
-            step = 3;
-          }
-        }
-        else
-        {
-          step = 1;
-        }
-
-        this.updateStep$.next(step);
-
-        this.msg.publish({kind: "SUCCESS", content: "Current step of schema update: " + step});
-      }, error =>
-      {
-        this.msg.publish({kind: "ERROR", content: error.error});
-      });
-  }
-
-  public loadCurrentUpdateReport(): void
-  {
-    this.msg.publish({kind: "INFO", content: "Checking what changes have been made during active schema update..."});
-
-    this.http
+    return this.http
       .get<SchemaUpdateDto>('api/schema/internal/update/changes')
-      .subscribe((value: SchemaUpdateDto) =>
-      {
-        this.currentUpdateReport$.next(value);
-        this.msg.publish({kind: "SUCCESS", content: "Changes of the active schema update loaded"});
-      }, error =>
-      {
-        this.msg.publish({kind: "ERROR", content: error.error});
-      });
+      .pipe(
+        tap(
+          (_value: SchemaUpdateDto) => this.msg.publish({kind: "SUCCESS", content: "Update report retrieved"}),
+          error => this.msg.publish({kind: "ERROR", content: error.error}))
+      );
   }
 
-  public initUpdate(): void
+  public initUpdate(): Observable<SchemaUpdateDto>
   {
-    this.msg.publish({kind: "INFO", content: "Initialising schema update"});
+    this.msg.publish({kind: "INFO", content: "Initialising schema update..."});
 
-    this.http
+    return this.http
       .put<SchemaUpdateDto>('api/schema/internal/update/init', null)
-      .subscribe((_value: SchemaUpdateDto) =>
-      {
-        this.loadUpdateStep();
-        this.msg.publish({kind: "SUCCESS", content: "Schema update initialised"});
-      }, error =>
-      {
-        this.updateStep$.next(0);
-        this.msg.publish({kind: "ERROR", content: error.error});
-      });
+      .pipe(
+        tap(
+          (_value: SchemaUpdateDto ) => this.msg.publish({kind: "SUCCESS", content: "Schema update initialised"}),
+          error => this.msg.publish({kind: "ERROR", content: error.error}))
+      );
   }
 
-  public mapData(mappingRequest: SchemaUpdateDataMappingRequest): void
+  public mapData(mappingRequest: SchemaUpdateDataMappingRequest): Observable<void>
   {
-    this.msg.publish({kind: "INFO", content: "Applying migration script"});
+    this.msg.publish({kind: "INFO", content: "Mapping data..."});
 
-    this.http
-      .put('api/schema/internal/update/data/map', mappingRequest)
-      .subscribe(_value =>
-      {
-        this.updateStep$.next(3);
-        this.msg.publish({kind: "SUCCESS", content: "Migration script applied"});
-      }, error =>
-      {
-        this.updateStep$.next(2);
-        this.msg.publish({kind: "ERROR", content: error.error});
-      });
+    return this.http
+      .put<void>('api/schema/internal/update/data/map', mappingRequest)
+      .pipe(
+        tap(
+          (_value: void) => this.msg.publish({kind: "SUCCESS", content: "Data mapped successfully"}),
+          error => this.msg.publish({kind: "ERROR", content: error.error}))
+      );
   }
 
-  public rollbackDataMapping(): void
+  public rollbackDataMapping(): Observable<void>
   {
-    this.msg.publish({kind: "INFO", content: "Rolling back migration scripts..."});
+    this.msg.publish({kind: "INFO", content: "Rolling back data mapping..."});
 
-    this.http
-      .put('api/schema/internal/update/data/rollback', null)
-      .subscribe(_value =>
-      {
-        this.updateStep$.next(1);
-        this.msg.publish({kind: "SUCCESS", content: "Migration scripts rolled back"});
-      }, error =>
-      {
-        this.updateStep$.next(3);
-        this.msg.publish({kind: "ERROR", content: error.error});
-      });
+    return this.http
+      .put<void>('api/schema/internal/update/data/rollback', null)
+      .pipe(
+        tap(
+          (_value: void) => this.msg.publish({kind: "SUCCESS", content: "Data mapping rolled back"}),
+          error => this.msg.publish({kind: "ERROR", content: error.error}))
+      );
   }
 
-  public cancelUpdate(): void
+  public cancelUpdate(): Observable<void>
   {
     this.msg.publish({kind: "INFO", content: "Cancelling schema update..."});
 
-    this.http
-      .put('api/schema/internal/update/cancel', null)
-      .subscribe(_value =>
-      {
-        this.updateStep$.next(0);
-        this.msg.publish({kind: "SUCCESS", content: "Schema update cancelled successfully"});
-      }, error =>
-      {
-        this.updateStep$.next(0);
-        this.msg.publish({kind: "ERROR", content: error.error});
-      });
+    return this.http
+      .put<void>('api/schema/internal/update/cancel', null)
+      .pipe(
+        tap(
+          (_value: void) => this.msg.publish({kind: "SUCCESS", content: "Schema update cancelled"}),
+          error => this.msg.publish({kind: "ERROR", content: error.error}))
+      );
   }
 
-  public commitUpdate(): void
+  public commitUpdate(): Observable<void>
   {
     this.msg.publish({kind: "INFO", content: "Committing schema update..."});
 
-    this.http
-      .put('api/schema/internal/update/commit', null)
-      .subscribe(_value =>
-      {
-        this.updateStep$.next(0);
-        this.msg.publish({kind: "SUCCESS", content: "Schema update committed successfully"});
-      }, error =>
-      {
-        this.updateStep$.next(3);
-        this.msg.publish({kind: "ERROR", content: error.error});
-      });
+    return this.http
+      .put<void>('api/schema/internal/update/commit', null)
+      .pipe(
+        tap(
+          (_value: void) =>
+          {
+            this.msg.publish({kind: "SUCCESS", content: "Schema update committed successfully"});
+            this.schemaService.loadSchema();
+          },
+          error => this.msg.publish({kind: "ERROR", content: error.error}))
+      );
   }
 }

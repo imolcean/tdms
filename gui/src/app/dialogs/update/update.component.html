@@ -1,8 +1,8 @@
-<div *ngIf="updater === undefined || currentStep === undefined">
+<div *ngIf="currentStep === undefined">
   <p-progressSpinner></p-progressSpinner>
 </div>
 
-<p-steps *ngIf="updater !== undefined && currentStep !== undefined" [model]="steps" [activeIndex]="currentStep"></p-steps>
+<p-steps *ngIf="currentStep !== undefined" [model]="steps" [activeIndex]="currentStep"></p-steps>
 
 <div class="content">
   <div class="step start" *ngIf="currentStep === 0">
@@ -12,13 +12,13 @@
       Please, assure that you have a correct updater selected.
     </p>
 
-    <p class="updater" *ngIf="updater !== undefined">
+    <p class="updater">
       Current schema updater: <span class="keyword">{{updater}}</span>
     </p>
 
     <div class="step-footer">
-      <p-button *ngIf="!loading && !closing" (onClick)="onUpdateBegin()">Begin</p-button>
-      <p-button *ngIf="loading || closing" [disabled]="true">Wait...</p-button>
+      <p-button *ngIf="!loading" (onClick)="onUpdateInit()">Begin</p-button>
+      <p-button *ngIf="loading" [disabled]="true">Wait...</p-button>
     </div>
   </div>
 
@@ -30,8 +30,8 @@
     <app-update-visualiser [update]="currentUpdateReport"></app-update-visualiser>
 
     <div class="step-footer">
-      <p-button *ngIf="!loading && !closing" (onClick)="currentStep = 2">Next</p-button>
-      <p-button *ngIf="loading || closing" [disabled]="true">Wait...</p-button>
+      <p-button *ngIf="!loading" (onClick)="currentStep = mappingRequired ? 2 : 3">Next</p-button>
+      <p-button *ngIf="loading" [disabled]="true">Wait...</p-button>
     </div>
   </div>
 
@@ -47,8 +47,9 @@
     <app-migration-form [update]="currentUpdateReport" [model]="mappingRequest"></app-migration-form>
 
     <div class="step-footer">
-      <p-button *ngIf="!loading && !closing" (onClick)="onMapData(mappingRequest!)">Next</p-button>
-      <p-button *ngIf="loading || closing" [disabled]="true">Wait...</p-button>
+      <p-button *ngIf="!loading" (onClick)="currentStep = 1">Back</p-button>
+      <p-button *ngIf="!loading" (onClick)="onMapData(mappingRequest!)">Next</p-button>
+      <p-button *ngIf="loading" [disabled]="true">Wait...</p-button>
     </div>
   </div>
 
@@ -62,13 +63,13 @@
     </p>
 
     <div class="step-footer">
-      <p-button *ngIf="!loading && !closing" (onClick)="onRollbackDataMapping()">Mapping rollback</p-button>
-      <p-button *ngIf="loading || closing" [disabled]="true">Wait...</p-button>
+      <p-button *ngIf="!loading && mappingRequired" (onClick)="onRollbackDataMapping()">Mapping rollback</p-button>
+      <p-button *ngIf="loading" [disabled]="true">Wait...</p-button>
     </div>
   </div>
 </div>
 
 <p-footer>
-  <button pButton label="Update" icon="pi pi-check" class="p-button-text" [disabled]="closing || loading || currentStep !== 3" (click)="onConfirm()"></button>
-  <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" [disabled]="closing || loading" (click)="onCancel()"></button>
+  <button pButton label="Update" icon="pi pi-check" class="p-button-text" [disabled]="loading || currentStep !== 3" (click)="onConfirm()"></button>
+  <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" [disabled]="loading" (click)="onCancel()"></button>
 </p-footer>

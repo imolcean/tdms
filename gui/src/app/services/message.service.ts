@@ -27,5 +27,9 @@ export class MessageService
     {
       console.error(msg.content);
     }
+    else
+    {
+      console.info(msg.content);
+    }
   }
 }

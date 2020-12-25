@@ -10,6 +10,7 @@ import {
   SchemaUpdateDto
 } from "../../dto/dto";
 import {UpdateService} from "../../services/update.service";
+import {forkJoin} from "rxjs";
 
 @Component({
   selector: 'app-update',
@@ -18,12 +19,12 @@ import {UpdateService} from "../../services/update.service";
 })
 export class UpdateComponent implements OnInit
 {
-  public updater: string | undefined;
-  public steps: MenuItem[];
-  public currentStep: number | undefined;
-  public currentUpdateReport: SchemaUpdateDto | undefined;
   public loading: boolean;
-  public closing: boolean;
+  public currentStep: number | undefined;
+  public steps: MenuItem[];
+  public updater: string | undefined;
+  public mappingRequired: boolean | undefined;
+  public currentUpdateReport: SchemaUpdateDto | undefined;
   public mappingRequest: SchemaUpdateDataMappingRequest | undefined;
 
   constructor(private ref: DynamicDialogRef,
@@ -39,43 +40,132 @@ export class UpdateComponent implements OnInit
       {label: 'Confirmation'}
     ];
 
-    this.loading = false;
-    this.closing = false;
-
-    this.projectService.getProject()
-      .subscribe((value: ProjectDto | undefined) => this.updater = value?.schemaUpdater);
-
-    this.updateService.getUpdateStep()
-      .subscribe((value: number | undefined) =>
-      {
-        this.currentStep = value;
-        if(this.currentStep === undefined || this.currentStep === 0 || this.currentStep === 3)
-        {
-          this.loading = false;
-
-          if(this.currentStep === 0 && this.closing)
-          {
-            this.ref.close(false);
-          }
-        }
-        else
-        {
-          this.updateService.loadCurrentUpdateReport();
-        }
-      });
-
-    this.updateService.getCurrentUpdateReport()
-      .subscribe((value: SchemaUpdateDto | undefined) =>
-      {
-        this.currentUpdateReport = value;
-        this.loading = false;
-        this.mappingRequest = this.createMappingRequest(value);
-      });
+    this.loading = true;
   }
 
   ngOnInit(): void
   {
-    this.updateService.loadUpdateStep();
+    this.projectService.getProject()
+      .subscribe((value: ProjectDto | undefined) =>
+      {
+        this.updater = value?.schemaUpdater;
+        this.init();
+      });
+  }
+
+  private init(): void
+  {
+    forkJoin({
+      // project: this.projectService.getProject(),
+      updateInProgress: this.updateService.isUpdateInProgress(),
+      updaterType: this.updateService.getUpdaterType(),
+      dataMapped: this.updateService.isDataMapped()
+    })
+      .subscribe((value: { /*project: ProjectDto | undefined, */updateInProgress: boolean, updaterType: string, dataMapped: boolean }) =>
+      {
+        // this.updater = value.project?.schemaUpdater;
+        this.mappingRequired = value.updaterType === 'diff';
+
+        if(!value.updateInProgress)
+        {
+          this.currentStep = 0;
+        }
+        else
+        {
+          this.updateService.getCurrentUpdateReport()
+            .subscribe((value1: SchemaUpdateDto) =>
+            {
+              this.currentUpdateReport = value1;
+              this.mappingRequest = this.createMappingRequest(value1);
+            });
+
+          if(this.mappingRequired)
+          {
+            if(!value.dataMapped)
+            {
+              this.currentStep = 1;
+            }
+            else
+            {
+              this.currentStep = 3;
+            }
+          }
+          else
+          {
+            this.currentStep = 1;
+          }
+        }
+
+        this.loading = false;
+      });
+  }
+
+  public onUpdateInit(): void
+  {
+    this.loading = true;
+    this.updateService.initUpdate()
+      .subscribe((value: SchemaUpdateDto) =>
+      {
+        this.currentUpdateReport = value;
+        this.mappingRequest = this.createMappingRequest(value);
+        this.currentStep = 1;
+        this.loading = false
+      }, _error => this.loading = false);
+  }
+
+  public onMapData(mappingRequest: SchemaUpdateDataMappingRequest): void
+  {
+    this.loading = true;
+    this.updateService.mapData(mappingRequest)
+      .subscribe(_value =>
+      {
+        this.currentStep = 3;
+        this.loading = false;
+      }, _error =>
+      {
+        this.currentStep = 2;
+        this.loading = false;
+      });
+  }
+
+  public onRollbackDataMapping(): void
+  {
+    this.loading = true;
+    this.updateService.rollbackDataMapping()
+      .subscribe(_value =>
+      {
+        this.currentStep = 1;
+        this.loading = false;
+      }, _error =>
+      {
+        this.currentStep = 3;
+        this.loading = false;
+      });
+  }
+
+  public onConfirm(): void
+  {
+    this.loading = true;
+    this.updateService.commitUpdate()
+      .subscribe(_value => this.ref.close(true), _error =>
+      {
+        this.currentStep = 3;
+        this.loading = false;
+      });
+  }
+
+  public onCancel(): void
+  {
+    if(this.currentStep !== undefined && this.currentStep > 0)
+    {
+      this.loading = true;
+      this.updateService.cancelUpdate()
+        .subscribe(_value => {}, _error => {}, () => this.ref.close(false));
+    }
+    else
+    {
+      this.ref.close(false);
+    }
   }
 
   private createMappingRequest(update: SchemaUpdateDto | undefined): SchemaUpdateDataMappingRequest | undefined
@@ -98,42 +188,5 @@ export class UpdateComponent implements OnInit
     }
 
     return {sqlMigrationTables: migrations};
-  }
-
-  public onUpdateBegin(): void
-  {
-    this.loading = true;
-    this.updateService.initUpdate();
-  }
-
-  public onMapData(mappingRequest: SchemaUpdateDataMappingRequest): void
-  {
-    this.loading = true;
-    this.updateService.mapData(mappingRequest);
-  }
-
-  public onRollbackDataMapping(): void
-  {
-    this.loading = true;
-    this.updateService.rollbackDataMapping();
-  }
-
-  public onConfirm(): void
-  {
-    this.closing = true;
-    this.updateService.commitUpdate();
-  }
-
-  public onCancel(): void
-  {
-    if(this.currentStep !== undefined && this.currentStep > 0)
-    {
-      this.closing = true;
-      this.updateService.cancelUpdate();
-    }
-    else
-    {
-      this.ref.close(false);
-    }
   }
 }
