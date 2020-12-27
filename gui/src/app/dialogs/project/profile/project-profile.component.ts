@@ -116,11 +116,11 @@ export class ProjectProfileComponent implements OnInit
         username: original.tmp.username,
         password: original.tmp.password
       } as DataSourceDto,
-      gitRepository: {
+      gitRepository: original.gitRepository ? {
         url: original.gitRepository.url,
         dir: original.gitRepository.dir,
         token: original.gitRepository.token
-      } as GitRepositoryDto,
+      } as GitRepositoryDto : null,
       schemaUpdater: original.schemaUpdater,
       dataImporter: original.dataImporter,
       dataExporter: original.dataExporter,

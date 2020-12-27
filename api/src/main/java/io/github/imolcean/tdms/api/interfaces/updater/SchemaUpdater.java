@@ -8,6 +8,7 @@ import lombok.Data;
 import org.pf4j.ExtensionPoint;
 import schemacrawler.schema.Table;
 
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -45,6 +46,15 @@ public interface SchemaUpdater extends PublicInterface, ExtensionPoint
         List<Table> deletedTables;
         List<Comparison> changedTables;
     }
+
+    /**
+     * Makes this updater use specified description for update.
+     *
+     * Description can be a Liquibase changelog (use master changelog), Flyway migration script, etc.
+     *
+     * @param descriptor path to the update description
+     */
+    void setUpdateDescriptor(Path descriptor);
 
     /**
      * Indicates whether a schema update is in progress.

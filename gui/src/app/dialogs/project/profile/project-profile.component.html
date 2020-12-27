@@ -23,6 +23,15 @@
                type="text"
                [(ngModel)]="project.dataDir">
       </div>
+
+      <div class="p-field">
+        <label for="schema-update-descriptor">Schema update descriptor</label>
+        <input id="schema-update-descriptor"
+               pInputText
+               [disabled]="!editing"
+               type="text"
+               [(ngModel)]="project.schemaUpdateDescriptor">
+      </div>
     </div>
 
     <div class="p-d-flex p-jc-center">
@@ -71,7 +80,7 @@
     </div>
   </p-tabPanel>
 
-  <p-tabPanel header="Git">
+  <p-tabPanel header="Git" *ngIf="project.gitRepository">
     <div class="p-fluid">
       <div class="p-field">
         <label for="git-url">URL</label>

@@ -23,4 +23,5 @@ public class ProjectDto
     private String dataGenerator;
 
     private String dataDir;
+    private String schemaUpdateDescriptor;
 }

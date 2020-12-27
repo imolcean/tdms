@@ -1,8 +1,10 @@
 package io.github.imolcean.tdms.core.services;
 
 import io.github.imolcean.tdms.api.dto.ProjectDto;
+import io.github.imolcean.tdms.api.exceptions.NoImplementationSelectedException;
 import io.github.imolcean.tdms.api.exceptions.NoOpenProjectException;
 import io.github.imolcean.tdms.api.DataSourceWrapper;
+import io.github.imolcean.tdms.api.interfaces.updater.SchemaUpdater;
 import io.github.imolcean.tdms.api.services.SchemaService;
 import io.github.imolcean.tdms.core.controllers.mappers.DataSourceMapper;
 import io.github.imolcean.tdms.core.controllers.mappers.GitRepositoryMapper;
@@ -35,6 +37,7 @@ public class ProjectService
 
     private String projectName;
     private Path dataDir;
+    private Path schemaUpdateDescriptor;
 
     public ProjectService(DataSourceService dsService,
                           SchemaService schemaService,
@@ -137,6 +140,38 @@ public class ProjectService
     }
 
     /**
+     * Finds the schema update descriptor of the currently open project.
+     *
+     * @return path to the schema update descriptor of the currently open project
+     * @throws NoOpenProjectException if there is no project open currently
+     */
+    public Path getSchemaUpdateDescriptor()
+    {
+        if(!isProjectOpen())
+        {
+            throw new NoOpenProjectException();
+        }
+
+        return schemaUpdateDescriptor;
+    }
+
+    /**
+     * Changes the schema update descriptor of the currently open project.
+     *
+     * @param descriptor new schema update descriptor of the currently open project
+     * @throws NoOpenProjectException if there is no project open currently
+     */
+    public void changeSchemaUpdateDescriptor(Path descriptor)
+    {
+        if(!isProjectOpen())
+        {
+            throw new NoOpenProjectException();
+        }
+
+        schemaUpdateDescriptor = descriptor;
+    }
+
+    /**
      * Opens a project.
      *
      * @param project project to open
@@ -152,18 +187,26 @@ public class ProjectService
 
         projectName = project.getProjectName();
         dataDir = Path.of(project.getDataDir());
+        schemaUpdateDescriptor = Path.of(project.getSchemaUpdateDescriptor());
 
         dsService.setInternalDataSource(new DataSourceWrapper(project.getInternal()));
         dsService.setTmpDataSource(new DataSourceWrapper(project.getTmp()));
 
-        gitService.openRepository(
-                project.getGitRepository().getUrl(),
-                Path.of(project.getGitRepository().getDir()),
-                project.getGitRepository().getToken());
+        if(project.getGitRepository() != null)
+        {
+            gitService.openRepository(
+                    project.getGitRepository().getUrl(),
+                    Path.of(project.getGitRepository().getDir()),
+                    project.getGitRepository().getToken());
+        }
 
         if(!Strings.isBlank(project.getSchemaUpdater()))
         {
             schemaUpdateManager.selectImplementation(project.getSchemaUpdater());
+            schemaUpdateManager
+                    .getSelectedImplementation()
+                    .orElseThrow(() -> new NoImplementationSelectedException(SchemaUpdater.class))
+                    .setUpdateDescriptor(schemaUpdateDescriptor);
         }
         else
         {
@@ -246,7 +289,8 @@ public class ProjectService
                 dataGenerationManager.getSelectedImplementation()
                         .map(impl -> impl.getClass().getName())
                         .orElse(null),
-                dataDir.toString());
+                dataDir.toString(),
+                schemaUpdateDescriptor.toString());
     }
 
     /**
@@ -265,6 +309,7 @@ public class ProjectService
 
         projectName = null;
         dataDir = null;
+        schemaUpdateDescriptor = null;
 
         dsService.clearInternalDataSource();
         dsService.clearTmpDataSource();

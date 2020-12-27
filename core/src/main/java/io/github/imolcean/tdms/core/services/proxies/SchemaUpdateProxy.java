@@ -6,6 +6,8 @@ import io.github.imolcean.tdms.api.interfaces.updater.SchemaUpdater;
 import io.github.imolcean.tdms.core.services.managers.SchemaUpdateImplementationManager;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Path;
+
 @Service
 public class SchemaUpdateProxy extends AbstractPublicInterfaceProxy<SchemaUpdater> implements SchemaUpdater
 {
@@ -32,6 +34,12 @@ public class SchemaUpdateProxy extends AbstractPublicInterfaceProxy<SchemaUpdate
         }
 
         return report;
+    }
+
+    @Override
+    public void setUpdateDescriptor(Path descriptor)
+    {
+        getImplementation().setUpdateDescriptor(descriptor);
     }
 
     @Override

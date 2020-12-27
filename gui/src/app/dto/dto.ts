@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 2.26.723 on 2020-12-24 07:25:03.
+// Generated using typescript-generator version 2.26.723 on 2020-12-27 10:46:53.
 
 export interface DataSourceDto {
     driverClassName: string;
@@ -27,6 +27,7 @@ export interface ProjectDto {
     deployer: string;
     dataGenerator: string;
     dataDir: string;
+    schemaUpdateDescriptor: string;
 }
 
 export interface SchemaUpdateDataMappingRequest {

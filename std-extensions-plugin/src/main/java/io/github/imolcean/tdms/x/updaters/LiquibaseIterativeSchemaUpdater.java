@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.java.Log;
 import org.pf4j.Extension;
 
+import java.nio.file.Path;
 import java.util.Properties;
 
 @Extension
@@ -30,11 +31,13 @@ public class LiquibaseIterativeSchemaUpdater extends IterativeSchemaUpdater
         this.internalDs = null;
         this.tmpDs = null;
 
-        if(this.changelogPath == null)
-        {
-            throw new IllegalStateException("Changelog path is not configured");
-        }
+        log.fine("Liquibase changelog: " + (this.changelogPath != null ? this.changelogPath : "unspecified"));
+    }
 
+    @Override
+    public void setUpdateDescriptor(Path descriptor)
+    {
+        this.changelogPath = descriptor.toAbsolutePath().toString();
         log.fine("Liquibase changelog: " + this.changelogPath);
     }
 

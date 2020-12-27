@@ -29,5 +29,6 @@
   "deployer": "io.github.imolcean.tdms.x.deployers.MigrationDeployer",
   "dataGenerator": "io.github.imolcean.tdms.core.generation.RuleBasedDataGenerator",
 
-  "dataDir": "C:\\tdms\\repo\\data"
+  "dataDir": "C:\\tdms\\repo\\data",
+  "schemaUpdateDescriptor": "C:\\tdms\\changelogs\\abc.xml"
 }
