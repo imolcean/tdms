@@ -3,7 +3,7 @@ import { TreeNode, MenuItem } from "primeng/api";
 import {ProjectDto, TableMetaDataDto} from "../../dto/dto";
 import {Observable} from "rxjs";
 import {SchemaService} from "../../services/schema.service";
-import {map, tap} from "rxjs/operators";
+import {map} from "rxjs/operators";
 import {PropertiesService} from "../../services/properties.service";
 import {TableService} from "../../services/table.service";
 import {ProjectService} from "../../services/project.service";
@@ -16,9 +16,8 @@ import {ProjectService} from "../../services/project.service";
 export class ProjectComponent implements OnInit
 {
   project$: Observable<ProjectDto | undefined>;
-  schema$: Observable<TableMetaDataDto[]>;
+  schema$: Observable<TableMetaDataDto[] | undefined>;
   nodes$: Observable<TreeNode[]>;
-  schemaLoading: boolean;
   contextMenuItems: MenuItem[];
 
   constructor(private projectService: ProjectService,
@@ -29,11 +28,9 @@ export class ProjectComponent implements OnInit
     this.project$ = this.projectService.getProject();
     this.schema$ = schemaService.getSchema();
     this.nodes$ = this.schema$.pipe(
-      map((schema: TableMetaDataDto[]) => this.schema2TreeNodes(schema)),
-      tap(() => this.schemaLoading = false)
+      map((schema: TableMetaDataDto[] | undefined) => this.schema2TreeNodes(schema))
     );
 
-    this.schemaLoading = true;
     this.contextMenuItems = [
       { label: 'Action 1', icon: 'fa fa-search', command: (event) => console.log("Action 1 on " + event.item.state[0].data.name) },
       { label: 'Action 2', icon: 'fa fa-close', command: (event) => console.log("Action 2 on " + event.item.state[0].data.name) }
@@ -78,8 +75,13 @@ export class ProjectComponent implements OnInit
     }
   }
 
-  private schema2TreeNodes(schema: TableMetaDataDto[]): TreeNode[]
+  private schema2TreeNodes(schema: TableMetaDataDto[] | undefined): TreeNode[]
   {
+    if(schema === undefined)
+    {
+      return [];
+    }
+
     const tableNodes: TreeNode[] = [];
 
     for(let table of schema)

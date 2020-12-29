@@ -11,9 +11,9 @@ import {ProjectDto} from "./dto/dto";
 import {ExtensionsService} from "./services/extensions.service";
 import {PathsService} from "./services/paths.service";
 import {UpdateComponent} from "./dialogs/update/update.component";
-import {UpdateService} from "./services/update.service";
 import {SchemaService} from "./services/schema.service";
 import {TableService} from "./services/table.service";
+import {GenerationComponent} from "./dialogs/generation/generation.component";
 
 @Component({
   selector: 'app-root',
@@ -75,7 +75,7 @@ export class AppComponent implements OnInit
           {label: 'Clear all', icon: 'pi pi-times', command: _e => this.onShowClearData(), disabled: this.project === undefined},
           {label: 'Import', icon: 'pi pi-arrow-left', command: _e => this.onShowImport(), disabled: this.project === undefined},
           {label: 'Export', icon: 'pi pi-arrow-right', command: _e => this.onShowExport(), disabled: this.project === undefined},
-          {label: 'Generation', icon: 'pi pi-briefcase', disabled: this.project === undefined}
+          {label: 'Generation', icon: 'pi pi-briefcase', command: _e => this.onShowGeneration(), disabled: this.project === undefined}
         ]
       },
       {
@@ -185,6 +185,16 @@ export class AppComponent implements OnInit
     this.dialogService.open(UpdateComponent, {
       header: 'Schema update',
       width: '70%',
+      dismissableMask: false,
+      closable: false
+    });
+  }
+
+  private onShowGeneration(): void
+  {
+    this.dialogService.open(GenerationComponent, {
+      header: 'Data generation',
+      width: '50%',
       dismissableMask: false,
       closable: false
     });

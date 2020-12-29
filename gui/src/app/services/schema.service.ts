@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {ProjectDto, TableMetaDataDto} from "../dto/dto";
-import {Observable, Subject} from "rxjs";
+import {BehaviorSubject, Observable} from "rxjs";
 import {HttpClient} from "@angular/common/http";
 import {MessageService} from "./message.service";
 import {tap} from "rxjs/operators";
@@ -11,7 +11,7 @@ import {ProjectService} from "./project.service";
 })
 export class SchemaService
 {
-  private schema$: Subject<TableMetaDataDto[]>;
+  private schema$: BehaviorSubject<TableMetaDataDto[] | undefined>;
 
   private project: ProjectDto | undefined;
 
@@ -19,7 +19,7 @@ export class SchemaService
               private msg: MessageService,
               private projectService: ProjectService)
   {
-    this.schema$ = new Subject<TableMetaDataDto[]>();
+    this.schema$ = new BehaviorSubject<TableMetaDataDto[] | undefined>(undefined);
     this.projectService.getProject()
       .subscribe((value: ProjectDto | undefined) => {
         this.project = value;
@@ -30,7 +30,7 @@ export class SchemaService
       });
   }
 
-  public getSchema(): Observable<TableMetaDataDto[]>
+  public getSchema(): Observable<TableMetaDataDto[] | undefined>
   {
     return this.schema$.asObservable();
   }

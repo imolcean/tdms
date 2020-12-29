@@ -1,0 +1,155 @@
+<div *ngIf="project === undefined || tables === undefined">
+  <p-progressSpinner></p-progressSpinner>
+</div>
+
+<ng-container *ngIf="project !== undefined && tables !== undefined">
+  <p-toolbar>
+    <p-dropdown [options]="tables" (onChange)="onTableSelect($event)" optionLabel="name" placeholder="Select table"></p-dropdown>
+  </p-toolbar>
+
+  <div class="p-fluid" *ngIf="currentTableRule">
+    <div class="p-field">
+      <label for="fill-mode">Fill mode</label>
+      <p-dropdown id="fill-mode" [options]="fillModeOptions" [(ngModel)]="currentTableRule.fillMode" [required]="true"></p-dropdown>
+    </div>
+
+    <div class="p-field">
+      <label for="rows-min">Rows to generate (min)</label>
+      <p-inputNumber id="rows-min" mode="decimal" [(ngModel)]="currentTableRule.rowCountTotalOrMin" [required]="true"></p-inputNumber>
+    </div>
+
+    <div class="p-field">
+      <label for="rows-min">Rows to generate (max) [optional]</label>
+      <p-inputNumber id="rows-max" mode="decimal" [(ngModel)]="currentTableRule.rowCountMax"></p-inputNumber>
+    </div>
+  </div>
+
+  <section *ngIf="currentTableRule">
+    <p-listbox [options]="currentTable?.columns"
+               [ngModel]="currentTableRule.columnRules[0] ? currentTableRule.columnRules[0] : undefined"
+               (onChange)="onColumnSelect($event)"
+               optionLabel="name">
+      <ng-template let-column pTemplate="item">
+        <p [class.current]="column === currentColumn">{{column.name}}</p>
+      </ng-template>
+    </p-listbox>
+
+    <div class="p-fluid column_rule_params" *ngIf="currentColumnRule">
+      <div class="p-field">
+        <label for="generation-method">Generation method</label>
+        <p-dropdown id="generation-method"
+                    [options]="generationMethodOptions"
+                    [group]="true"
+                    [ngModel]="currentColumnRule.generationMethodName"
+                    (onChange)="onGenerationMethodSelect($event)"
+                    [required]="true"
+                    placeholder="Select generation method"></p-dropdown>
+      </div>
+
+      <div class="p-field">
+        <label for="uniqueness">Generate unique values</label>
+        <p-checkbox id="uniqueness" [(ngModel)]="currentColumnRule.uniqueValues" [binary]="true" [required]="true"></p-checkbox>
+      </div>
+
+      <div class="p-field">
+        <label for="null-part">Generate NULL values [0..1]</label>
+        <p-inputNumber id="null-part" mode="decimal" [(ngModel)]="currentColumnRule.nullPart" [required]="true"></p-inputNumber>
+      </div>
+
+      <div class="method_params">
+        <!-- Fields specific for random number generation methods -->
+        <ng-container *ngIf="currentGenerationMethodType === 'number'">
+          <div class="p-field">
+            <label for="min-number">Minimum</label>
+            <p-inputNumber id="min-number" mode="decimal" [(ngModel)]="currentColumnRule.params['min']"></p-inputNumber>
+          </div>
+
+          <div class="p-field">
+            <label for="max-number">Maximum</label>
+            <p-inputNumber id="max-number" mode="decimal" [(ngModel)]="currentColumnRule.params['max']"></p-inputNumber>
+          </div>
+        </ng-container>
+
+        <!-- Fields specific for random timeline generation methods -->
+        <ng-container *ngIf="currentGenerationMethodType === 'timeline'">
+          <div class="p-field">
+            <label for="min-date">Minimum</label>
+            <input id="min-date" type="text" pInputText [(ngModel)]="currentColumnRule.params['min']"/> <!-- TODO Format mask -->
+          </div>
+
+          <div class="p-field">
+            <label for="max-date">Maximum</label>
+            <input id="max-date" type="text" pInputText [(ngModel)]="currentColumnRule.params['max']"/> <!-- TODO Format mask -->
+          </div>
+        </ng-container>
+
+        <!-- Fields specific for the random string generation method -->
+        <ng-container *ngIf="currentGenerationMethodType === 'string'">
+          <div class="p-field">
+            <label for="min-length">Minimum length</label>
+            <p-inputNumber id="min-length" mode="decimal" [(ngModel)]="currentColumnRule.params['minLength']"></p-inputNumber>
+          </div>
+
+          <div class="p-field">
+            <label for="max-length">Maximum length</label>
+            <p-inputNumber id="max-length" mode="decimal" [(ngModel)]="currentColumnRule.params['maxLength']"></p-inputNumber>
+          </div>
+
+          <div class="p-field">
+            <label for="capitalization">Capitalization</label>
+            <p-dropdown id="capitalization" [options]="capitalizationOptions" [(ngModel)]="currentColumnRule.params['capitalization']"></p-dropdown>
+          </div>
+        </ng-container>
+
+        <!-- Fields specific for the regex generation method -->
+        <ng-container *ngIf="currentGenerationMethodType === 'regex'">
+          <div class="p-field">
+            <label for="pattern">Pattern</label>
+            <input id="pattern" type="text" pInputText [(ngModel)]="currentColumnRule.params['pattern']" [required]="true"/>
+          </div>
+        </ng-container>
+
+        <!-- Fields specific for the value list generation method -->
+  <!--      <ng-container *ngIf="currentGenerationMethodType === 'list'">-->
+  <!--        <div class="p-field">-->
+  <!--          <label for="values">Values</label>-->
+  <!--          &lt;!&ndash; TODO List creation component (required = true) &ndash;&gt;-->
+  <!--        </div>-->
+  <!--      </ng-container>-->
+
+        <!-- Fields specific for the formula generation method -->
+        <ng-container *ngIf="currentGenerationMethodType === 'formula'">
+          <div class="p-field">
+            <label for="script">Script</label>
+            <textarea id="script" pInputTextarea [(ngModel)]="currentColumnRule.params['formula']" [required]="true"></textarea>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </section>
+</ng-container>
+
+<p-footer>
+  <button pButton label="Ok" icon="pi pi-check" class="p-button-text" (click)="onConfirm()"></button>
+  <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="onCancel()"></button>
+</p-footer>
+
+
+
+<div>
+  <p>Current table rule</p>
+
+  {{currentTableRule | json}}
+</div>
+<hr>
+<div>
+  <p>Current column rule</p>
+
+  {{currentColumnRule | json}}
+</div>
+<hr>
+<div>
+  <p>Rules</p>
+
+  {{rules | json}}
+</div>

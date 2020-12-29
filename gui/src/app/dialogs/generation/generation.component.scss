@@ -1,0 +1,18 @@
+p.current {
+  font-weight: bold;
+}
+
+section {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+}
+
+div.column_rule_params {
+  flex: 1 0 auto;
+  margin-left: 15px;
+}
+
+div.method_params {
+  border-top: 3px solid #bcbcbc;
+}

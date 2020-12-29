@@ -6,7 +6,7 @@
             (onNodeUnselect)="nodeUnselect($event)"
             (onNodeContextMenuSelect)="nodeCmSelect($event)"
             [contextMenu]="cm"
-            [loading]="schemaLoading">
+            [loading]="(schema$ | async) === undefined">
 
       <ng-template let-node  pTemplate="table">
         <p (dblclick)="open(node);">

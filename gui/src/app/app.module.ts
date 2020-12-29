@@ -20,6 +20,8 @@ import { TabViewModule } from 'primeng/tabview';
 import { DropdownModule } from "primeng/dropdown";
 import { StepsModule } from "primeng/steps";
 import { InputTextareaModule } from "primeng/inputtextarea";
+import { InputNumberModule } from "primeng/inputnumber";
+import { CheckboxModule } from "primeng/checkbox";
 
 import { AppComponent } from './app.component';
 import { PropertiesComponent } from './panes/properties/properties.component';
@@ -41,6 +43,7 @@ import { UpdateVisualiserComponent } from './elements/update-visualiser/update-v
 import { TableVisualiserComponent } from './elements/table-visualiser/table-visualiser.component';
 import { MigrationFormComponent } from './elements/migration-form/migration-form.component';
 import {ConfirmationService} from "primeng/api";
+import { GenerationComponent } from './dialogs/generation/generation.component';
 
 const appRoutes: Routes = [
   // { path: 'crisis-center', component: CrisisListComponent },
@@ -65,7 +68,8 @@ const appRoutes: Routes = [
     UpdateComponent,
     UpdateVisualiserComponent,
     TableVisualiserComponent,
-    MigrationFormComponent
+    MigrationFormComponent,
+    GenerationComponent
   ],
   imports: [
     RouterModule.forRoot([]),
@@ -90,7 +94,9 @@ const appRoutes: Routes = [
     TabViewModule,
     DropdownModule,
     StepsModule,
-    InputTextareaModule
+    InputTextareaModule,
+    InputNumberModule,
+    CheckboxModule
   ],
   providers: [DialogService, ConfirmationService],
   bootstrap: [AppComponent]

@@ -19,7 +19,7 @@
 
   "gitRepository": {
     "url": "https://github.com/imolcean/exp.git",
-    "dir": "C:\\tdms\\repo",
+    "dir": "C:\\tdms\\projects\\exp\\repo",
     "token": "914a332435833eb10e2f9fcf526f9f8b20878a07"
   },
 
@@ -29,6 +29,6 @@
   "deployer": "io.github.imolcean.tdms.x.deployers.MigrationDeployer",
   "dataGenerator": "io.github.imolcean.tdms.core.generation.RuleBasedDataGenerator",
 
-  "dataDir": "C:\\tdms\\repo\\data",
-  "schemaUpdateDescriptor": "C:\\tdms\\changelogs\\abc.xml"
+  "dataDir": "C:\\tdms\\projects\\exp\\repo\\data",
+  "schemaUpdateDescriptor": "C:\\tdms\\projects\\exp\\changelogs\\abc.xml"
 }
