@@ -210,7 +210,7 @@ public class TableRule
         log.info("Generating data for table " + table.getName() + " in UPDATE fill mode");
         for(int i = 0; i < content.getRows().size(); i++)
         {
-            log.fine(String.format("Generating row %s/%s", i, content.getRows().size()));
+            log.fine(String.format("Generating row %s/%s", i + 1, content.getRows().size()));
             for(ColumnRule cr : getOrderedColumnRules())
             {
                 if(cr.getColumn().isPartOfPrimaryKey())
@@ -244,7 +244,7 @@ public class TableRule
 
         for(int i = 0; i < rowCount; i++)
         {
-            log.fine(String.format("Generating row %s/%s", i, rowCount));
+            log.fine(String.format("Generating row %s/%s", i + 1, rowCount));
             TableContent.Row row = new TableContent.Row(table);
 
             for(ColumnRule cr : getOrderedColumnRules())

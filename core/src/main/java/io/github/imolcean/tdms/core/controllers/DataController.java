@@ -164,9 +164,9 @@ public class DataController
     }
 
     @PutMapping("/internal/generate")
-    public ResponseEntity<Void> generateData(@RequestBody Collection<TableRuleDto> params) throws Exception
+    public ResponseEntity<Void> generateData(@RequestBody Collection<TableRuleDto> rules) throws Exception
     {
-        dataGenerationProxy.generate(dsService.getInternalDataSource(), params);
+        dataGenerationProxy.generate(dsService.getInternalDataSource(), rules);
 
         return ResponseEntity.noContent().build();
     }

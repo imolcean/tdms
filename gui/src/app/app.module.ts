@@ -22,6 +22,7 @@ import { StepsModule } from "primeng/steps";
 import { InputTextareaModule } from "primeng/inputtextarea";
 import { InputNumberModule } from "primeng/inputnumber";
 import { CheckboxModule } from "primeng/checkbox";
+import { InputMaskModule } from "primeng/inputmask";
 
 import { AppComponent } from './app.component';
 import { PropertiesComponent } from './panes/properties/properties.component';
@@ -38,11 +39,11 @@ import { ProjectProfileComponent } from "./dialogs/project/profile/project-profi
 import { ProjectOpenComponent } from './dialogs/project/open/project-open.component';
 import { DatasourceComponent } from './elements/datasource/datasource.component';
 import { UpdateComponent } from './dialogs/update/update.component';
-import {RouterModule, Routes} from "@angular/router";
+import { RouterModule, Routes } from "@angular/router";
 import { UpdateVisualiserComponent } from './elements/update-visualiser/update-visualiser.component';
 import { TableVisualiserComponent } from './elements/table-visualiser/table-visualiser.component';
 import { MigrationFormComponent } from './elements/migration-form/migration-form.component';
-import {ConfirmationService} from "primeng/api";
+import { ConfirmationService } from "primeng/api";
 import { GenerationComponent } from './dialogs/generation/generation.component';
 
 const appRoutes: Routes = [
@@ -96,7 +97,8 @@ const appRoutes: Routes = [
     StepsModule,
     InputTextareaModule,
     InputNumberModule,
-    CheckboxModule
+    CheckboxModule,
+    InputMaskModule
   ],
   providers: [DialogService, ConfirmationService],
   bootstrap: [AppComponent]

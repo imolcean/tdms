@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
-import {TableContentDto} from "../dto/dto";
+import {TableContentDto, TableRuleDto} from "../dto/dto";
 import {HttpClient} from "@angular/common/http";
 import {BehaviorSubject, Observable} from "rxjs";
 import {MessageService} from "./message.service";
+import {tap} from "rxjs/operators";
 
 @Injectable({
   providedIn: 'root',
 })
-export class TableService
+export class DataService
 {
   private content$: BehaviorSubject<TableContentDto | undefined>;
 
@@ -129,5 +130,18 @@ export class TableService
       {
         this.msg.publish({kind: "ERROR", content: error.error});
       });
+  }
+
+  public generate(rules: TableRuleDto[]): Observable<void>
+  {
+    this.msg.publish({kind: "INFO", content: "Generating data..."});
+
+    return this.http
+      .put<void>('api/data/internal/generate', rules)
+      .pipe(
+        tap(
+          x => this.msg.publish({kind: "SUCCESS", content: "Data generated successfully"}),
+          e => this.msg.publish({kind: "ERROR", content: e.error}))
+      );
   }
 }

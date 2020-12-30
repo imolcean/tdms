@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {DynamicDialogConfig, DynamicDialogRef} from "primeng/dynamicdialog";
-import {TableService} from "../../services/table.service";
+import {DataService} from "../../services/data.service";
 import {ProjectDto} from "../../dto/dto";
 import {ProjectService} from "../../services/project.service";
 
@@ -15,7 +15,7 @@ export class ImportComponent implements OnInit
 
   constructor(private ref: DynamicDialogRef,
               private config: DynamicDialogConfig,
-              private data: TableService,
+              private data: DataService,
               private projectService: ProjectService)
   {
     this.projectService.getProject()

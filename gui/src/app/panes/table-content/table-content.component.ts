@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {TableContentDto} from "../../dto/dto";
-import {TableService} from "../../services/table.service";
+import {DataService} from "../../services/data.service";
 
 @Component({
   selector: 'app-table-content',
@@ -16,7 +16,7 @@ export class TableContentComponent implements OnInit
   public tmpRow: any[];
   public tmpRowIndex: number | undefined;
 
-  constructor(private tableService: TableService)
+  constructor(private tableService: DataService)
   {
     this.tableService.getContent()
       .subscribe((value: TableContentDto | undefined) => this.content = value);

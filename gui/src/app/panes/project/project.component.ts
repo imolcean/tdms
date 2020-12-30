@@ -5,7 +5,7 @@ import {Observable} from "rxjs";
 import {SchemaService} from "../../services/schema.service";
 import {map} from "rxjs/operators";
 import {PropertiesService} from "../../services/properties.service";
-import {TableService} from "../../services/table.service";
+import {DataService} from "../../services/data.service";
 import {ProjectService} from "../../services/project.service";
 
 @Component({
@@ -23,7 +23,7 @@ export class ProjectComponent implements OnInit
   constructor(private projectService: ProjectService,
               private schemaService: SchemaService,
               private propertiesService: PropertiesService,
-              private tableService: TableService)
+              private tableService: DataService)
   {
     this.project$ = this.projectService.getProject();
     this.schema$ = schemaService.getSchema();

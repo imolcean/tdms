@@ -70,16 +70,29 @@
           </div>
         </ng-container>
 
-        <!-- Fields specific for random timeline generation methods -->
-        <ng-container *ngIf="currentGenerationMethodType === 'timeline'">
+        <!-- Fields specific for random date generation methods -->
+        <ng-container *ngIf="currentGenerationMethodType === 'date'">
           <div class="p-field">
             <label for="min-date">Minimum</label>
-            <input id="min-date" type="text" pInputText [(ngModel)]="currentColumnRule.params['min']"/> <!-- TODO Format mask -->
+            <p-inputMask id="min-date" [(ngModel)]="currentColumnRule.params['min']" mask="9999-99-99? 99:99:99" placeholder="YYYY-MM-DD[ hh:mm:ss]"></p-inputMask>
           </div>
 
           <div class="p-field">
             <label for="max-date">Maximum</label>
-            <input id="max-date" type="text" pInputText [(ngModel)]="currentColumnRule.params['max']"/> <!-- TODO Format mask -->
+            <p-inputMask id="max-date" [(ngModel)]="currentColumnRule.params['max']" mask="9999-99-99? 99:99:99" placeholder="YYYY-MM-DD[ hh:mm:ss]"></p-inputMask>
+          </div>
+        </ng-container>
+
+        <!-- Fields specific for the random time generation method -->
+        <ng-container *ngIf="currentGenerationMethodType === 'time'">
+          <div class="p-field">
+            <label for="min-time">Minimum</label>
+            <p-inputMask id="min-time" [(ngModel)]="currentColumnRule.params['min']" mask="99:99:99" placeholder="hh:mm:ss"></p-inputMask>
+          </div>
+
+          <div class="p-field">
+            <label for="max-time">Maximum</label>
+            <p-inputMask id="max-time" [(ngModel)]="currentColumnRule.params['max']" mask="99:99:99" placeholder="hh:mm:ss"></p-inputMask>
           </div>
         </ng-container>
 
@@ -130,8 +143,8 @@
 </ng-container>
 
 <p-footer>
-  <button pButton label="Ok" icon="pi pi-check" class="p-button-text" (click)="onConfirm()"></button>
-  <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="onCancel()"></button>
+  <button pButton label="Ok" icon="pi pi-check" class="p-button-text" [disabled]="loading" (click)="onConfirm()"></button>
+  <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" [disabled]="loading" (click)="onCancel()"></button>
 </p-footer>
 
 

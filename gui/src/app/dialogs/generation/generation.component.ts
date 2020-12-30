@@ -10,6 +10,7 @@ import {
   TableRuleDtoColumnRuleDto
 } from "../../dto/dto";
 import {SelectItem, SelectItemGroup} from "primeng/api";
+import {DataService} from "../../services/data.service";
 
 @Component({
   selector: 'app-generation',
@@ -18,6 +19,8 @@ import {SelectItem, SelectItemGroup} from "primeng/api";
 })
 export class GenerationComponent implements OnInit
 {
+  public loading: boolean = false;
+
   public project: ProjectDto | undefined;
   public tables: TableMetaDataDto[] | undefined;
 
@@ -74,7 +77,8 @@ export class GenerationComponent implements OnInit
   constructor(private ref: DynamicDialogRef,
               private config: DynamicDialogConfig,
               private projectService: ProjectService,
-              private schemaService: SchemaService)
+              private schemaService: SchemaService,
+              private dataService: DataService)
   {
     this.projectService.getProject()
       .subscribe((value: ProjectDto | undefined) => this.project = value)
@@ -143,7 +147,7 @@ export class GenerationComponent implements OnInit
         generationMethodName: "",
         uniqueValues: false,
         nullPart: 0,
-        params: {} // TODO
+        params: {}
       };
 
       delete this.currentGenerationMethodType;
@@ -161,9 +165,22 @@ export class GenerationComponent implements OnInit
     this.currentColumnRule!.params = this.createParamsByGenerationMethodType(this.currentGenerationMethodType);
   }
 
-  public onConfirm(): void {}
+  public onConfirm(): void
+  {
+    if(this.rules.length === 0)
+    {
+      this.ref.close(false);
+    }
 
-  public onCancel(): void {}
+    this.loading = true;
+    this.dataService.generate(this.rules)
+      .subscribe(_value => this.ref.close(true), _error => this.loading = false);
+  }
+
+  public onCancel(): void
+  {
+    this.ref.close(false);
+  }
 
   private getGenerationMethodTypeByName(methodName: string): string | undefined
   {
@@ -183,9 +200,13 @@ export class GenerationComponent implements OnInit
     {
       return 'number';
     }
-    else if(isTimelineMethod)
+    else if(isTimelineMethod && methodName !== 'TimeGenerationMethod')
     {
-      return 'timeline';
+      return 'date';
+    }
+    else if(methodName === 'TimeGenerationMethod')
+    {
+      return 'time';
     }
     else if(methodName === 'StringGenerationMethod')
     {

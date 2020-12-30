@@ -12,7 +12,7 @@ import {ExtensionsService} from "./services/extensions.service";
 import {PathsService} from "./services/paths.service";
 import {UpdateComponent} from "./dialogs/update/update.component";
 import {SchemaService} from "./services/schema.service";
-import {TableService} from "./services/table.service";
+import {DataService} from "./services/data.service";
 import {GenerationComponent} from "./dialogs/generation/generation.component";
 
 @Component({
@@ -31,7 +31,7 @@ export class AppComponent implements OnInit
               private extensionsService: ExtensionsService,
               private pathsService: PathsService,
               private schemaService: SchemaService,
-              private tableService: TableService)
+              private tableService: DataService)
   {
     this.menuItems = this.getMenuContent();
 
