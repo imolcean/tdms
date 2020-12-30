@@ -2,6 +2,9 @@ package io.github.imolcean.tdms.core.controllers;
 
 import io.github.imolcean.tdms.api.dto.TableContentDto;
 import io.github.imolcean.tdms.api.dto.TableRuleDto;
+import io.github.imolcean.tdms.api.dto.ValueListDto;
+import io.github.imolcean.tdms.core.controllers.mappers.ValueListMapper;
+import io.github.imolcean.tdms.core.generation.ValueLibraryLoader;
 import io.github.imolcean.tdms.core.services.ProjectService;
 import io.github.imolcean.tdms.core.services.proxies.DataExportProxy;
 import io.github.imolcean.tdms.core.services.proxies.DataGenerationProxy;
@@ -30,6 +33,7 @@ public class DataController
     private final DataSourceService dsService;
     private final SchemaService schemaService;
     private final DataService dataService;
+    private final ValueLibraryLoader valueLibraryLoader;
     private final DataImportProxy dataImportProxy;
     private final DataExportProxy dataExportProxy;
     private final DataGenerationProxy dataGenerationProxy;
@@ -38,6 +42,7 @@ public class DataController
                           DataSourceService dsService,
                           SchemaService SchemaService,
                           DataService dataService,
+                          ValueLibraryLoader valueLibraryLoader,
                           DataImportProxy dataImportProxy,
                           DataExportProxy dataExportProxy,
                           DataGenerationProxy dataGenerationProxy)
@@ -46,6 +51,7 @@ public class DataController
         this.dsService = dsService;
         this.schemaService = SchemaService;
         this.dataService = dataService;
+        this.valueLibraryLoader = valueLibraryLoader;
         this.dataImportProxy = dataImportProxy;
         this.dataExportProxy = dataExportProxy;
         this.dataGenerationProxy = dataGenerationProxy;
@@ -169,6 +175,17 @@ public class DataController
         dataGenerationProxy.generate(dsService.getInternalDataSource(), rules);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/internal/generate/lists")
+    public ResponseEntity<List<ValueListDto>> valueLists()
+    {
+        List<ValueListDto> valueLists =
+                valueLibraryLoader.getLists().values().stream()
+                .map(ValueListMapper::toDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(valueLists);
     }
 
     private Map<Column, Object> columnNamesMap2ColumnMap(Table table, Map<String, Object> row)

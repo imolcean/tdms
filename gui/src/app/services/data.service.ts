@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import {TableContentDto, TableRuleDto} from "../dto/dto";
+import {ProjectDto, TableContentDto, TableRuleDto, ValueListDto} from "../dto/dto";
 import {HttpClient} from "@angular/common/http";
 import {BehaviorSubject, Observable} from "rxjs";
 import {MessageService} from "./message.service";
 import {tap} from "rxjs/operators";
+import {ProjectService} from "./project.service";
 
 @Injectable({
   providedIn: 'root',
@@ -11,16 +12,32 @@ import {tap} from "rxjs/operators";
 export class DataService
 {
   private content$: BehaviorSubject<TableContentDto | undefined>;
+  private valueLists$: BehaviorSubject<ValueListDto[] | undefined>;
 
   constructor(private http: HttpClient,
-              private msg: MessageService)
+              private msg: MessageService,
+              private projectService: ProjectService)
   {
     this.content$ = new BehaviorSubject<TableContentDto | undefined>(undefined);
+    this.valueLists$ = new BehaviorSubject<ValueListDto[] | undefined>(undefined);
+
+    this.projectService.getProject()
+      .subscribe((value: ProjectDto | undefined) => {
+        if(value === undefined)
+        {
+          this.content$.next(undefined);
+        }
+      });
   }
 
   public getContent(): Observable<TableContentDto | undefined>
   {
     return this.content$.asObservable();
+  }
+
+  public getValueLists(): Observable<ValueListDto[] | undefined>
+  {
+    return this.valueLists$.asObservable();
   }
 
   public loadData(tableName: string): void
@@ -37,6 +54,27 @@ export class DataService
         {
           this.msg.publish({kind: "ERROR", content: error.error});
         });
+  }
+
+  public unloadData(): void
+  {
+    this.content$.next(undefined);
+  }
+
+  public loadValueLists(): void
+  {
+    this.msg.publish({kind: "INFO", content: "Loading value lists"});
+
+    this.http
+      .get<ValueListDto[]>('api/data/internal/generate/lists')
+      .subscribe((value: ValueListDto[]) =>
+      {
+        this.msg.publish({kind: "SUCCESS", content: "Value lists loaded"});
+        this.valueLists$.next(value);
+      }, error =>
+      {
+        this.msg.publish({kind: "ERROR", content: error.error});
+      });
   }
 
   public addRows(tableName: string, rows: {[key: string]: any;}[]): void

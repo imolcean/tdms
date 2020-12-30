@@ -181,7 +181,10 @@ public class RuleBasedDataGenerator implements DataGenerator
             Table table = schemaService.getTable(ds, trDto.getTableName());
             TableRule tr = new TableRule(table, TableRule.FillMode.valueOf(trDto.getFillMode().name()), trDto.getRowCountTotalOrMin(), trDto.getRowCountMax());
 
-            for(TableRuleDto.ColumnRuleDto crDto : trDto.getColumnRules())
+            for(TableRuleDto.ColumnRuleDto crDto :
+                    trDto.getColumnRules().stream()
+                            .filter(columnRuleDto -> !columnRuleDto.getGenerationMethodName().equals("ignore"))
+                            .collect(Collectors.toList()))
             {
                 ColumnRule cr =
                         new ColumnRule(

@@ -27,6 +27,10 @@ export class SchemaService
         {
           this.loadSchema();
         }
+        else
+        {
+          this.schema$.next(undefined);
+        }
       });
   }
 

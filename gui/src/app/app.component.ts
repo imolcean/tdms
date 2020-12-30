@@ -31,7 +31,7 @@ export class AppComponent implements OnInit
               private extensionsService: ExtensionsService,
               private pathsService: PathsService,
               private schemaService: SchemaService,
-              private tableService: DataService)
+              private dataService: DataService)
   {
     this.menuItems = this.getMenuContent();
 
@@ -46,6 +46,7 @@ export class AppComponent implements OnInit
   {
     this.pathsService.loadPaths();
     this.extensionsService.loadAvailable();
+    this.dataService.loadValueLists();
     this.projectService.loadProject();
   }
 
@@ -212,7 +213,7 @@ export class AppComponent implements OnInit
   {
     this.confirmationService.confirm({
       message: 'Are you sure that you want to remove data from all tables?',
-      accept: () => this.tableService.clearAll()
+      accept: () => this.dataService.clearAll()
     });
   }
 }

@@ -45,6 +45,7 @@ import { TableVisualiserComponent } from './elements/table-visualiser/table-visu
 import { MigrationFormComponent } from './elements/migration-form/migration-form.component';
 import { ConfirmationService } from "primeng/api";
 import { GenerationComponent } from './dialogs/generation/generation.component';
+import { ValueListComponent } from './elements/value-list/value-list.component';
 
 const appRoutes: Routes = [
   // { path: 'crisis-center', component: CrisisListComponent },
@@ -70,7 +71,8 @@ const appRoutes: Routes = [
     UpdateVisualiserComponent,
     TableVisualiserComponent,
     MigrationFormComponent,
-    GenerationComponent
+    GenerationComponent,
+    ValueListComponent
   ],
   imports: [
     RouterModule.forRoot([]),

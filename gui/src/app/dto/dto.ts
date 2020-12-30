@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 2.26.723 on 2020-12-27 10:46:53.
+// Generated using typescript-generator version 2.26.723 on 2020-12-30 08:32:44.
 
 export interface DataSourceDto {
     driverClassName: string;
@@ -71,6 +71,12 @@ export interface TableRuleDto {
     rowCountTotalOrMin: number;
     rowCountMax?: number;
     columnRules: TableRuleDtoColumnRuleDto[];
+}
+
+export interface ValueListDto {
+    name: string;
+    isList: boolean;
+    options: any[];
 }
 
 export interface SchemaUpdateDataMappingRequestTableDataMigrationRequest {

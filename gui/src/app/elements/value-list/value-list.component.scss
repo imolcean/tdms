@@ -1,0 +1,25 @@
+div.value-list-container {
+  &.framed {
+    border: 2px solid red;
+  }
+
+  display: flex;
+  justify-content: space-between;
+}
+
+div.table-wrapper {
+  flex: 1 0 auto;
+}
+
+table {
+  width: 100%;
+  border: 1px solid #a6a6a6;
+
+  & thead {
+    border-bottom: 1px solid #a6a6a6;
+
+    & th:nth-child(3) {
+      background-color: #bcbcbc;
+    }
+  }
+}

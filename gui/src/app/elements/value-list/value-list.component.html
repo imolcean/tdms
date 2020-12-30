@@ -1,0 +1,41 @@
+<div *ngIf="lists === undefined">
+  <p-progressSpinner></p-progressSpinner>
+</div>
+
+<div class="value-list-container" [class.framed]="required && empty" *ngIf="lists !== undefined">
+  <div class="value-list-menu">
+    <p-listbox [options]="lists"
+               [ngModel]="currentList"
+               (onChange)="onListChange($event)"
+               optionLabel="name">
+    </p-listbox>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+      <tr>
+        <th></th>
+        <th></th>
+        <th>Option</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>
+          <form (ngSubmit)="onAddOption($event)">
+            <input type="text" pInputText [(ngModel)]="addedOption" [ngModelOptions]="{standalone: true}"/>
+          </form>
+        </td>
+      </tr>
+      <tr *ngFor="let option of options; let i = index">
+        <td><button pButton icon="pi pi-minus" class="p-button-text" (click)="onRemoveOption(i)"></button></td>
+        <td>{{i + 1}}</td>
+        <td>{{option}}</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

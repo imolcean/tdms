@@ -28,6 +28,12 @@ export class GenerationComponent implements OnInit
   public capitalizationOptions: string[] = ["MIXED", "LOWER", "UPPER", "FIRST_UPPER"];
   public generationMethodOptions: SelectItemGroup[] = [
     {
+      label: 'Ignore', value: 'ignore',
+      items: [
+        {label: 'Ignore', value: 'ignore'},
+      ]
+    },
+    {
       label: 'Number', value: 'number',
       items: [
         {label: 'Byte', value: 'ByteGenerationMethod'},
@@ -112,7 +118,7 @@ export class GenerationComponent implements OnInit
       this.currentTableRule = {
         tableName: this.currentTable.name,
         fillMode: "APPEND",
-        rowCountTotalOrMin: 0,
+        rowCountTotalOrMin: 1,
         rowCountMax: undefined,
         columnRules: []
       };
@@ -144,9 +150,9 @@ export class GenerationComponent implements OnInit
     {
       this.currentColumnRule = {
         columnName: this.currentColumn.name,
-        generationMethodName: "",
+        generationMethodName: "ignore",
         uniqueValues: false,
-        nullPart: 0,
+        nullPart: 0.0,
         params: {}
       };
 
@@ -161,8 +167,8 @@ export class GenerationComponent implements OnInit
     const method: string = ($event.value as string);
 
     this.currentGenerationMethodType = this.getGenerationMethodTypeByName(method);
-    this.currentColumnRule!.generationMethodName = method;
     this.currentColumnRule!.params = this.createParamsByGenerationMethodType(this.currentGenerationMethodType);
+    this.currentColumnRule!.generationMethodName = method;
   }
 
   public onConfirm(): void
@@ -234,23 +240,23 @@ export class GenerationComponent implements OnInit
     {
       case 'number':
         return {
-          min: 0,
-          max: 0
+          min: null,
+          max: null
         };
       case 'timeline':
         return {
-          min: "",
-          max: ""
+          min: null,
+          max: null
         };
       case 'string':
         return {
-          minLength: 0,
-          maxLength: 0,
+          minLength: null,
+          maxLength: null,
           capitalization: "MIXED"
         };
       case 'regex':
         return {
-          pattern: ""
+          pattern: null
         };
       case 'list':
         return {
@@ -258,7 +264,7 @@ export class GenerationComponent implements OnInit
         };
       case 'formula':
         return {
-          formula: ""
+          formula: null
         };
       default:
         return {};
