@@ -1,8 +1,8 @@
 <div *ngIf="content">
-  <h1>{{content.tableName}}</h1>
+  <h1>{{(contentLocation === 'internal' ? 'Internal DB: ' : 'Current stage: ') + content.tableName}}</h1>
 
   <p-toolbar>
-    <button pButton label="Add row" icon="pi pi-plus" class="p-button-success p-mr-2" (click)="onAddRow()"></button>
+    <button pButton label="Add row" icon="pi pi-plus" class="p-button-success p-mr-2" [disabled]="contentLocation !== 'internal'" (click)="onAddRow()"></button>
     <button pButton label="Close table" type="button" icon="pi pi-times" (click)="onCloseTable()" class="p-button-text"></button>
   </p-toolbar>
 
@@ -19,8 +19,8 @@
     <ng-template pTemplate="body" let-row let-ri="rowIndex">
       <tr [pEditableRow]="row">
         <td style="text-align:center">
-          <button pButton type="button" icon="pi pi-trash" (click)="onDeleteRow(ri)" class="p-button-rounded p-button-text"></button>
-          <button pButton type="button" pInitEditableRow icon="pi pi-pencil" (click)="onEditRow(row, ri)" class="p-button-rounded p-button-text"></button>
+          <button pButton type="button" [disabled]="contentLocation !== 'internal'" icon="pi pi-trash" (click)="onDeleteRow(ri)" class="p-button-rounded p-button-text"></button>
+          <button pButton type="button" [disabled]="contentLocation !== 'internal'" pInitEditableRow icon="pi pi-pencil" (click)="onEditRow(row, ri)" class="p-button-rounded p-button-text"></button>
         </td>
         <td *ngFor="let col of content.columnNames; let i = index"
             [class.null-container]="row[i] === null">

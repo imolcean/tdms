@@ -11,6 +11,7 @@ import {ProjectService} from "./project.service";
 })
 export class DataService
 {
+  private contentLocation$: BehaviorSubject<string| undefined>;
   private content$: BehaviorSubject<TableContentDto | undefined>;
   private valueLists$: BehaviorSubject<ValueListDto[] | undefined>;
 
@@ -18,6 +19,7 @@ export class DataService
               private msg: MessageService,
               private projectService: ProjectService)
   {
+    this.contentLocation$ = new BehaviorSubject<string | undefined>(undefined);
     this.content$ = new BehaviorSubject<TableContentDto | undefined>(undefined);
     this.valueLists$ = new BehaviorSubject<ValueListDto[] | undefined>(undefined);
 
@@ -30,6 +32,11 @@ export class DataService
       });
   }
 
+  public getContentLocation(): Observable<string | undefined>
+  {
+    return this.contentLocation$.asObservable();
+  }
+
   public getContent(): Observable<TableContentDto | undefined>
   {
     return this.content$.asObservable();
@@ -40,15 +47,16 @@ export class DataService
     return this.valueLists$.asObservable();
   }
 
-  public loadData(tableName: string): void
+  public loadData(alias: string, tableName: string): void
   {
     this.msg.publish({kind: "INFO", content: "Loading content of table " + tableName + "..."});
 
     this.http
-      .get<TableContentDto>('api/data/internal/' + tableName)
+      .get<TableContentDto>('api/data/' + alias + '/' + tableName)
       .subscribe((value: TableContentDto) =>
         {
           this.msg.publish({kind: "SUCCESS", content: "Content loaded"});
+          this.contentLocation$.next(alias);
           this.content$.next(value);
         }, error =>
         {
@@ -86,7 +94,7 @@ export class DataService
       .subscribe(_value =>
       {
         this.msg.publish({kind: "SUCCESS", content: "Row(s) added"});
-        this.loadData(tableName);
+        this.loadData('internal', tableName);
       }, error =>
       {
         this.msg.publish({kind: "ERROR", content: error.error});
@@ -102,7 +110,7 @@ export class DataService
       .subscribe(_value =>
       {
         this.msg.publish({kind: "SUCCESS", content: "Row updated"});
-        this.loadData(tableName);
+        this.loadData('internal', tableName);
       }, error =>
       {
         this.msg.publish({kind: "ERROR", content: error.error});
@@ -118,7 +126,7 @@ export class DataService
       .subscribe(_value =>
       {
         this.msg.publish({kind: "SUCCESS", content: "Row deleted"});
-        this.loadData(tableName);
+        this.loadData('internal', tableName);
       }, error =>
       {
         this.msg.publish({kind: "ERROR", content: error.error});
@@ -178,8 +186,23 @@ export class DataService
       .put<void>('api/data/internal/generate', rules)
       .pipe(
         tap(
-          x => this.msg.publish({kind: "SUCCESS", content: "Data generated successfully"}),
+          _x => this.msg.publish({kind: "SUCCESS", content: "Data generated successfully"}),
           e => this.msg.publish({kind: "ERROR", content: e.error}))
       );
+  }
+
+  public deployToCurrentStage(): void
+  {
+    this.msg.publish({kind: "INFO", content: "Deploying data..."});
+
+    this.http
+      .put<void>('api/deployment/current', null)
+      .subscribe(_value =>
+      {
+        this.msg.publish({kind: "SUCCESS", content: "Data deployed successfully"});
+      }, error =>
+      {
+        this.msg.publish({kind: "ERROR", content: error.error});
+      });
   }
 }

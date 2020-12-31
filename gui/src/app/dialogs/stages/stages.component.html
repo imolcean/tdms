@@ -25,57 +25,17 @@
       </div>
 
       <app-datasource [ds]="selectedStage.datasource" [editing]="editing"></app-datasource>
-
-<!--      <div class="p-field">-->
-<!--        <label for="driver">Driver</label>-->
-<!--        <input id="driver"-->
-<!--               pInputText-->
-<!--               [disabled]="!editing"-->
-<!--               type="text"-->
-<!--               [(ngModel)]="selectedStage.datasource.driverClassName">-->
-<!--      </div>-->
-
-<!--      <div class="p-field">-->
-<!--        <label for="url">URL</label>-->
-<!--        <input id="url"-->
-<!--               pInputText-->
-<!--               [disabled]="!editing"-->
-<!--               type="text"-->
-<!--               [(ngModel)]="selectedStage.datasource.url">-->
-<!--      </div>-->
-
-<!--      <div class="p-field">-->
-<!--        <label for="db">Database name</label>-->
-<!--        <input id="db"-->
-<!--               pInputText-->
-<!--               [disabled]="!editing"-->
-<!--               type="text"-->
-<!--               [(ngModel)]="selectedStage.datasource.database">-->
-<!--      </div>-->
-
-<!--      <div class="p-field">-->
-<!--        <label for="username">Username</label>-->
-<!--        <input id="username"-->
-<!--               pInputText-->
-<!--               [disabled]="!editing"-->
-<!--               type="text"-->
-<!--               [(ngModel)]="selectedStage.datasource.username">-->
-<!--      </div>-->
-
-<!--      <div class="p-field">-->
-<!--        <label for="password">Password</label>-->
-<!--        <input id="password"-->
-<!--               pInputText-->
-<!--               [disabled]="!editing"-->
-<!--               type="text"-->
-<!--               [(ngModel)]="selectedStage.datasource.password">-->
-<!--      </div>-->
     </div>
   </div>
 
   <div class="selection-pane p-d-flex p-jc-center" *ngIf="!editing && selectedStage.name !== ''">
     <button pButton label="Select" icon="pi pi-check" class="p-mr-4 p-button-secondary" *ngIf="selectedStage.name !== currentStage" (click)="onSelectCurrentStage()"></button>
     <button pButton label="Unselect" icon="pi pi-times" class="p-mr-4 p-button-secondary" *ngIf="selectedStage.name === currentStage" (click)="onUnselectCurrentStage()"></button>
+  </div>
+
+  <div class="selection-pane p-d-flex p-jc-center" *ngIf="!editing && selectedStage.name === currentStage">
+    <button pButton label="Apply schema" icon="pi pi-pencil" class="p-mr-4 p-button-secondary" (click)="onApplySchema()"></button>
+    <button pButton label="Deploy data" icon="pi pi-pencil" class="p-mr-4 p-button-secondary" (click)="onDeploy()"></button>
   </div>
 
   <div class="crud-pane p-d-flex p-jc-center">

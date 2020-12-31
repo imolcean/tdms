@@ -115,14 +115,43 @@ export class SchemaService
 
   public dropAllInternal(): void
   {
-    this.msg.publish({kind: "INFO", content: "Clearing schema..."});
+    this.msg.publish({kind: "INFO", content: "Clearing internal schema..."});
 
     this.http
       .delete('api/schema/internal')
       .subscribe(_value =>
       {
         this.internalSchema$.next([]);
-        this.msg.publish({kind: "SUCCESS", content: "Schema cleared"});
+        this.msg.publish({kind: "SUCCESS", content: "Internal schema cleared"});
+      }, error =>
+      {
+        this.msg.publish({kind: "ERROR", content: error.error});
+      });
+  }
+
+  public copySchemaFromInternalToCurrentStage(): void
+  {
+    this.msg.publish({kind: "INFO", content: "Clearing schema of current stage..."});
+
+    this.http
+      .delete('api/schema/current')
+      .subscribe(_value =>
+      {
+        this.currentStageSchema$.next([]);
+
+        this.msg.publish({kind: "SUCCESS", content: "Schema of current stage cleared"});
+        this.msg.publish({kind: "INFO", content: "Applying schema to current stage..."});
+
+        this.http
+          .put('api/schema/copy/internal/current', null)
+          .subscribe(_value =>
+          {
+            this.msg.publish({kind: "SUCCESS", content: "Schema applied"});
+            this.loadCurrentStageSchema();
+          }, error =>
+          {
+            this.msg.publish({kind: "ERROR", content: error.error});
+          });
       }, error =>
       {
         this.msg.publish({kind: "ERROR", content: error.error});

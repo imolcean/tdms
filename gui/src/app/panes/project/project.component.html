@@ -9,7 +9,7 @@
             [loading]="(internalSchema$ | async) === undefined">
 
       <ng-template let-node  pTemplate="table">
-        <p (dblclick)="open(node);">
+        <p (dblclick)="open('internal', node);">
           {{node.label}}
         </p>
       </ng-template>
@@ -22,7 +22,7 @@
     <p-contextMenu #cm [model]="contextMenuItems"></p-contextMenu>
   </p-accordionTab>
 
-  <p-accordionTab header="Stage" [disabled]="(stageSchema$ | async) === undefined">
+  <p-accordionTab header="Stage" [disabled]="(stage$ | async) === undefined">
     <p-tree [value]="stageNodes$ | async"
             selectionMode="single"
             (onNodeSelect)="nodeSelect($event)"
@@ -30,7 +30,7 @@
             [loading]="(stageSchema$ | async) === undefined">
 
       <ng-template let-node  pTemplate="table">
-        <p (dblclick)="open(node);">
+        <p (dblclick)="open('current', node);">
           {{node.label}}
         </p>
       </ng-template>

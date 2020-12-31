@@ -3,6 +3,8 @@ import {DynamicDialogConfig, DynamicDialogRef} from "primeng/dynamicdialog";
 import {DataSourceService} from "../../services/data-source.service";
 import {StageDto} from "../../dto/dto";
 import {StageSelectionService} from "../../services/stage-selection.service";
+import {SchemaService} from "../../services/schema.service";
+import {DataService} from "../../services/data.service";
 
 @Component({
   selector: 'app-stages',
@@ -22,7 +24,9 @@ export class StagesComponent implements OnInit
   constructor(private ref: DynamicDialogRef,
               private config: DynamicDialogConfig,
               private dsService: DataSourceService,
-              private stageSelectionService: StageSelectionService)
+              private stageSelectionService: StageSelectionService,
+              private schemaService: SchemaService,
+              private dataService: DataService)
   {
     this.dsService.getStages()
       .subscribe((value: StageDto[]) => this.stages = value);
@@ -128,5 +132,15 @@ export class StagesComponent implements OnInit
   public onUnselectCurrentStage(): void
   {
     this.stageSelectionService.clearCurrentStage();
+  }
+
+  public onApplySchema(): void
+  {
+    this.schemaService.copySchemaFromInternalToCurrentStage();
+  }
+
+  public onDeploy(): void
+  {
+    this.dataService.deployToCurrentStage();
   }
 }

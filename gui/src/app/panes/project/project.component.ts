@@ -71,7 +71,7 @@ export class ProjectComponent implements OnInit
     }
   }
 
-  public nodeUnselect($event: any)
+  public nodeUnselect(_$event: any)
   {
     this.propertiesService.clearProperties();
   }
@@ -81,11 +81,11 @@ export class ProjectComponent implements OnInit
     this.contextMenuItems.forEach((item: MenuItem) => item.state = [$event.node]);
   }
 
-  public open(node: TreeNode)
+  public open(alias: string, node: TreeNode)
   {
     if(node.type === "table")
     {
-      this.tableService.loadData(node.data.name);
+      this.tableService.loadData(alias, node.data.name);
     }
   }
 

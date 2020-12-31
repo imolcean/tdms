@@ -9,6 +9,7 @@ import {DataService} from "../../services/data.service";
 })
 export class TableContentComponent implements OnInit
 {
+  public contentLocation: string | undefined;
   public content: TableContentDto | undefined;
 
   public showDialog: boolean;
@@ -18,6 +19,9 @@ export class TableContentComponent implements OnInit
 
   constructor(private tableService: DataService)
   {
+    this.tableService.getContentLocation()
+      .subscribe((value: string | undefined) => this.contentLocation = value);
+
     this.tableService.getContent()
       .subscribe((value: TableContentDto | undefined) => this.content = value);
 
