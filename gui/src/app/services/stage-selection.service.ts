@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {Observable, Subject} from "rxjs";
+import {BehaviorSubject, Observable} from "rxjs";
 import {HttpClient} from "@angular/common/http";
 import {MessageService} from "./message.service";
 
@@ -8,12 +8,12 @@ import {MessageService} from "./message.service";
 })
 export class StageSelectionService
 {
-  private currentStage$: Subject<string | undefined>;
+  private currentStage$: BehaviorSubject<string | undefined>;
 
   constructor(private http: HttpClient,
               private msg: MessageService)
   {
-    this.currentStage$ = new Subject<string | undefined>();
+    this.currentStage$ = new BehaviorSubject<string | undefined>(undefined);
   }
 
   public getCurrentStage(): Observable<string | undefined>

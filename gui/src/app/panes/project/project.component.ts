@@ -7,6 +7,7 @@ import {map} from "rxjs/operators";
 import {PropertiesService} from "../../services/properties.service";
 import {DataService} from "../../services/data.service";
 import {ProjectService} from "../../services/project.service";
+import {StageSelectionService} from "../../services/stage-selection.service";
 
 @Component({
   selector: 'app-project',
@@ -16,18 +17,31 @@ import {ProjectService} from "../../services/project.service";
 export class ProjectComponent implements OnInit
 {
   project$: Observable<ProjectDto | undefined>;
-  schema$: Observable<TableMetaDataDto[] | undefined>;
-  nodes$: Observable<TreeNode[]>;
+
+  internalSchema$: Observable<TableMetaDataDto[] | undefined>;
+  internalNodes$: Observable<TreeNode[]>;
   contextMenuItems: MenuItem[];
+
+  stage$: Observable<string | undefined>;
+  stageSchema$: Observable<TableMetaDataDto[] | undefined>;
+  stageNodes$: Observable<TreeNode[]>;
 
   constructor(private projectService: ProjectService,
               private schemaService: SchemaService,
               private propertiesService: PropertiesService,
-              private tableService: DataService)
+              private tableService: DataService,
+              private stageSelectionService: StageSelectionService)
   {
     this.project$ = this.projectService.getProject();
-    this.schema$ = schemaService.getSchema();
-    this.nodes$ = this.schema$.pipe(
+
+    this.internalSchema$ = schemaService.getInternalSchema();
+    this.internalNodes$ = this.internalSchema$.pipe(
+      map((schema: TableMetaDataDto[] | undefined) => this.schema2TreeNodes(schema))
+    );
+
+    this.stage$ = this.stageSelectionService.getCurrentStage();
+    this.stageSchema$ = this.schemaService.getCurrentStageSchema();
+    this.stageNodes$ = this.stageSchema$.pipe(
       map((schema: TableMetaDataDto[] | undefined) => this.schema2TreeNodes(schema))
     );
 
@@ -41,7 +55,7 @@ export class ProjectComponent implements OnInit
 
   public update(): void
   {
-    this.schemaService.loadSchema();
+    this.schemaService.loadInternalSchema();
   }
 
   public nodeSelect($event: any)

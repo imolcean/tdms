@@ -5,41 +5,63 @@ import {HttpClient} from "@angular/common/http";
 import {MessageService} from "./message.service";
 import {tap} from "rxjs/operators";
 import {ProjectService} from "./project.service";
+import {StageSelectionService} from "./stage-selection.service";
 
 @Injectable({
   providedIn: 'root',
 })
 export class SchemaService
 {
-  private schema$: BehaviorSubject<TableMetaDataDto[] | undefined>;
+  private internalSchema$: BehaviorSubject<TableMetaDataDto[] | undefined>;
+  private currentStageSchema$: BehaviorSubject<TableMetaDataDto[] | undefined>;
 
   private project: ProjectDto | undefined;
 
   constructor(private http: HttpClient,
               private msg: MessageService,
-              private projectService: ProjectService)
+              private projectService: ProjectService,
+              private stageSelectionService: StageSelectionService)
   {
-    this.schema$ = new BehaviorSubject<TableMetaDataDto[] | undefined>(undefined);
+    this.internalSchema$ = new BehaviorSubject<TableMetaDataDto[] | undefined>(undefined);
+    this.currentStageSchema$ = new BehaviorSubject<TableMetaDataDto[] | undefined>(undefined);
+
     this.projectService.getProject()
       .subscribe((value: ProjectDto | undefined) => {
         this.project = value;
         if(value !== undefined)
         {
-          this.loadSchema();
+          this.loadInternalSchema();
         }
         else
         {
-          this.schema$.next(undefined);
+          this.internalSchema$.next(undefined);
         }
+      });
+
+    this.stageSelectionService.getCurrentStage()
+      .subscribe((value: string | undefined) =>
+      {
+        if(value === undefined)
+        {
+          this.currentStageSchema$.next(undefined);
+          return;
+        }
+
+        this.loadCurrentStageSchema();
       });
   }
 
-  public getSchema(): Observable<TableMetaDataDto[] | undefined>
+  public getInternalSchema(): Observable<TableMetaDataDto[] | undefined>
   {
-    return this.schema$.asObservable();
+    return this.internalSchema$.asObservable();
   }
 
-  public loadSchema(): void
+  public getCurrentStageSchema(): Observable<TableMetaDataDto[] | undefined>
+  {
+    return this.currentStageSchema$.asObservable();
+  }
+
+  public loadInternalSchema(): void
   {
     if(this.project === undefined)
     {
@@ -53,7 +75,7 @@ export class SchemaService
       .get<TableMetaDataDto[]>('api/schema/internal')
       .subscribe((value: TableMetaDataDto[]) =>
       {
-        this.schema$.next(value);
+        this.internalSchema$.next(value);
         this.msg.publish({kind: "SUCCESS", content: "Schema loaded"});
       }, error =>
       {
@@ -61,7 +83,23 @@ export class SchemaService
       });
   }
 
-  public getOccupiedTableNames(): Observable<string[]>
+  public loadCurrentStageSchema(): void
+  {
+    this.msg.publish({kind: "INFO", content: "Loading schema of current stage..."});
+
+    this.http
+      .get<TableMetaDataDto[]>('api/schema/current')
+      .subscribe((value: TableMetaDataDto[]) =>
+      {
+        this.currentStageSchema$.next(value);
+        this.msg.publish({kind: "SUCCESS", content: "Schema of current stage loaded"});
+      }, error =>
+      {
+        this.msg.publish({kind: "ERROR", content: error.error});
+      });
+  }
+
+  public getOccupiedTableNamesInternal(): Observable<string[]>
   {
     this.msg.publish({kind: "INFO", content: "Loading list of non-empty tables..."});
 
@@ -75,7 +113,7 @@ export class SchemaService
       );
   }
 
-  public dropAll(): void
+  public dropAllInternal(): void
   {
     this.msg.publish({kind: "INFO", content: "Clearing schema..."});
 
@@ -83,7 +121,7 @@ export class SchemaService
       .delete('api/schema/internal')
       .subscribe(_value =>
       {
-        this.schema$.next([]);
+        this.internalSchema$.next([]);
         this.msg.publish({kind: "SUCCESS", content: "Schema cleared"});
       }, error =>
       {

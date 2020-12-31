@@ -38,7 +38,6 @@ export class StagesComponent implements OnInit
   ngOnInit(): void
   {
     this.dsService.loadStages();
-    this.stageSelectionService.loadCurrentStage();
   }
 
   public onOk()

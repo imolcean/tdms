@@ -89,7 +89,7 @@ export class GenerationComponent implements OnInit
     this.projectService.getProject()
       .subscribe((value: ProjectDto | undefined) => this.project = value)
 
-    this.schemaService.getSchema()
+    this.schemaService.getInternalSchema()
       .subscribe((value: TableMetaDataDto[] | undefined) => this.tables = value);
 
     // TODO: Get rules from local storage

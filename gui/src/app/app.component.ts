@@ -14,6 +14,7 @@ import {UpdateComponent} from "./dialogs/update/update.component";
 import {SchemaService} from "./services/schema.service";
 import {DataService} from "./services/data.service";
 import {GenerationComponent} from "./dialogs/generation/generation.component";
+import {StageSelectionService} from "./services/stage-selection.service";
 
 @Component({
   selector: 'app-root',
@@ -31,7 +32,8 @@ export class AppComponent implements OnInit
               private extensionsService: ExtensionsService,
               private pathsService: PathsService,
               private schemaService: SchemaService,
-              private dataService: DataService)
+              private dataService: DataService,
+              private stageSelectionService: StageSelectionService)
   {
     this.menuItems = this.getMenuContent();
 
@@ -47,6 +49,7 @@ export class AppComponent implements OnInit
     this.pathsService.loadPaths();
     this.extensionsService.loadAvailable();
     this.dataService.loadValueLists();
+    this.stageSelectionService.loadCurrentStage();
     this.projectService.loadProject();
   }
 
@@ -205,7 +208,7 @@ export class AppComponent implements OnInit
   {
     this.confirmationService.confirm({
       message: 'Are you sure that you want to drop all tables?',
-      accept: () => this.schemaService.dropAll()
+      accept: () => this.schemaService.dropAllInternal()
     });
   }
 
