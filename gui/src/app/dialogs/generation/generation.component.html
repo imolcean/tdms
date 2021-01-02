@@ -145,23 +145,3 @@
   <button pButton label="Ok" icon="pi pi-check" class="p-button-text" [disabled]="loading" (click)="onConfirm()"></button>
   <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" [disabled]="loading" (click)="onCancel()"></button>
 </p-footer>
-
-
-
-<div>
-  <p>Current table rule</p>
-
-  {{currentTableRule | json}}
-</div>
-<hr>
-<div>
-  <p>Current column rule</p>
-
-  {{currentColumnRule | json}}
-</div>
-<hr>
-<div>
-  <p>Rules</p>
-
-  {{rules | json}}
-</div>

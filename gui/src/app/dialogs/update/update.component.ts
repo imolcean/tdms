@@ -25,7 +25,7 @@ export class UpdateComponent implements OnInit
   public updater: string | undefined;
   public mappingRequired: boolean | undefined;
   public currentUpdateReport: SchemaUpdateDto | undefined;
-  public mappingRequest: SchemaUpdateDataMappingRequest | undefined;
+  public mappingRequest: {[tableName: string]: string;} | undefined;
 
   constructor(private ref: DynamicDialogRef,
               private config: DynamicDialogConfig,
@@ -110,13 +110,30 @@ export class UpdateComponent implements OnInit
         this.mappingRequest = this.createMappingRequest(value);
         this.currentStep = 1;
         this.loading = false
-      }, _error => this.loading = false);
+      }, _error =>
+      {
+        this.currentStep = 1;
+        this.loading = false;
+      });
   }
 
-  public onMapData(mappingRequest: SchemaUpdateDataMappingRequest): void
+  public onMapData(mappingRequest: {[tableName: string]: any;}): void
   {
     this.loading = true;
-    this.updateService.mapData(mappingRequest)
+
+    const requestDto: SchemaUpdateDataMappingRequest = {sqlMigrationTables: []};
+    for(const tableName of Object.keys(mappingRequest))
+    {
+      const tableRequest: SchemaUpdateDataMappingRequestTableDataMigrationRequest =
+        {
+          tableName: tableName,
+          sql: mappingRequest[tableName]
+        };
+
+      requestDto.sqlMigrationTables.push(tableRequest);
+    }
+
+    this.updateService.mapData(requestDto)
       .subscribe(_value =>
       {
         this.currentStep = 3;
@@ -168,25 +185,25 @@ export class UpdateComponent implements OnInit
     }
   }
 
-  private createMappingRequest(update: SchemaUpdateDto | undefined): SchemaUpdateDataMappingRequest | undefined
+  private createMappingRequest(update: SchemaUpdateDto | undefined): {[tableName: string]: string;} | undefined
   {
     if(update === undefined)
     {
       return undefined;
     }
 
-    const migrations: SchemaUpdateDataMappingRequestTableDataMigrationRequest[] = [];
+    const migrations: {[tableName: string]: string;} = {};
 
     for(const table of update.addedTables)
     {
-      migrations.push({tableName: table.name, sql: ""});
+      migrations[table.name] = "";
     }
 
     for(const comparison of update.changedTables)
     {
-      migrations.push({tableName: comparison.before.name, sql: ""});
+      migrations[comparison.before.name] = "";
     }
 
-    return {sqlMigrationTables: migrations};
+    return migrations;
   }
 }

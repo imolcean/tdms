@@ -78,7 +78,7 @@ public class StringGenerationMethod implements PrimitiveGenerationMethod<String>
         List<Object> args = parseParams(params);
         int maxLength = args.get(1) != null
                 ? ((Number) args.get(1)).intValue()
-                : column.getSize();
+                : column.getSize() - 1;
 
         return generate(
                 args.get(0) != null ? ((Number) args.get(0)).intValue() : 0,

@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {SchemaUpdateDataMappingRequest, SchemaUpdateDto} from "../../dto/dto";
+import {SchemaUpdateDto} from "../../dto/dto";
 
 @Component({
   selector: 'app-migration-form',
@@ -12,7 +12,7 @@ export class MigrationFormComponent implements OnInit
   public update: SchemaUpdateDto | undefined;
 
   @Input()
-  public model: SchemaUpdateDataMappingRequest | undefined;
+  public model: {[tableName: string]: string;} | undefined;
 
   constructor() {}
 

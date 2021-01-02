@@ -7,7 +7,7 @@
         <p-accordionTab *ngFor="let table of update.addedTables" [header]="table.name">
           <textarea pInputTextarea
                     [defaultValue]="table.name"
-                    [(ngModel)]="model.sqlMigrationTables[table.name]"></textarea>
+                    [(ngModel)]="model[table.name]"></textarea>
         </p-accordionTab>
       </p-accordion>
     </p-accordionTab>
@@ -17,9 +17,13 @@
         <p-accordionTab *ngFor="let comparison of update.changedTables; let i = index;" [header]="comparison.before.name">
           <textarea pInputTextarea
                     [defaultValue]="comparison.before.name + ' -> ' + comparison.after.name"
-                    [(ngModel)]="model.sqlMigrationTables[i].sql"></textarea>
+                    [(ngModel)]="model[comparison.before.name]"></textarea>
         </p-accordionTab>
       </p-accordion>
     </p-accordionTab>
   </p-accordion>
+
+  <p>
+    {{model | json}}
+  </p>
 </ng-container>
