@@ -29,10 +29,10 @@ public class TdmApplication implements CommandLineRunner
     @Override
     public void run(String... args) throws Exception
     {
-        ProjectDto project = mapper.readValue(new ClassPathResource("EXP.tdm.json").getInputStream(), ProjectDto.class);
-        projectService.open(project);
-
-        StageSelectionContextHolder.setStageName("exp");
+//        ProjectDto project = mapper.readValue(new ClassPathResource("EXP.tdm.json").getInputStream(), ProjectDto.class);
+//        projectService.open(project);
+//
+//        StageSelectionContextHolder.setStageName("exp");
 
 
         System.out.println("DONE!");
