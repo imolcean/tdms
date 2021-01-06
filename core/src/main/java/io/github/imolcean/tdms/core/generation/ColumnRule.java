@@ -36,7 +36,11 @@ public class ColumnRule
         this.generationMethod = generationMethod;
         this.postponed = false;
         this.nullPart = !column.isNullable() ? 0 : nullPart;
-        this.uniqueValues = this.column.isPartOfPrimaryKey() || this.column.isPartOfUniqueIndex() || uniqueValues;
+        this.uniqueValues =
+                this.column.isPartOfPrimaryKey()
+                        && this.column.getParent().getPrimaryKey().getColumns().size() == 1
+//                        || this.column.isPartOfUniqueIndex()
+                        || uniqueValues;
         this.params = params != null ? params : new HashMap<>();
 
         if(this.generationMethod instanceof FormulaGenerationMethod)
