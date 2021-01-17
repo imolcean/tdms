@@ -56,6 +56,8 @@ Every table rule has column rules for every column. You can specify, whether gen
 - Foreign Key - picks a random private key from the referenced table
 - Formula - creates a value using provided script
 
+To start the generation process, go to **Data > Generation**.
+
 ![Structure of a rule](./doc/rules.png "Structure of a rule")
 
 ### Formula Generation Method
