@@ -2,6 +2,7 @@ package io.github.imolcean.tdms.core.generation;
 
 import io.github.imolcean.tdms.api.TableContent;
 import io.github.imolcean.tdms.api.exceptions.DataGenerationException;
+import io.github.imolcean.tdms.core.generation.methods.FkGenerationMethod;
 import io.github.imolcean.tdms.core.generation.methods.FormulaGenerationMethod;
 import io.github.imolcean.tdms.api.interfaces.generation.method.GenerationMethod;
 import lombok.*;
@@ -79,21 +80,41 @@ public class ColumnRule
             ((FormulaGenerationMethod) generationMethod).fillPlaceholders(currentRow.getValuesAsMap());
         }
 
-        Object value = generationMethod.generate(params);
+        Object value;
 
         if(uniqueValues)
         {
-            // TODO Optional: Determine the exact amount of possible unique values
-            int attempt = 0;
-            while(content.contains(value))
+            if(generationMethod instanceof FkGenerationMethod)
             {
-                if(attempt > 20)
-                {
-                    throw new DataGenerationException(String.format("Cannot generate another unique value for column '%s'", column.getName()));
-                }
-
+                value = ((FkGenerationMethod) generationMethod).pick();
+            }
+            else
+            {
                 value = generationMethod.generate(params);
-                attempt++;
+
+                int attempt = 0;
+                while(content.contains(value))
+                {
+                    if(attempt > 20)
+                    {
+                        throw new DataGenerationException(String.format("Cannot generate unique value for column '%s'", column.getName()));
+                    }
+
+                    value = generationMethod.generate(params);
+                    attempt++;
+                }
+            }
+        }
+        else
+        {
+            value = generationMethod.generate(params);
+        }
+
+        if(ValuePool.getPool().containsKey(column))
+        {
+            for(List<Object> list : ValuePool.getPool().get(column).values())
+            {
+                list.add(value);
             }
         }
 

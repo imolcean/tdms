@@ -50,7 +50,7 @@ public class GenerationMethodCreator
             case "DoubleGenerationMethod":
                 return new DoubleGenerationMethod();
             case "FkGenerationMethod":
-                return new FkGenerationMethod(lowLevelDataService, connection, column);
+                return new FkGenerationMethod(lowLevelDataService, connection, column, dto.isUniqueValues());
             case "FloatGenerationMethod":
                 return new FloatGenerationMethod();
             case "FormulaGenerationMethod":
