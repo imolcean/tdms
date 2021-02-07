@@ -33,10 +33,10 @@ public interface DataService
      * Retrieves all rows from the given table
      *
      * @param ds database containing the {@code table}
-     * @param table table whose rows are being retrieved
+     * @param tableName table whose rows are being retrieved
      * @return list of rows of the given table
      */
-    List<Object[]> getTableContent(DataSource ds, Table table) throws SQLException;
+    List<Object[]> getTableContent(DataSource ds, String tableName) throws SQLException;
 
     /**
      * Retrieves all rows from the given table but the returned rows contain only the specified column.
@@ -133,19 +133,17 @@ public interface DataService
      * Removes all rows from the specified table.
      * In case the removal of at least one row fails (due to database constraints, for example), the
      * whole transaction will be rolled back.
-     *
-     * @param ds database containing the {@code table}
-     * @param table table that should be cleared
+     *  @param ds database containing the {@code table}
+     * @param tableName table that should be cleared
      */
-    void clearTable(DataSource ds, Table table) throws SQLException;
+    void clearTable(DataSource ds, String tableName) throws SQLException;
 
     /**
      * Removes all rows from the specified tables.
      * In case the removal of at least one row fails (due to database constraints, for example), the
      * whole transaction will be rolled back.
-     *
-     * @param ds database containing the {@code tables}
-     * @param tables tables that should be cleared
+     *  @param ds database containing the {@code tables}
+     * @param tableNames tables that should be cleared
      */
-    void clearTables(DataSource ds, Collection<Table> tables) throws SQLException, IOException;
+    void clearTables(DataSource ds, Collection<String> tableNames) throws SQLException, IOException;
 }

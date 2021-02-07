@@ -130,7 +130,7 @@ public abstract class DiffSchemaUpdater extends AbstractSchemaUpdater
                 log.warning("Data mapping resulted in an inconsistent state of the database and will be rolled back");
 
                 dataMapped = false;
-                dataService.clearTables(tmpDs, schemaService.getTables(tmpDs, schemaService.getOccupiedTableNames(tmpDs)));
+                dataService.clearTables(tmpDs, schemaService.getOccupiedTableNames(tmpDs));
 
                 throw e;
             }
@@ -147,7 +147,7 @@ public abstract class DiffSchemaUpdater extends AbstractSchemaUpdater
 
         log.info("Rolling back data mapping");
 
-        dataService.clearTables(tmpDs, schemaService.getSchema(tmpDs).getTables());
+        dataService.clearTables(tmpDs, schemaService.getTableNames(tmpDs));
 
         dataMapped = false;
 

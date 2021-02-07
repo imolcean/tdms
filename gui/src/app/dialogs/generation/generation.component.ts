@@ -22,7 +22,8 @@ export class GenerationComponent implements OnInit
   public loading: boolean = false;
 
   public project: ProjectDto | undefined;
-  public tables: TableMetaDataDto[] | undefined;
+  public tableNames: string[] | undefined;
+  public tables: TableMetaDataDto[];
 
   public fillModeOptions: string[] = ["APPEND", "UPDATE"];
   public capitalizationOptions: string[] = ["MIXED", "LOWER", "UPPER", "FIRST_UPPER"];
@@ -89,22 +90,49 @@ export class GenerationComponent implements OnInit
     this.projectService.getProject()
       .subscribe((value: ProjectDto | undefined) => this.project = value)
 
-    this.schemaService.getInternalSchema()
-      .subscribe((value: TableMetaDataDto[] | undefined) => this.tables = value);
+    this.schemaService.getInternalTableNames()
+      .subscribe((value: string[] | undefined) => this.tableNames = value);
 
     // TODO: Get rules from local storage
     this.rules = [];
+    this.tables = [];
   }
 
   ngOnInit(): void {}
 
   public onTableSelect($event: any): void
   {
+    this.loading = true;
+    delete this.currentTable;
     delete this.currentColumn;
     delete this.currentColumnRule;
     delete this.currentGenerationMethodType;
 
-    this.currentTable = ($event.value as TableMetaDataDto);
+    const tableName: string = ($event.value as string);
+    this.currentTable = this.tables.find((t: TableMetaDataDto) => t.name === tableName);
+
+    if(!this.currentTable)
+    {
+      this.schemaService.getInternalTable(tableName)
+        .subscribe((value: TableMetaDataDto) =>
+        {
+          this.tables.push(value);
+          this.currentTable = value;
+          this._onTableSelect();
+        })
+    }
+    else
+    {
+      this._onTableSelect();
+    }
+  }
+
+  private _onTableSelect()
+  {
+    if(!this.currentTable)
+    {
+      return;
+    }
 
     const existingRule: TableRuleDto | undefined =
       this.rules.find((value: TableRuleDto) => value.tableName === this.currentTable!.name);
@@ -125,6 +153,8 @@ export class GenerationComponent implements OnInit
 
       this.rules.push(this.currentTableRule);
     }
+
+    this.loading = false;
   }
 
   public onColumnSelect($event: any): void

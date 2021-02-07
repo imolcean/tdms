@@ -23,13 +23,13 @@ import java.util.stream.Collectors;
 public class DefaultLowLevelDataService implements LowLevelDataService
 {
     @Override
-    public List<Object[]> getTableContent(Connection connection, Table table) throws SQLException
+    public List<Object[]> getTableContent(Connection connection, String tableName) throws SQLException
     {
-        log.info("Retrieving content of the table " + table.getName());
+        log.info("Retrieving content of the table " + tableName);
 
         try(Statement statement = connection.createStatement())
         {
-            ResultSet rs = statement.executeQuery("SELECT * FROM " + table.getName());
+            ResultSet rs = statement.executeQuery("SELECT * FROM " + tableName);
 
             log.info("Content retrieved");
 
@@ -120,14 +120,14 @@ public class DefaultLowLevelDataService implements LowLevelDataService
     }
 
     @Override
-    public void clearTable(Connection connection, Table table) throws SQLException
+    public void clearTable(Connection connection, String tableName) throws SQLException
     {
-        log.fine("Clearing table " + table.getName());
+        log.fine("Clearing table " + tableName);
 
         try(Statement statement = connection.createStatement())
         {
             //noinspection SqlWithoutWhere
-            statement.executeUpdate("DELETE FROM " + table.getName());
+            statement.executeUpdate("DELETE FROM " + tableName);
         }
     }
 

@@ -21,10 +21,10 @@ public interface LowLevelDataService
      * Retrieves all rows from the given table
      *
      * @param connection database containing the {@code table}
-     * @param table table whose rows are being retrieved
+     * @param tableName table whose rows are being retrieved
      * @return list of rows of the given table
      */
-    List<Object[]> getTableContent(Connection connection, Table table) throws SQLException;
+    List<Object[]> getTableContent(Connection connection, String tableName) throws SQLException;
 
     /**
      * Retrieves all rows from the given table but the returned rows contain only the specified column.
@@ -57,11 +57,10 @@ public interface LowLevelDataService
 
     /**
      * Removes all rows from the specified table.
-     *
-     * @param connection database containing the {@code table}
-     * @param table table that should be cleared
+     *  @param connection database containing the {@code table}
+     * @param tableName table that should be cleared
      */
-    void clearTable(Connection connection, Table table) throws SQLException;
+    void clearTable(Connection connection, String tableName) throws SQLException;
 
     /**
      * Disables database constraints.

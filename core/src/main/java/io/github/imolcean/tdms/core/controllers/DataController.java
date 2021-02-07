@@ -68,7 +68,7 @@ public class DataController
                 TableContentMapper.toDto(
                         table.getName(),
                         table.getColumns(),
-                        dataService.getTableContent(ds, table)));
+                        dataService.getTableContent(ds, tableName)));
     }
 
     @GetMapping("/{alias}/{table}/{columns}")
@@ -132,12 +132,11 @@ public class DataController
     }
 
     @DeleteMapping("/internal/{table}")
-    public ResponseEntity<Void> clearTable(@PathVariable("table") String tableName) throws SQLException, SchemaCrawlerException
+    public ResponseEntity<Void> clearTable(@PathVariable("table") String tableName) throws SQLException
     {
         DataSource ds = dsService.getInternalDataSource();
-        Table table = schemaService.getTable(ds, tableName);
 
-        dataService.clearTable(ds, table);
+        dataService.clearTable(ds, tableName);
 
         return ResponseEntity.noContent().build();
     }
@@ -148,7 +147,7 @@ public class DataController
     {
         DataSource ds = dsService.getInternalDataSource();
 
-        dataService.clearTables(ds, schemaService.getSchema(ds).getTables());
+        dataService.clearTables(ds, schemaService.getTableNames(ds));
 
         return ResponseEntity.noContent().build();
     }

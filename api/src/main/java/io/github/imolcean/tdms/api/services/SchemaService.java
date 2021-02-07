@@ -26,8 +26,10 @@ public interface SchemaService
      * Retrieves the whole schema of a database with all the tables, indexes, etc.
      *
      * This method may take some time when called for databases with large schemas,
-     * so implementations might use caching to spare time for repeated calls. However, the first call
+     * so implementations might (but do not have to) use caching to spare time for repeated calls. However, the first call
      * will still be expensive.
+     *
+     * Caution: Please try to avoid calling this method because it is blocking and may take long time on large schemas.
      *
      * @param ds Database whose schema is being retrieved
      * @return Whole schema of the given database

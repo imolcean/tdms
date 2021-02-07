@@ -49,8 +49,7 @@ public class MigrationDeployer implements Deployer
 
         log.fine("Clearing the target DB");
 
-        List<Table> tablesToClear = schemaService.getTables(target, schemaService.getOccupiedTableNames(target));
-        dataService.clearTables(target, tablesToClear);
+        dataService.clearTables(target, schemaService.getOccupiedTableNames(target));
 
         log.fine("Copying data from the source DB into the target DB");
 

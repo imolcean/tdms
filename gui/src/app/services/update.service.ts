@@ -128,7 +128,7 @@ export class UpdateService
           (_value: void) =>
           {
             this.msg.publish({kind: "SUCCESS", content: "Schema update committed successfully"});
-            this.schemaService.loadInternalSchema();
+            this.schemaService.loadTableNamesInternal();
           },
           error => this.msg.publish({kind: "ERROR", content: error.error}))
       );

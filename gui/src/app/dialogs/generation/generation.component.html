@@ -1,13 +1,17 @@
-<div *ngIf="project === undefined || tables === undefined">
+<div *ngIf="project === undefined || tableNames === undefined">
   <p-progressSpinner></p-progressSpinner>
 </div>
 
-<ng-container *ngIf="project !== undefined && tables !== undefined">
+<ng-container *ngIf="project !== undefined && tableNames !== undefined">
   <p-toolbar>
-    <p-dropdown [options]="tables" (onChange)="onTableSelect($event)" optionLabel="name" placeholder="Select table"></p-dropdown>
+    <p-dropdown [options]="tableNames" (onChange)="onTableSelect($event)" placeholder="Select table"></p-dropdown>
   </p-toolbar>
 
-  <div class="p-fluid" *ngIf="currentTableRule">
+  <p *ngIf="!currentTable && loading">
+    Loading...
+  </p>
+
+  <div class="p-fluid" *ngIf="currentTable && currentTableRule">
     <div class="p-field">
       <label for="fill-mode">Fill mode</label>
       <p-dropdown id="fill-mode" [options]="fillModeOptions" [(ngModel)]="currentTableRule.fillMode" [required]="true"></p-dropdown>

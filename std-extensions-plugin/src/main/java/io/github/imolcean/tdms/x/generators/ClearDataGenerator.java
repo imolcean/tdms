@@ -31,6 +31,6 @@ public class ClearDataGenerator implements SimpleDataGenerator
     {
         log.info("Clearing the internal database");
 
-        dataService.clearTables(ds, schemaService.getSchema(ds).getTables());
+        dataService.clearTables(ds, schemaService.getTableNames(ds));
     }
 }

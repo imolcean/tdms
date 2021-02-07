@@ -116,8 +116,8 @@ public class DefaultSchemaService implements SchemaService
 
                 if(tableExists(src, "DATABASECHANGELOG"))
                 {
-                    dataService.clearTable(target, getTable(target, "DATABASECHANGELOG"));
-                    dataService.clearTable(target, getTable(target, "DATABASECHANGELOGLOCK"));
+                    dataService.clearTable(target, "DATABASECHANGELOG");
+                    dataService.clearTable(target, "DATABASECHANGELOGLOCK");
                 }
                 else
                 {

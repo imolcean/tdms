@@ -2,11 +2,11 @@
   <p-accordionTab header="Internal" [disabled]="(project$ | async) === undefined">
     <p-tree [value]="internalNodes$ | async"
             selectionMode="single"
+            (onNodeExpand)="nodeExpand($event)"
+            (onNodeCollapse)="nodeUnselect()"
             (onNodeSelect)="nodeSelect($event)"
-            (onNodeUnselect)="nodeUnselect($event)"
-            (onNodeContextMenuSelect)="nodeCmSelect($event)"
-            [contextMenu]="cm"
-            [loading]="(internalSchema$ | async) === undefined">
+            (onNodeUnselect)="nodeUnselect()"
+            [loading]="(internalTableNames$ | async) === undefined">
 
       <ng-template let-node  pTemplate="table">
         <p (dblclick)="open('internal', node);">
@@ -18,16 +18,16 @@
         <p>{{node.label}}</p>
       </ng-template>
     </p-tree>
-
-    <p-contextMenu #cm [model]="contextMenuItems"></p-contextMenu>
   </p-accordionTab>
 
   <p-accordionTab header="Stage" [disabled]="(stage$ | async) === undefined">
     <p-tree [value]="stageNodes$ | async"
             selectionMode="single"
+            (onNodeExpand)="nodeExpand($event)"
+            (onNodeCollapse)="nodeUnselect()"
             (onNodeSelect)="nodeSelect($event)"
-            (onNodeUnselect)="nodeUnselect($event)"
-            [loading]="(stageSchema$ | async) === undefined">
+            (onNodeUnselect)="nodeUnselect()"
+            [loading]="(stageTableNames$ | async) === undefined">
 
       <ng-template let-node  pTemplate="table">
         <p (dblclick)="open('current', node);">

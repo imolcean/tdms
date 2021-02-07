@@ -61,7 +61,7 @@ public class JsonDataExporter implements DataExporter
             List<String> columnNames = table.getColumns().stream()
                     .map(NamedObject::getName)
                     .collect(Collectors.toList());
-            List<Object[]> rows = dataService.getTableContent(ds, table);
+            List<Object[]> rows = dataService.getTableContent(ds, tableName);
 
             TableContentDto dto = new TableContentDto(tableName, columnNames, rows);
 

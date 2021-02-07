@@ -121,14 +121,14 @@ public class RuleBasedDataGenerator implements DataGenerator
                 log.info("Generating data (first phase)");
                 for(TableRule tr : generationOrder)
                 {
-                    List<TableContent.Row> rows = lowLevelDataService.getTableContent(connection, tr.getTable()).stream()
+                    List<TableContent.Row> rows = lowLevelDataService.getTableContent(connection, tr.getTable().getName()).stream()
                             .map(rawObjects -> new TableContent.Row(tr.getTable(), rawObjects))
                             .collect(Collectors.toList());
                     TableContent content = new TableContent(tr.getTable(), rows);
 
                     tr.generate(content);
 
-                    lowLevelDataService.clearTable(connection, tr.getTable());
+                    lowLevelDataService.clearTable(connection, tr.getTable().getName());
                     lowLevelDataService.insertRows(connection, tr.getTable(), content.getRowsAsArrays());
                 }
 
@@ -146,14 +146,14 @@ public class RuleBasedDataGenerator implements DataGenerator
                     tr.setFillMode(TableRule.FillMode.UPDATE);
                     tr.setColumnRules(postponedColumnRules);
 
-                    List<TableContent.Row> rows = lowLevelDataService.getTableContent(connection, tr.getTable()).stream()
+                    List<TableContent.Row> rows = lowLevelDataService.getTableContent(connection, tr.getTable().getName()).stream()
                             .map(rawObjects -> new TableContent.Row(tr.getTable(), rawObjects))
                             .collect(Collectors.toList());
                     TableContent content = new TableContent(tr.getTable(), rows);
 
                     tr.generate(content);
 
-                    lowLevelDataService.clearTable(connection, tr.getTable());
+                    lowLevelDataService.clearTable(connection, tr.getTable().getName());
                     lowLevelDataService.insertRows(connection, tr.getTable(), content.getRowsAsArrays());
                 }
             }

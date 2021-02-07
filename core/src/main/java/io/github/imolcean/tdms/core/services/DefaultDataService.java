@@ -46,11 +46,11 @@ public class DefaultDataService implements DataService
     }
 
     @Override
-    public List<Object[]> getTableContent(DataSource ds, Table table) throws SQLException
+    public List<Object[]> getTableContent(DataSource ds, String tableName) throws SQLException
     {
         try(Connection connection = ds.getConnection())
         {
-            return lowLevelDataService.getTableContent(connection, table);
+            return lowLevelDataService.getTableContent(connection, tableName);
         }
     }
 
@@ -135,7 +135,7 @@ public class DefaultDataService implements DataService
             throw new TableContentRowIndexOutOfBoundsException(table.getName(), rowCount, rowIndex);
         }
 
-        Object[] presentRow = getTableContent(ds, table).get(rowIndex);
+        Object[] presentRow = getTableContent(ds, table.getName()).get(rowIndex);
         Object[] _row = new Object[table.getColumns().size()];
 
         int i = 0;
@@ -222,7 +222,7 @@ public class DefaultDataService implements DataService
 
             for(Table table : tables)
             {
-                List<Object[]> data = getTableContent(src, table);
+                List<Object[]> data = getTableContent(src, table.getName());
 
                 try
                 {
@@ -264,15 +264,15 @@ public class DefaultDataService implements DataService
     }
 
     @Override
-    public void clearTable(DataSource ds, Table table) throws SQLException
+    public void clearTable(DataSource ds, String tableName) throws SQLException
     {
-        log.info("Clearing table " + table.getName());
+        log.info("Clearing table " + tableName);
 
         try(Connection connection = lowLevelDataService.createTransaction(ds))
         {
             try
             {
-                lowLevelDataService.clearTable(connection, table);
+                lowLevelDataService.clearTable(connection, tableName);
             }
             catch(SQLException e)
             {
@@ -287,7 +287,7 @@ public class DefaultDataService implements DataService
     }
 
     @Override
-    public void clearTables(DataSource ds, Collection<Table> tables) throws SQLException, IOException
+    public void clearTables(DataSource ds, Collection<String> tableNames) throws SQLException, IOException
     {
         log.info("Clearing tables");
 
@@ -297,11 +297,11 @@ public class DefaultDataService implements DataService
 
             try
             {
-                for(Table table : tables)
+                for(String tableName : tableNames)
                 {
-                    log.fine("Clearing table " + table.getName());
+                    log.fine("Clearing table " + tableName);
 
-                    lowLevelDataService.clearTable(connection, table);
+                    lowLevelDataService.clearTable(connection, tableName);
                 }
             }
             catch(SQLException e)

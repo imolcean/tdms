@@ -3,17 +3,17 @@ import {ProjectDto, TableMetaDataDto} from "../dto/dto";
 import {BehaviorSubject, Observable} from "rxjs";
 import {HttpClient} from "@angular/common/http";
 import {MessageService} from "./message.service";
-import {tap} from "rxjs/operators";
 import {ProjectService} from "./project.service";
 import {StageSelectionService} from "./stage-selection.service";
+import {tap} from "rxjs/operators";
 
 @Injectable({
   providedIn: 'root',
 })
 export class SchemaService
 {
-  private internalSchema$: BehaviorSubject<TableMetaDataDto[] | undefined>;
-  private currentStageSchema$: BehaviorSubject<TableMetaDataDto[] | undefined>;
+  private internalTableNames$: BehaviorSubject<string[] | undefined>;
+  private currentStageTableNames$: BehaviorSubject<string[] | undefined>;
 
   private project: ProjectDto | undefined;
 
@@ -22,19 +22,19 @@ export class SchemaService
               private projectService: ProjectService,
               private stageSelectionService: StageSelectionService)
   {
-    this.internalSchema$ = new BehaviorSubject<TableMetaDataDto[] | undefined>(undefined);
-    this.currentStageSchema$ = new BehaviorSubject<TableMetaDataDto[] | undefined>(undefined);
+    this.internalTableNames$ = new BehaviorSubject<string[] | undefined>(undefined);
+    this.currentStageTableNames$ = new BehaviorSubject<string[] | undefined>(undefined);
 
     this.projectService.getProject()
       .subscribe((value: ProjectDto | undefined) => {
         this.project = value;
         if(value !== undefined)
         {
-          this.loadInternalSchema();
+          this.loadTableNamesInternal();
         }
         else
         {
-          this.internalSchema$.next(undefined);
+          this.internalTableNames$.next(undefined);
         }
       });
 
@@ -43,74 +43,70 @@ export class SchemaService
       {
         if(value === undefined)
         {
-          this.currentStageSchema$.next(undefined);
+          this.currentStageTableNames$.next(undefined);
           return;
         }
 
-        this.loadCurrentStageSchema();
+        this.loadTableNamesCurrentStage();
       });
   }
 
-  public getInternalSchema(): Observable<TableMetaDataDto[] | undefined>
+  public getInternalTableNames(): Observable<string[] | undefined>
   {
-    return this.internalSchema$.asObservable();
+    return this.internalTableNames$.asObservable();
   }
 
-  public getCurrentStageSchema(): Observable<TableMetaDataDto[] | undefined>
+  public getCurrentStageTableNames(): Observable<string[] | undefined>
   {
-    return this.currentStageSchema$.asObservable();
+    return this.currentStageTableNames$.asObservable();
   }
 
-  public loadInternalSchema(): void
+  public getInternalTable(tableName: string): Observable<TableMetaDataDto>
   {
-    if(this.project === undefined)
-    {
-      this.msg.publish({kind: "WARNING", content: "There is no open project"});
-      return;
-    }
-
-    this.msg.publish({kind: "INFO", content: "Loading schema..."});
-
-    this.http
-      .get<TableMetaDataDto[]>('api/schema/internal')
-      .subscribe((value: TableMetaDataDto[]) =>
-      {
-        this.internalSchema$.next(value);
-        this.msg.publish({kind: "SUCCESS", content: "Schema loaded"});
-      }, error =>
-      {
-        this.msg.publish({kind: "ERROR", content: error.error});
-      });
-  }
-
-  public loadCurrentStageSchema(): void
-  {
-    this.msg.publish({kind: "INFO", content: "Loading schema of current stage..."});
-
-    this.http
-      .get<TableMetaDataDto[]>('api/schema/current')
-      .subscribe((value: TableMetaDataDto[]) =>
-      {
-        this.currentStageSchema$.next(value);
-        this.msg.publish({kind: "SUCCESS", content: "Schema of current stage loaded"});
-      }, error =>
-      {
-        this.msg.publish({kind: "ERROR", content: error.error});
-      });
-  }
-
-  public getOccupiedTableNamesInternal(): Observable<string[]>
-  {
-    this.msg.publish({kind: "INFO", content: "Loading list of non-empty tables..."});
+    this.msg.publish({kind: "INFO", content: "Loading table '" + tableName + "'..."});
 
     return this.http
-      .get<string[]>('api/schema/tables/internal/occupied')
+      .get<TableMetaDataDto>('api/schema/table/internal/' + tableName)
       .pipe(
         tap(
-          (_value: string[]) => this.msg.publish({kind: "SUCCESS", content: "List of non-empty tables loaded"}),
+          (_value: TableMetaDataDto) => this.msg.publish({kind: "SUCCESS", content: "Table loaded"}),
           error => this.msg.publish({kind: "ERROR", content: error.error})
         )
       );
+  }
+
+  public loadTableNamesInternal(): void
+  {
+    this.msg.publish({kind: "INFO", content: "Loading list of tables of internal DB..."});
+
+    this.http
+      .get<string[]>('api/schema/tables/internal')
+      .subscribe((value: string[]) =>
+      {
+        this.internalTableNames$.next(value);
+        this.msg.publish({kind: "SUCCESS", content: "List of tables of internal DB loaded"});
+      },
+      error =>
+      {
+        this.msg.publish({kind: "ERROR", content: error.error});
+      });
+  }
+
+  public loadTableNamesCurrentStage(): void
+  {
+    this.msg.publish({kind: "INFO", content: "Loading list of tables of current stage..."});
+
+    this.http
+      .get<string[]>('api/schema/tables/current')
+      .subscribe((value: string[]) =>
+        {
+          this.currentStageTableNames$.next(value);
+          this.msg.publish({kind: "SUCCESS", content: "List of tables of current stage loaded"});
+        },
+        error =>
+        {
+          this.msg.publish({kind: "ERROR", content: error.error});
+        });
   }
 
   public dropAllInternal(): void
@@ -121,7 +117,7 @@ export class SchemaService
       .delete('api/schema/internal')
       .subscribe(_value =>
       {
-        this.internalSchema$.next([]);
+        this.internalTableNames$.next([]);
         this.msg.publish({kind: "SUCCESS", content: "Internal schema cleared"});
       }, error =>
       {
@@ -137,7 +133,7 @@ export class SchemaService
       .delete('api/schema/current')
       .subscribe(_value =>
       {
-        this.currentStageSchema$.next([]);
+        this.currentStageTableNames$.next([]);
 
         this.msg.publish({kind: "SUCCESS", content: "Schema of current stage cleared"});
         this.msg.publish({kind: "INFO", content: "Applying schema to current stage..."});
@@ -147,7 +143,7 @@ export class SchemaService
           .subscribe(_value =>
           {
             this.msg.publish({kind: "SUCCESS", content: "Schema applied"});
-            this.loadCurrentStageSchema();
+            this.loadTableNamesCurrentStage();
           }, error =>
           {
             this.msg.publish({kind: "ERROR", content: error.error});

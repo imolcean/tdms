@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { TreeNode, MenuItem } from "primeng/api";
-import {ProjectDto, TableMetaDataDto} from "../../dto/dto";
+import { TreeNode } from "primeng/api";
+import {ProjectDto, TableMetaDataDto, TableMetaDataDtoColumn} from "../../dto/dto";
 import {Observable} from "rxjs";
 import {SchemaService} from "../../services/schema.service";
 import {map} from "rxjs/operators";
@@ -18,12 +18,11 @@ export class ProjectComponent implements OnInit
 {
   project$: Observable<ProjectDto | undefined>;
 
-  internalSchema$: Observable<TableMetaDataDto[] | undefined>;
+  internalTableNames$: Observable<string[] | undefined>;
   internalNodes$: Observable<TreeNode[]>;
-  contextMenuItems: MenuItem[];
 
   stage$: Observable<string | undefined>;
-  stageSchema$: Observable<TableMetaDataDto[] | undefined>;
+  stageTableNames$: Observable<string[] | undefined>;
   stageNodes$: Observable<TreeNode[]>;
 
   constructor(private projectService: ProjectService,
@@ -34,99 +33,119 @@ export class ProjectComponent implements OnInit
   {
     this.project$ = this.projectService.getProject();
 
-    this.internalSchema$ = schemaService.getInternalSchema();
-    this.internalNodes$ = this.internalSchema$.pipe(
-      map((schema: TableMetaDataDto[] | undefined) => this.schema2TreeNodes(schema))
+    this.internalTableNames$ = schemaService.getInternalTableNames();
+    this.internalNodes$ = this.internalTableNames$.pipe(
+      map((tableNames: string[] | undefined) => this.tableNames2TreeNodes(tableNames))
     );
 
     this.stage$ = this.stageSelectionService.getCurrentStage();
-    this.stageSchema$ = this.schemaService.getCurrentStageSchema();
-    this.stageNodes$ = this.stageSchema$.pipe(
-      map((schema: TableMetaDataDto[] | undefined) => this.schema2TreeNodes(schema))
+    this.stageTableNames$ = this.schemaService.getCurrentStageTableNames();
+    this.stageNodes$ = this.stageTableNames$.pipe(
+      map((tableNames: string[] | undefined) => this.tableNames2TreeNodes(tableNames))
     );
-
-    this.contextMenuItems = [
-      { label: 'Action 1', icon: 'fa fa-search', command: (event) => console.log("Action 1 on " + event.item.state[0].data.name) },
-      { label: 'Action 2', icon: 'fa fa-close', command: (event) => console.log("Action 2 on " + event.item.state[0].data.name) }
-    ];
   }
 
   ngOnInit(): void {}
 
   public update(): void
   {
-    this.schemaService.loadInternalSchema();
+    this.schemaService.loadTableNamesInternal();
+  }
+
+  public nodeExpand($event: any)
+  {
+    if($event.node.type === "table")
+    {
+      if(!$event.node.children)
+      {
+        this.schemaService.getInternalTable($event.node.label)
+          .subscribe((value: TableMetaDataDto) =>
+          {
+            $event.node.data = value;
+            $event.node.children = this.columns2treeNodes(value.columns);
+
+            this.nodeSelect($event);
+          });
+      }
+      else
+      {
+        this.nodeSelect($event);
+      }
+    }
   }
 
   public nodeSelect($event: any)
   {
-    switch($event.node.type)
+    this.nodeUnselect();
+
+    if($event.node.type === "column")
     {
-      case "table":
-        this.propertiesService.selectPropertiesFromTable($event.node.data);
-        break;
-      case "column":
-        this.propertiesService.selectPropertiesFromColumn($event.node.data);
-        break;
+      this.propertiesService.selectPropertiesFromColumn($event.node.data);
+      return;
+    }
+
+    if($event.node.type === "table" && $event.node.data)
+    {
+      this.propertiesService.selectPropertiesFromTable($event.node.data);
     }
   }
 
-  public nodeUnselect(_$event: any)
+  public nodeUnselect()
   {
     this.propertiesService.clearProperties();
-  }
-
-  public nodeCmSelect($event: any)
-  {
-    this.contextMenuItems.forEach((item: MenuItem) => item.state = [$event.node]);
   }
 
   public open(alias: string, node: TreeNode)
   {
     if(node.type === "table")
     {
-      this.tableService.loadData(alias, node.data.name);
+      this.tableService.loadData(alias, node.label!);
     }
   }
 
-  private schema2TreeNodes(schema: TableMetaDataDto[] | undefined): TreeNode[]
+  private tableNames2TreeNodes(tableNames: string[] | undefined): TreeNode[]
   {
-    if(schema === undefined)
+    if(tableNames === undefined)
     {
       return [];
     }
 
     const tableNodes: TreeNode[] = [];
 
-    for(let table of schema)
+    for(let tableName of tableNames)
     {
-      const columnNodes: TreeNode[] = [];
-
-      for(let column of table.columns)
-      {
-        const node: TreeNode =
-          {
-            type: "column",
-            data: column,
-            label: column.name,
-            icon: "pi pi-circle-off"
-          };
-
-        columnNodes.push(node);
-      }
-
       const node: TreeNode =
         {
           type: "table",
-          data: table,
-          label: table.name,
+          data: undefined,
+          label: tableName,
           icon: "pi pi-table",
-          children: columnNodes
+          leaf: false
         };
 
       tableNodes.push(node);
     }
 
     return tableNodes;
+  }
+
+  private columns2treeNodes(columns: TableMetaDataDtoColumn[]): TreeNode[]
+  {
+    const columnNodes: TreeNode[] = [];
+
+    for(let column of columns)
+    {
+      const node: TreeNode =
+        {
+          type: "column",
+          data: column,
+          label: column.name,
+          icon: "pi pi-circle-off"
+        };
+
+      columnNodes.push(node);
+    }
+
+    return columnNodes;
   }
 }
