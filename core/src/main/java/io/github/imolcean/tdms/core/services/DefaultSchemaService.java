@@ -63,7 +63,54 @@ public class DefaultSchemaService implements SchemaService
                     .withLoadOptions(load)
                     .toOptions();
 
-            return SchemaCrawlerUtility.getCatalog(connection, options);
+            Catalog catalog = SchemaCrawlerUtility.getCatalog(connection, options);
+
+            log.fine("Schema retrieved");
+
+            return catalog;
+        }
+    }
+
+    @Override
+    public Catalog getSchemaCompact(DataSource ds) throws SQLException, SchemaCrawlerException
+    {
+        log.fine("Retrieving schema (compact)");
+
+        try(Connection connection = ds.getConnection())
+        {
+            SchemaInfoLevel infoLevel = SchemaInfoLevelBuilder.builder()
+                    .withInfoLevel(InfoLevel.standard)
+                    .setRetrieveForeignKeys(false)
+                    .setRetrieveAdditionalColumnMetadata(false)
+                    .setRetrieveAdditionalColumnAttributes(false)
+                    .setRetrieveAdditionalTableAttributes(false)
+                    .setRetrieveDatabaseUsers(false)
+                    .setRetrieveAdditionalDatabaseInfo(false)
+                    .setRetrieveAdditionalJdbcDriverInfo(false)
+                    .setRetrieveIndexes(false)
+                    .setRetrieveIndexInformation(false)
+                    .setRetrieveTablePrivileges(false)
+                    .setRetrieveTableColumnPrivileges(false)
+                    .setRetrieveTableConstraintDefinitions(false)
+                    .setRetrieveTableConstraintInformation(false)
+                    .setRetrieveUserDefinedColumnDataTypes(false)
+                    .setRetrieveRoutines(false)
+                    .toOptions();
+
+            LoadOptions load = LoadOptionsBuilder.builder()
+                    .withSchemaInfoLevel(infoLevel)
+                    .toOptions();
+
+            SchemaCrawlerOptions options = SchemaCrawlerOptionsBuilder.builder()
+                    .withLimitOptions(getDefaultLimitOptions(getFullSchemaName(connection)))
+                    .withLoadOptions(load)
+                    .toOptions();
+
+            Catalog catalog = SchemaCrawlerUtility.getCatalog(connection, options);
+
+            log.fine("Schema (compact) retrieved");
+
+            return catalog;
         }
     }
 

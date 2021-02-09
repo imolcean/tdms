@@ -46,7 +46,7 @@ public abstract class AbstractSchemaUpdater implements SchemaUpdater
         log.fine("Copying schema and data from Temp DB into Internal DB");
 
         schemaService.copySchema(tmpDs, internalDs);
-        dataService.copyData(tmpDs, internalDs, schemaService.getSchema(tmpDs).getTables());
+        dataService.copyData(tmpDs, internalDs, schemaService.getSchemaCompact(tmpDs).getTables());
 
         log.fine("Purging Temp DB");
 

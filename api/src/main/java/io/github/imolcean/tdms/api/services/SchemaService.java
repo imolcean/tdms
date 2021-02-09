@@ -37,6 +37,18 @@ public interface SchemaService
     Catalog getSchema(DataSource ds) throws SQLException, SchemaCrawlerException;
 
     /**
+     * Retrieves a compact version of a database schema with all the tables, columns, PKs but without FKs and indexes.
+     *
+     * One should prefer this method over {@code getSchema(...)} if there is no need in FK and index information.
+     *
+     * Caution: Please try to avoid calling this method because it is blocking and may take long time on large schemas.
+     *
+     * @param ds Database whose schema is being retrieved
+     * @return Compact schema of the given database (no FKs and indexes)
+     */
+    Catalog getSchemaCompact(DataSource ds) throws SQLException, SchemaCrawlerException;
+
+    /**
      * Creates an exact copy of the schema of the {@code src} database in the {@code target} database.
      * This method is only guaranteed to work correctly when the {@code target} database contains an empty schema.
      *

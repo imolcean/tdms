@@ -36,7 +36,7 @@ public class ExcelDataImporter implements DataImporter
     @Override
     public void importData(DataSource ds, Path importDir) throws Exception
     {
-        Collection<Table> tables = schemaService.getSchema(ds).getTables();
+        Collection<Table> tables = schemaService.getSchemaCompact(ds).getTables();
 
         log.fine("Checking that the database is empty");
 
@@ -222,7 +222,7 @@ public class ExcelDataImporter implements DataImporter
                 return str;
             case FORMULA:
                 log.warning(String.format("Cell %s.%s contains a formula, I will try to evaluate the value", cell.getRowIndex(), cell.getColumnIndex()));
-                FormulaEvaluator evaluator =cell.getRow().getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
+                FormulaEvaluator evaluator = cell.getRow().getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
                 return new DataFormatter().formatCellValue(cell, evaluator);
             default:
                 log.warning(String.format("Unknown type of cell %s.%s, I will treat it as a NULL", cell.getRowIndex(), cell.getColumnIndex()));
