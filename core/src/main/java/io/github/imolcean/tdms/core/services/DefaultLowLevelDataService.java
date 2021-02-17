@@ -3,17 +3,17 @@ package io.github.imolcean.tdms.core.services;
 import de.danielbechler.util.Strings;
 import io.github.imolcean.tdms.api.services.LowLevelDataService;
 import io.github.imolcean.tdms.core.TableContentResultSetHandler;
-import io.github.imolcean.tdms.core.utils.QueryLoader;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
-import schemacrawler.schema.Column;
-import schemacrawler.schema.JavaSqlType;
-import schemacrawler.schema.NamedObject;
-import schemacrawler.schema.Table;
+import schemacrawler.inclusionrule.RegularExpressionInclusionRule;
+import schemacrawler.schema.*;
+import schemacrawler.schemacrawler.*;
+import schemacrawler.utility.SchemaCrawlerUtility;
 
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.*;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -106,7 +106,15 @@ public class DefaultLowLevelDataService implements LowLevelDataService
                 int i = 0;
                 for(JavaSqlType type : columnTypes)
                 {
-                    statement.setObject(i + 1, row[i], type);
+                    Object value = row[i];
+
+                    if(type.getName().toLowerCase().contains("binary") && value != null)
+                    {
+                        log.fine("Converting value to a byte array");
+                        value = Base64.getDecoder().decode((String) value);
+                    }
+
+                    statement.setObject(i + 1, value, type);
                     i++;
                 }
 
@@ -145,14 +153,23 @@ public class DefaultLowLevelDataService implements LowLevelDataService
     {
         log.fine("Disabling database constraints");
 
+        List<String> tableNames = null;
+        try
+        {
+            tableNames = getTableNames(connection);
+        }
+        catch(SchemaCrawlerException e)
+        {
+            throw new IOException(e);
+        }
+
         try(Statement statement = connection.createStatement())
         {
-            // Yeah, I know. Why would you use a batch for a single query?
-            //
-            // SQLServer refuses to throw an exception when disabling constraints fails. It just writes to the log instead.
-            // If you use a batch, however, the exception is thrown as it should.
+            for(String tableName : tableNames)
+            {
+                statement.addBatch("ALTER TABLE " + tableName + " NOCHECK CONSTRAINT all");
+            }
 
-            statement.addBatch(QueryLoader.loadQuery("disable_constraints"));
             statement.executeBatch();
         }
         catch(Exception e)
@@ -178,14 +195,23 @@ public class DefaultLowLevelDataService implements LowLevelDataService
     {
         log.fine("Enabling database constraints");
 
+        List<String> tableNames = null;
+        try
+        {
+            tableNames = getTableNames(connection);
+        }
+        catch(SchemaCrawlerException e)
+        {
+            throw new IOException(e);
+        }
+
         try(Statement statement = connection.createStatement())
         {
-            // Yeah, I know. Why would you use a batch for a single query?
-            //
-            // SQLServer refuses to throw an exception when enabling constraints fails. It just writes to the log instead.
-            // If you use a batch, however, the exception is thrown as it should.
+            for(String tableName : tableNames)
+            {
+                statement.addBatch("ALTER TABLE " + tableName + " WITH CHECK CHECK CONSTRAINT all");
+            }
 
-            statement.addBatch(QueryLoader.loadQuery("enable_constraints"));
             statement.executeBatch();
         }
         catch(Exception e)
@@ -220,5 +246,37 @@ public class DefaultLowLevelDataService implements LowLevelDataService
     {
         log.fine("Rolling the transaction back");
         connection.rollback();
+    }
+
+    private List<String> getTableNames(Connection connection) throws SQLException, SchemaCrawlerException
+    {
+        LoadOptions load = LoadOptionsBuilder.builder()
+                .withInfoLevel(InfoLevel.minimum)
+                .toOptions();
+
+        SchemaCrawlerOptions options = SchemaCrawlerOptionsBuilder.builder()
+                .withLimitOptions(getDefaultLimitOptions(getFullSchemaName(connection)))
+                .withLoadOptions(load)
+                .toOptions();
+
+        Catalog catalog = SchemaCrawlerUtility.getCatalog(connection, options);
+
+        return catalog.getTables().stream()
+                .map(NamedObject::getName)
+                .collect(Collectors.toList());
+    }
+
+    private String getFullSchemaName(Connection connection) throws SQLException
+    {
+        return String.format("%s.%s", connection.getCatalog(), connection.getSchema());
+    }
+
+    private LimitOptions getDefaultLimitOptions(String fullSchemaName)
+    {
+        return LimitOptionsBuilder.builder()
+                .includeSchemas(new RegularExpressionInclusionRule(fullSchemaName))
+                .includeTables(name -> !name.contains("sysdiagrams"))
+                .tableTypes("TABLE")
+                .toOptions();
     }
 }

@@ -39,7 +39,11 @@ public class JsonDataImporter implements DataImporter
         Iterator<File> it = FileUtils.iterateFiles(importDir.toFile(), null, true);
         while(it.hasNext())
         {
-            TableContentDto dto = mapper.readValue(it.next(), TableContentDto.class);
+            File file = it.next();
+
+            log.fine("Deserialising " + file.getName());
+
+            TableContentDto dto = mapper.readValue(file, TableContentDto.class);
             Table table = schemaService.getTable(ds, dto.getTableName());
 
             if(!dataService.isTableEmpty(ds, table))
