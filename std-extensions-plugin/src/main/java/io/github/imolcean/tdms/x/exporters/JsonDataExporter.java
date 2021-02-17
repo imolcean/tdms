@@ -63,6 +63,8 @@ public class JsonDataExporter implements DataExporter
                     .collect(Collectors.toList());
             List<Object[]> rows = dataService.getTableContent(ds, tableName);
 
+            log.fine(String.format("There are %s rows", rows.size()));
+
             TableContentDto dto = new TableContentDto(tableName, columnNames, rows);
 
             Path file = Files.createFile(Paths.get(exportDir.toAbsolutePath().toString(), tableName + ".json"));
